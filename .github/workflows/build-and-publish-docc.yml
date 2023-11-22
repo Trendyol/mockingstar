@@ -1,0 +1,29 @@
+name:  Build and Publish DocC
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  test:
+    name: 'Build and Publish DocC'
+    runs-on: macOS
+    permissions:
+      contents: write
+
+    steps:
+    - name: Check out Repository
+      uses: actions/checkout@v2
+
+    - name: Build DocC
+      run: swift run --package-path ./fastlaneRunner fastlaneRunner lane buildDocCLane
+
+    - name: Push DocC
+      uses: s0/git-publish-subdir-action@develop
+      env:
+        REPO: git@github.com:Trendyol/mockingstar-docs.git
+        BRANCH: main
+        FOLDER: ./.docsExport
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        MESSAGE: "Build: ({sha}) {msg}"

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>diffEditor</title>
+        <script src="ace.js"></script>
+        <script src="ace-diff.js"></script>
+        <link href= "ace-diff.min.css" rel="stylesheet">
+    </head>
+
+    <body>
+        <div class="diffEditor"></div>
+
+        <script>
+            define("ace/theme/twilight", ["require", "exports", "module", "ace/lib/dom"], function(e, t, n) {
+                t.isDark = !window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
+                t.cssClass = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "ace-twilight" : "ace-twilight",
+                t.cssText = "";
+            });
+
+            
+            var aceDiffer = new AceDiff({
+                element: '.diffEditor',
+                theme: 'ace/theme/twilight',
+                left: {
+                    content: ``,
+                },
+                right: {
+                    content: ``,
+                },
+            });
+
+            document.getElementsByClassName("ace_text-input")[0].addEventListener('input', function() {
+                window.webkit.messageHandlers.leftUpdate.postMessage(aceDiffer.editors.left.ace.getValue());
+            })
+
+            document.getElementsByClassName("ace_text-input")[1].addEventListener('input', function() {
+                window.webkit.messageHandlers.rightUpdate.postMessage(aceDiffer.editors.right.ace.getValue());
+            })
+        </script>
+    </body>
+</html>

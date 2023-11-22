@@ -1,0 +1,55 @@
+@Tutorial(time: 2) {
+    @Intro(title: "Mock Error Plugin") {
+        Customize error model when mock not found
+        
+        @Image(source: not_found.png)
+    }
+    
+    @Section(title: "When Mock Request Return Error") {
+        @ContentAndMedia {
+            Normally mock server fetch response from origin server which not have, but if your request additionally has `disableLiveData` flag, mock server can return error. 
+            
+            @Image(source: not_found.png)
+        }
+    }
+    
+    @Section(title: "Example Use Cases") {
+        @ContentAndMedia {
+            - Error response for your default response
+            - Debugging
+            - Placeholder
+        }
+    }
+    
+    @Section(title: "Create Mock Error Plugin") {
+        @ContentAndMedia {
+            You can create project based plugin or mock domain based plugin, only change is file path
+        }
+        
+        @Steps {
+            @Step {
+                Create `mockError.js` file at `Plugins` or `/Domains/`*DomainName*`/Plugins`
+                
+                @Code(name: "mockError.js", file: MockErrorPlugin.js)
+            }
+            
+            @Step {
+                Define plugin function.
+                
+                @Code(name: "mockError.js", file: MockErrorPlugin-empty.js)
+            }
+            
+            @Step {
+                Customize your response model. 
+                @Code(name: "mockError.js", file: MockErrorPlugin-model.js)
+            }
+            
+            @Step {
+                Return model
+                
+                🚨 Be sure response type must be string
+                @Code(name: "mockError.js", file: MockErrorPlugin-template.js)
+            }
+        }
+    }
+}

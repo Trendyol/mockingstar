@@ -1,0 +1,49 @@
+@Tutorial(time: 3) {
+    @Intro(title: "Mock Detail Plugin") {
+        Mock detail page can offer more information with Mock Detail Plugin
+        
+        @Image(source: detail.png)
+    }
+    
+    @Section(title: "Example Use Cases") {
+        @ContentAndMedia {
+            - Offer example code blocks
+            - HTTP Request for additional informations like diff checking
+            - Obtain more information about mock
+        }
+    }
+    
+    @Section(title: "Create Mock Detail Plugin") {
+        @ContentAndMedia {
+            You can create project based plugin or mock domain based plugin, only change is file path
+        }
+        
+        @Steps {
+            @Step {
+                Create `mockDetailMessages.js` file at `Plugins` or `/Domains/`*DomainName*`/Plugins`
+                
+                @Code(name: "mockDetailMessages.js", file: RequestDetailPlugin.js)
+            }
+            
+            @Step {
+                Define plugin function.
+                
+                @Code(name: "mockDetailMessages.js", file: RequestDetailPlugin-empty.js)
+            }
+            
+            @Step {
+                Return message text
+                
+                🚨 Be sure retun type must be string
+                @Code(name: "mockDetailMessages.js", file: RequestDetailPlugin-template.js)
+            }
+            
+            @Step {
+                Also you can make http request
+                
+                🚨 Be sure retun type must be string
+                @Code(name: "mockDetailMessages.js", file: RequestDetailPlugin-async.js)
+            }
+        }
+    }
+}

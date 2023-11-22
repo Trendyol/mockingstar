@@ -1,0 +1,87 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "/about-us" : {
+
+    },
+    "123" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Domains" : {
+
+    },
+    "Execute All Headers" : {
+
+    },
+    "Execute All Queries" : {
+
+    },
+    "Filters" : {
+
+    },
+    "Header Configs" : {
+
+    },
+    "Header Configurations" : {
+
+    },
+    "Header Filter Default Style Ignore" : {
+
+    },
+    "Hide Inspector" : {
+
+    },
+    "id" : {
+
+    },
+    "Key" : {
+
+    },
+    "Mock Configurations" : {
+
+    },
+    "New" : {
+
+    },
+    "Path" : {
+
+    },
+    "Path Configs" : {
+
+    },
+    "Path Configurations" : {
+
+    },
+    "Path Matching Ratio" : {
+
+    },
+    "Paths" : {
+
+    },
+    "Query Configs" : {
+
+    },
+    "Query Configurations" : {
+
+    },
+    "Query Filter Default Style Ignore" : {
+
+    },
+    "Save" : {
+
+    },
+    "Settings" : {
+
+    },
+    "trendyol.com" : {
+
+    },
+    "Value" : {
+
+    }
+  },
+  "version" : "1.0"
+}

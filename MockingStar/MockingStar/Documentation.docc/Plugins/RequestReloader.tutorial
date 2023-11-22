@@ -1,0 +1,69 @@
+@Tutorial(time: 3) {
+    @Intro(title: "Request Reloader Plugin") {
+        Mock Server saves original request so you can resend original request anytime. Request Reloader Plugin can modify your request.
+        
+        @Image(source: server_cluster.png)
+    }
+    
+    @Section(title: "Example Use Cases") {
+        @ContentAndMedia {
+            - URL modifications: change your prod requests to stage urls
+            - Authentication: Update expired tokens
+        }
+    }
+    
+    @Section(title: "Request Model") {
+        @ContentAndMedia {
+            Request Model contains `url`, `headers`, `request body` and `method`
+            
+            @Image(source: server_cluster.png)
+            
+            ```swift
+            public struct URLRequestModel: Codable, Equatable {
+                public let url: String
+                public let headers: [String: String]
+                public let body: String
+                public let method: String
+            
+                public init(url: String, headers: [String : String], body: String, method: String) {
+                    self.url = url
+                    self.headers = headers
+                    self.body = body
+                    self.method = method
+                }   
+            }
+            ```
+        }
+    }
+    
+    @Section(title: "Create Request Reloader Plugin") {
+        @ContentAndMedia {
+            You can create project based plugin or mock domain based plugin, only change is file path
+        }
+            
+        @Steps {
+            @Step {
+                Create `requestReloader.js` file at `Plugins` or `/Domains/`*DomainName*`/Plugins`
+                    
+                @Code(name: "requestReloader.js", file: RequestReloaderPlugin.js)
+            }
+                
+            @Step {
+                Define plugin function.
+                    
+                @Code(name: "requestReloader.js", file: RequestReloaderPlugin-empty.js)
+            }
+                
+            @Step {
+                Customize your request model. 
+                @Code(name: "requestReloader.js", file: RequestReloaderPlugin-modify.js)
+            }
+                
+            @Step {
+                Return modified request
+                    
+                @Code(name: "requestReloader.js", file: RequestReloaderPlugin-template.js)
+            }
+        }
+    }
+}

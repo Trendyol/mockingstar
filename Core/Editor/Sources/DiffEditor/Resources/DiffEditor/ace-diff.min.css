@@ -1,0 +1,306 @@
+@media (prefers-color-scheme: dark) {
+/*! Ace-diff | github.com/ace-diff/ace-diff */
+.acediff__wrap {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    position: absolute;
+    bottom: 0;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    overflow:auto
+}
+
+.acediff__gutter {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 60px;
+    flex: 0 0 60px;
+    border-left: 1px solid #000;
+    border-right: 1px solid #000;
+    overflow:hidden
+}
+
+.acediff__gutter, .acediff__gutter svg {
+    background-color:#272727
+}
+
+.acediff__left, .acediff__right {
+    height: 100%;
+    -webkit-box-flex: 1;
+    -ms-flex: 1;
+    flex:1
+}
+
+.acediff__diffLine {
+    background-color: #004d7a;
+    border-top: 1px solid #003554;
+    border-bottom: 1px solid #003554;
+    position: absolute;
+    z-index:4
+}
+
+.acediff__diffLine.targetOnly {
+    height: 0 !important;
+    border-top: 1px solid #003554;
+    border-bottom: 0;
+    position:absolute
+}
+
+.acediff__connector {
+    fill: #004d7a;
+    stroke:#003554
+}
+
+.acediff__copy--left, .acediff__copy--right {
+    position:relative
+}
+
+.acediff__copy--left div, .acediff__copy--right div {
+    color: #fff;
+    text-shadow: 1px 1px rgba(0, 0, 0, .7);
+    position: absolute;
+    margin: 2px 3px;
+    cursor:pointer
+}
+
+.acediff__copy--right div:hover {
+    color:#61a2e7
+}
+
+.acediff__copy--left {
+    float:right
+}
+
+.acediff__copy--left div {
+    right:0
+}
+
+.acediff__copy--left div:hover {
+    color: #f7b742
+}
+
+.ace-twilight .ace_gutter {
+	background: #232323;
+	color: #E2E2E2
+}
+
+.ace-twilight .ace_print-margin {
+	width: 1px;
+	background: #232323
+}
+
+.ace-twilight {
+	background-color: #141414;
+	color: #F8F8F8
+}
+
+.ace-twilight .ace_cursor {
+	color: #A7A7A7
+}
+
+.ace-twilight .ace_marker-layer .ace_selection {
+	background: rgba(221, 240, 255, 0.20)
+}
+
+.ace-twilight.ace_multiselect .ace_selection.ace_start {
+	box-shadow: 0 0 3px 0px #141414;
+}
+
+.ace-twilight .ace_marker-layer .ace_step {
+	background: rgb(102, 82, 0)
+}
+
+.ace-twilight .ace_marker-layer .ace_bracket {
+	margin: -1px 0 0 -1px;
+	border: 1px solid rgba(255, 255, 255, 0.25)
+}
+
+.ace-twilight .ace_marker-layer .ace_active-line {
+	background: rgba(255, 255, 255, 0.031)
+}
+
+.ace-twilight .ace_gutter-active-line {
+	background-color: rgba(255, 255, 255, 0.031)
+}
+
+.ace-twilight .ace_marker-layer .ace_selected-word {
+	border: 1px solid rgba(221, 240, 255, 0.20)
+}
+
+.ace-twilight .ace_invisible {
+	color: rgba(255, 255, 255, 0.25)
+}
+
+.ace-twilight .ace_keyword,
+.ace-twilight .ace_meta {
+	color: #CDA869
+}
+
+.ace-twilight .ace_constant,
+.ace-twilight .ace_constant.ace_character,
+.ace-twilight .ace_constant.ace_character.ace_escape,
+.ace-twilight .ace_constant.ace_other,
+.ace-twilight .ace_heading,
+.ace-twilight .ace_markup.ace_heading,
+.ace-twilight .ace_support.ace_constant {
+	color: #CF6A4C
+}
+
+.ace-twilight .ace_invalid.ace_illegal {
+	color: #F8F8F8;
+	background-color: rgba(86, 45, 86, 0.75)
+}
+
+.ace-twilight .ace_invalid.ace_deprecated {
+	text-decoration: underline;
+	font-style: italic;
+	color: #D2A8A1
+}
+
+.ace-twilight .ace_support {
+	color: #9B859D
+}
+
+.ace-twilight .ace_fold {
+	background-color: #AC885B;
+	border-color: #F8F8F8
+}
+
+.ace-twilight .ace_support.ace_function {
+	color: #DAD085
+}
+
+.ace-twilight .ace_list,
+.ace-twilight .ace_markup.ace_list,
+.ace-twilight .ace_storage {
+	color: #F9EE98
+}
+
+.ace-twilight .ace_entity.ace_name.ace_function,
+.ace-twilight .ace_meta.ace_tag,
+.ace-twilight .ace_variable {
+	color: #AC885B
+}
+
+.ace-twilight .ace_string {
+	color: #8F9D6A
+}
+
+.ace-twilight .ace_string.ace_regexp {
+	color: #E9C062
+}
+
+.ace-twilight .ace_comment {
+	font-style: italic;
+	color: #5F5A60
+}
+
+.ace-twilight .ace_variable {
+	color: #7587A6
+}
+
+.ace-twilight .ace_xml-pe {
+	color: #494949
+}
+
+.ace-twilight .ace_indent-guide {
+	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAEklEQVQImWMQERFpYLC1tf0PAAgOAnPnhxyiAAAAAElFTkSuQmCC) right repeat-y
+}
+
+}
+
+@media (prefers-color-scheme: light) {
+/*! Ace-diff | github.com/ace-diff/ace-diff */
+.acediff__wrap {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    position: absolute;
+    bottom: 0;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    overflow:auto
+}
+
+.acediff__gutter {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 0 60px;
+    flex: 0 0 60px;
+    border-left: 1px solid #bcbcbc;
+    border-right: 1px solid #bcbcbc;
+    overflow:hidden
+}
+
+.acediff__gutter, .acediff__gutter svg {
+    background-color:#efefef
+}
+
+.acediff__left, .acediff__right {
+    height: 100%;
+    -webkit-box-flex: 1;
+    -ms-flex: 1;
+    flex:1
+}
+
+.acediff__diffLine {
+    background-color: #d8f2ff;
+    border-top: 1px solid #a2d7f2;
+    border-bottom: 1px solid #a2d7f2;
+    position: absolute;
+    z-index:4
+}
+
+.acediff__diffLine.targetOnly {
+    height: 0 !important;
+    border-top: 1px solid #a2d7f2;
+    border-bottom: 0;
+    position:absolute
+}
+
+.acediff__connector {
+    fill: #d8f2ff;
+    stroke:#a2d7f2
+}
+
+.acediff__copy--left, .acediff__copy--right {
+    position:relative
+}
+
+.acediff__copy--left div, .acediff__copy--right div {
+    color: #000;
+    text-shadow: 1px 1px hsla(0, 0%, 100%, .7);
+    position: absolute;
+    margin: 2px 3px;
+    cursor:pointer
+}
+
+.acediff__copy--right div:hover {
+    color:#004ea0
+}
+
+.acediff__copy--left {
+    float:right
+}
+
+.acediff__copy--left div {
+    right:0
+}
+
+.acediff__copy--left div:hover {
+    color: #c98100
+}
+
+
+}

@@ -1,0 +1,47 @@
+@Tutorials(name: "Plugins Tutorial") {
+    @Intro(title: "Plugins Tutorial") {
+        Plugins Tutorial
+        
+        @Image(source: appIcon.png)
+    }
+    
+    @Chapter(name: "Live Request Updater") {
+        Manipulate Live Request
+        
+        @Image(source: server_cluster.png)
+        
+        @TutorialReference(tutorial: "doc:LiveRequestUpdater")
+    }
+    
+    @Chapter(name: "Mock Detail") {
+        More informations on Mock Detail
+        
+        @Image(source: detail.png)
+        
+        @TutorialReference(tutorial: "doc:MockDetail")
+    }
+    
+    @Chapter(name: "Mock Error") {
+        Custom error response for your application
+        
+        @Image(source: not_found.png)
+        
+        @TutorialReference(tutorial: "doc:MockError")
+    }
+    
+    @Chapter(name: "Request Reloader") {
+        Manipulate Mock Reloader Request
+        
+        @Image(source: server_cluster.png)
+        
+        @TutorialReference(tutorial: "doc:RequestReloader")
+    }
+    
+    @Chapter(name: "Plugin Commons") {
+        Plugins commons
+        
+        @Image(source: code_typing.png)
+        
+        @TutorialReference(tutorial: "doc:PluginCommons")
+    }
+}
