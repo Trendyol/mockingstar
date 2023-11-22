@@ -1,0 +1,18 @@
+name: Unit Tests
+
+on:
+  pull_request:
+    branches:
+    - "*"
+
+jobs:
+  test:
+    name: 'Run Unit Tests'
+    runs-on: macOS
+
+    steps:
+    - name: Check out Repository
+      uses: actions/checkout@v2
+
+    - name: Run Xcode Unit Tests
+      run: swift run --package-path ./fastlaneRunner fastlaneRunner lane unitTestLane

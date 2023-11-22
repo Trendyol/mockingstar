@@ -1,0 +1,69 @@
+@Tutorial(time: 3) {
+    @Intro(title: "Live Request Plugin") {
+        During fetch response from origin server, Live Request Plugin can modify request
+        
+        @Image(source: server_cluster.png)
+    }
+    
+    @Section(title: "Example Use Cases") {
+        @ContentAndMedia {
+            - URL modifications: change your prod requests to stage urls
+            - Authentication: Add token your requests
+        }
+    }
+    
+    @Section(title: "Request Model") {
+        @ContentAndMedia {
+            Request Model contains `url`, `headers`, `request body` and `method`
+            
+            @Image(source: server_cluster.png)
+            
+            ```swift
+            public struct URLRequestModel: Codable, Equatable {
+                public let url: String
+                public let headers: [String: String]
+                public let body: String
+                public let method: String
+            
+                public init(url: String, headers: [String : String], body: String, method: String) {
+                    self.url = url
+                    self.headers = headers
+                    self.body = body
+                    self.method = method
+                }   
+            }
+            ```
+        }
+    }
+    
+    @Section(title: "Create Live Request Plugin") {
+        @ContentAndMedia {
+            You can create project based plugin or mock domain based plugin, only change is file path
+        }
+            
+        @Steps {
+            @Step {
+                Create `liveRequestUpdater.js` file at `Plugins` or `/Domains/`*DomainName*`/Plugins`
+                    
+                @Code(name: "liveRequestUpdater.js", file: LiveRequestPlugin.js)
+            }
+                
+            @Step {
+                Define plugin function.
+                    
+                @Code(name: "liveRequestUpdater.js", file: LiveRequestPlugin-empty.js)
+            }
+                
+            @Step {
+                Customize your request model. 
+                @Code(name: "liveRequestUpdater.js", file: LiveRequestPlugin-modify.js)
+            }
+                
+            @Step {
+                Return modified request
+                    
+                @Code(name: "liveRequestUpdater.js", file: LiveRequestPlugin-template.js)
+            }
+        }
+    }
+}

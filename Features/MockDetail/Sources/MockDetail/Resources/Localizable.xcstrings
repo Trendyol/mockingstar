@@ -1,0 +1,153 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    " " : {
+
+    },
+    ": " : {
+
+    },
+    "?%@" : {
+
+    },
+    "%lld" : {
+
+    },
+    "Actions" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Details" : {
+
+    },
+    "Diff Count" : {
+
+    },
+    "Discard Changes" : {
+
+    },
+    "Editor Data" : {
+
+    },
+    "Enter a scenario" : {
+
+    },
+    "Error" : {
+
+    },
+    "Fix File Path" : {
+
+    },
+    "Hide Inspector" : {
+
+    },
+    "Host" : {
+
+    },
+    "HTTP Status" : {
+
+    },
+    "HTTP Status Code" : {
+
+    },
+    "Is Modified" : {
+
+    },
+    "JSON Validation Error" : {
+
+    },
+    "Mock Reload" : {
+
+    },
+    "Mock Scenario" : {
+
+    },
+    "Mock State" : {
+
+    },
+    "Mock Status Code" : {
+
+    },
+    "Mock Will be Deleted, Are you sure" : {
+
+    },
+    "Open in Finder" : {
+
+    },
+    "Original Request" : {
+
+    },
+    "Overview" : {
+
+    },
+    "Path" : {
+
+    },
+    "Plugin" : {
+
+    },
+    "Query" : {
+
+    },
+    "Reload" : {
+
+    },
+    "Reload %@" : {
+
+    },
+    "Reload Mock" : {
+
+    },
+    "Response Content" : {
+
+    },
+    "Response Status Code" : {
+
+    },
+    "Response Time" : {
+
+    },
+    "Response Time (Second)" : {
+
+    },
+    "Save" : {
+
+    },
+    "Save & Back" : {
+
+    },
+    "Send Request" : {
+
+    },
+    "Send saved request to server and compare mock and new response" : {
+
+    },
+    "The file location is not where it should be, which causes the mock to not be used as a response. You can move this mock to its required location by tap Fix." : {
+
+    },
+    "Updated Request" : {
+
+    },
+    "URL" : {
+
+    },
+    "Warning" : {
+
+    },
+    "You have request reloader plugin and plugin modified original request" : {
+
+    },
+    "You should chose mock side or response side" : {
+
+    }
+  },
+  "version" : "1.0"
+}

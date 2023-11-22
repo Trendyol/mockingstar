@@ -1,0 +1,60 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "App" : {
+
+    },
+    "Change Path" : {
+
+    },
+    "Check" : {
+
+    },
+    "Continue" : {
+
+    },
+    "Diagnostic" : {
+
+    },
+    "Mock Domains" : {
+
+    },
+    "MockingStar" : {
+
+    },
+    "Mocks Folder" : {
+
+    },
+    "Plugins" : {
+
+    },
+    "Restart" : {
+
+    },
+    "Select Folder" : {
+
+    },
+    "Server Port" : {
+
+    },
+    "Servers" : {
+
+    },
+    "Unsaved changes" : {
+
+    },
+    "Use Default Folder" : {
+
+    },
+    "Welcome to" : {
+
+    },
+    "Working" : {
+
+    },
+    "You can save or discard them" : {
+
+    }
+  },
+  "version" : "1.0"
+}

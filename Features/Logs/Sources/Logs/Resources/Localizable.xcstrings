@@ -1,0 +1,40 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "active: %lld" : {
+
+    },
+    "Clear" : {
+
+    },
+    "Copy Logs" : {
+
+    },
+    "Critical Logs" : {
+
+    },
+    "Following" : {
+
+    },
+    "Select all" : {
+
+    },
+    "Severity Filter" : {
+
+    },
+    "Unselect all" : {
+
+    }
+  },
+  "version" : "1.0"
+}

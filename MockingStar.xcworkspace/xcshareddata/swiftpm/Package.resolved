@@ -1,0 +1,68 @@
+{
+  "pins" : [
+    {
+      "identity" : "anycodable",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/yusufozgul/AnyCodable",
+      "state" : {
+        "revision" : "96b006da47aed6ebfcaecc4d08a559445aa10438",
+        "version" : "1.1.3"
+      }
+    },
+    {
+      "identity" : "filemonitor",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/aus-der-Technik/FileMonitor.git",
+      "state" : {
+        "revision" : "0cfe5bd5842d6e83df173c454354eac6b6fd1f08",
+        "version" : "1.1.0"
+      }
+    },
+    {
+      "identity" : "flyingfox",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swhitty/FlyingFox.git",
+      "state" : {
+        "revision" : "8a20a97f2037f133ac9bf5a817a4eb70bfd04981",
+        "version" : "0.12.3"
+      }
+    },
+    {
+      "identity" : "jsvaluecoder",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/theolampert/JSValueCoder",
+      "state" : {
+        "branch" : "main",
+        "revision" : "9e15b58c144158fad33cde7e90f334dca2ca17a2"
+      }
+    },
+    {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser",
+      "state" : {
+        "revision" : "8f4d2753f0e4778c76d5f05ad16c74f707390531",
+        "version" : "1.2.3"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-syntax.git",
+      "state" : {
+        "revision" : "6ad4ea24b01559dde0773e3d091f1b9e36175036",
+        "version" : "509.0.2"
+      }
+    },
+    {
+      "identity" : "swiftyjs",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/yusufozgul/SwiftyJS",
+      "state" : {
+        "branch" : "main",
+        "revision" : "f5c29468529b6e7c6c52708eec838bdddd5e303e"
+      }
+    }
+  ],
+  "version" : 2
+}

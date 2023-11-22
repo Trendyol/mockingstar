@@ -1,0 +1,34 @@
+name:  Release CLI
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  test:
+    name: 'Release CLI App'
+    runs-on: macOS
+    permissions:
+      contents: write
+
+    steps:
+    - name: Check out Repository
+      uses: actions/checkout@v2
+
+    - name: Set env
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+    - name: Build CLI App 
+      run: swift run --package-path ./fastlaneRunner fastlaneRunner lane releaseCLILane
+
+    - name: Find Executable
+      run: echo "EXECUTABLE_PATH=$(find ./.build -name MockingStar -type f -not -path '*dSYM*')" >> $GITHUB_ENV
+
+    - name: Create a Release
+      uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ env.RELEASE_VERSION }}
+        name: MockingStar - Release ${{ env.RELEASE_VERSION }}
+        artifacts: '${{ env.EXECUTABLE_PATH }}'
+        allowUpdates: true

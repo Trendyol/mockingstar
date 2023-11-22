@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:MockingStar/MockingStar.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:MockingStarExecutable">
+   </FileRef>
+   <Group
+      location = "container:"
+      name = "Core">
+      <FileRef
+         location = "group:Core/PluginCore">
+      </FileRef>
+      <FileRef
+         location = "group:Core/CommonKit">
+      </FileRef>
+      <FileRef
+         location = "group:Core/CommonViewsKit">
+      </FileRef>
+      <FileRef
+         location = "group:Core/Editor">
+      </FileRef>
+      <FileRef
+         location = "group:Core/MockingStarCore">
+      </FileRef>
+      <FileRef
+         location = "group:Core/Server">
+      </FileRef>
+   </Group>
+   <Group
+      location = "group:Features"
+      name = "Features">
+      <FileRef
+         location = "group:Logs">
+      </FileRef>
+      <FileRef
+         location = "group:PluginConfigs">
+      </FileRef>
+      <FileRef
+         location = "group:MockDetail">
+      </FileRef>
+      <FileRef
+         location = "group:MockList">
+      </FileRef>
+      <FileRef
+         location = "group:MockDomainConfigs">
+      </FileRef>
+   </Group>
+   <FileRef
+      location = "group:TestPlan.xctestplan">
+   </FileRef>
+</Workspace>

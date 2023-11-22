@@ -1,0 +1,43 @@
+@Tutorial(time: 2) {
+    @Intro(title: "Plugins") {
+        Plugins extends MockingStar features, easily customize with JavaScript based plugins 
+        
+        @Image(source: code_typing.png)
+    }
+    
+    @Section(title: "Plugin Configurations") {
+        @ContentAndMedia {
+            All plugins can configurable with UI. Define `config` variable and configure in UI.
+            
+            @Image(source: SS_plugin_configuration.png)
+        }
+        
+        @Steps {
+            @Step {
+                Define `config` variable.
+                
+                @Code(name: "any-plugin-file.js", file: PluginConfiguration-empty.js)
+            }
+            
+            @Step {
+                You can define four different type input: `text`, `number`, `bool`, `textArray` and `numberArray`.
+                
+                @Code(name: "any-plugin-file.js", file: PluginConfiguration.js)
+            }
+        }
+    }
+    
+    @Section(title: "Plugin Utils") {
+        @ContentAndMedia {
+           All plugins have `util` variable, that provides more functionality for plugins. Currently have only http request support.
+        }
+        
+        @Steps {
+            @Step {
+                HTTP Request Util
+                
+                @Code(name: "any-plugin-file.js", file: PluginUtils.js)
+            }
+        }
+    }
+}

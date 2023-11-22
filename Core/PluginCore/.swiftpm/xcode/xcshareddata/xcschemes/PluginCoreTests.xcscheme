@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1500"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      shouldAutocreateTestPlan = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "PluginCoreTests"
+               BuildableName = "PluginCoreTests"
+               BlueprintName = "PluginCoreTests"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "MockListTests"
+               BuildableName = "MockListTests"
+               BlueprintName = "MockListTests"
+               ReferencedContainer = "container:../../Features/MockList">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "ServerTests"
+               BuildableName = "ServerTests"
+               BlueprintName = "ServerTests"
+               ReferencedContainer = "container:../Server">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "55B438392A6FE25D00E2A9DD"
+               BuildableName = "MockingStarTests.xctest"
+               BlueprintName = "MockingStarTests"
+               ReferencedContainer = "container:../../MockingStar/MockingStar.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DiffEditorTests"
+               BuildableName = "DiffEditorTests"
+               BlueprintName = "DiffEditorTests"
+               ReferencedContainer = "container:../Editor">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "CommonKitTests"
+               BuildableName = "CommonKitTests"
+               BlueprintName = "CommonKitTests"
+               ReferencedContainer = "container:../CommonKit">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "PluginCoreTests"
+               BuildableName = "PluginCoreTests"
+               BlueprintName = "PluginCoreTests"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "MockDetailTests"
+               BuildableName = "MockDetailTests"
+               BlueprintName = "MockDetailTests"
+               ReferencedContainer = "container:../../Features/MockDetail">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "MockingStarCoreTests"
+               BuildableName = "MockingStarCoreTests"
+               BlueprintName = "MockingStarCoreTests"
+               ReferencedContainer = "container:../MockingStarCore">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "CommonViewsKitTests"
+               BuildableName = "CommonViewsKitTests"
+               BlueprintName = "CommonViewsKitTests"
+               ReferencedContainer = "container:../CommonViewsKit">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "PluginConfigsTests"
+               BuildableName = "PluginConfigsTests"
+               BlueprintName = "PluginConfigsTests"
+               ReferencedContainer = "container:../../Features/PluginConfigs">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "JSONEditorTests"
+               BuildableName = "JSONEditorTests"
+               BlueprintName = "JSONEditorTests"
+               ReferencedContainer = "container:../Editor">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "MockDomainConfigsTests"
+               BuildableName = "MockDomainConfigsTests"
+               BlueprintName = "MockDomainConfigsTests"
+               ReferencedContainer = "container:../../Features/MockDomainConfigs">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>

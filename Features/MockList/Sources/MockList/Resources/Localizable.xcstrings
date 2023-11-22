@@ -1,0 +1,51 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Are you sure?" : {
+
+    },
+    "Created" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Error" : {
+
+    },
+    "HTTP Status" : {
+
+    },
+    "Last Updated" : {
+
+    },
+    "Method" : {
+
+    },
+    "Ok" : {
+
+    },
+    "Open Mock Detail" : {
+
+    },
+    "Remove Selected" : {
+
+    },
+    "Request" : {
+
+    },
+    "Response Time" : {
+
+    },
+    "Scenario" : {
+
+    },
+    "Select All" : {
+
+    },
+    "Unselect All" : {
+
+    }
+  },
+  "version" : "1.0"
+}

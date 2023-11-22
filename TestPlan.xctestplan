@@ -1,0 +1,101 @@
+{
+  "configurations" : [
+    {
+      "id" : "92545CB1-1128-41C3-B889-8D8407D4CA10",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:..\/Features\/MockDomainConfigs",
+        "identifier" : "MockDomainConfigsTests",
+        "name" : "MockDomainConfigsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/CommonViewsKit",
+        "identifier" : "CommonViewsKitTests",
+        "name" : "CommonViewsKitTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Features\/Logs",
+        "identifier" : "LogsTests",
+        "name" : "LogsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/Editor",
+        "identifier" : "DiffEditorTests",
+        "name" : "DiffEditorTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/CommonKit",
+        "identifier" : "CommonKitTests",
+        "name" : "CommonKitTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/PluginCore",
+        "identifier" : "PluginCoreTests",
+        "name" : "PluginCoreTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/MockingStarCore",
+        "identifier" : "MockingStarCoreTests",
+        "name" : "MockingStarCoreTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Features\/MockList",
+        "identifier" : "MockListTests",
+        "name" : "MockListTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/Editor",
+        "identifier" : "JSONEditorTests",
+        "name" : "JSONEditorTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Features\/MockDetail",
+        "identifier" : "MockDetailTests",
+        "name" : "MockDetailTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Features\/PluginConfigs",
+        "identifier" : "PluginConfigsTests",
+        "name" : "PluginConfigsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/Server",
+        "identifier" : "ServerTests",
+        "name" : "ServerTests"
+      }
+    }
+  ],
+  "version" : 1
+}
