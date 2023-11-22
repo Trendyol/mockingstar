@@ -33,11 +33,3 @@ jobs:
         AC_ISSUER_ID: ${{ secrets.AC_ISSUER_ID }}
         AC_API_KEY: ${{ secrets.AC_API_KEY }}
         VERSION: ${{ env.RELEASE_VERSION }}
-
-    - name: Create a Release
-      uses: ncipollo/release-action@v1
-      with:
-        tag: ${{ env.RELEASE_VERSION }}
-        name: MockingStar - Release ${{ env.RELEASE_VERSION }}
-        artifacts: './.appBuildOutput/MockingStar.pkg'
-        allowUpdates: true

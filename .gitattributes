@@ -1,0 +1,8 @@
+*.js linguist-detectable=false
+*.js linguist-vendored=true
+
+*.html linguist-detectable=false
+*.html linguist-vendored=true
+
+*.css linguist-detectable=false
+*.css linguist-vendored=true
