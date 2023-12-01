@@ -5,6 +5,14 @@
         @Image(source: appIcon.png)
     }
     
+    @Chapter(name: "Plugin Commons") {
+        Plugins commons
+        
+        @Image(source: code_typing.png)
+        
+        @TutorialReference(tutorial: "doc:PluginCommons")
+    }
+    
     @Chapter(name: "Live Request Updater") {
         Manipulate Live Request
         
@@ -35,13 +43,5 @@
         @Image(source: server_cluster.png)
         
         @TutorialReference(tutorial: "doc:RequestReloader")
-    }
-    
-    @Chapter(name: "Plugin Commons") {
-        Plugins commons
-        
-        @Image(source: code_typing.png)
-        
-        @TutorialReference(tutorial: "doc:PluginCommons")
     }
 }

@@ -1,13 +1,13 @@
 @Tutorial(time: 2) {
     @Intro(title: "Mock Error Plugin") {
-        Customize error model when mock not found
+        Customize the error model when a mock is not found.
         
         @Image(source: not_found.png)
     }
     
     @Section(title: "When Mock Request Return Error") {
         @ContentAndMedia {
-            Normally mock server fetch response from origin server which not have, but if your request additionally has `disableLiveData` flag, mock server can return error. 
+            Normally, Mocking Star fetches a response from the origin server which it does not have. However, if your request additionally has the `disableLiveData` flag, the mock server can return an error. 
             
             @Image(source: not_found.png)
         }
@@ -23,7 +23,7 @@
     
     @Section(title: "Create Mock Error Plugin") {
         @ContentAndMedia {
-            You can create project based plugin or mock domain based plugin, only change is file path
+            You can create a project-based plugin or a mock domain-based plugin; the only change is the file path.
         }
         
         @Steps {

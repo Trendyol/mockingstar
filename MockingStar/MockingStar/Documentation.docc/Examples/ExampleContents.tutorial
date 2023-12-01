@@ -1,0 +1,15 @@
+@Tutorials(name: "Examples") {
+    @Intro(title: "Examples") {
+        Explore Mocking Star example projects
+        
+        @Image(source: appIcon.png)
+    }
+    
+    @Chapter(name: "Using Mocking Star in Xcode UI Tests") {
+        Explore How to Use Mocking Star in Xcode UI Tests
+        
+        @Image(source: xcode-logo.png)
+        
+        @TutorialReference(tutorial: "doc:XCUITest-Example")
+    }
+}

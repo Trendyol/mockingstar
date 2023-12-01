@@ -1,13 +1,13 @@
 @Tutorial(time: 2) {
-    @Intro(title: "Plugins") {
-        Plugins extends MockingStar features, easily customize with JavaScript based plugins 
+    @Intro(title: "Plugin Common") {
+        Plugins extend Mocking Star features, easily customizable with JavaScript-based plugins. 
         
         @Image(source: code_typing.png)
     }
     
     @Section(title: "Plugin Configurations") {
         @ContentAndMedia {
-            All plugins can configurable with UI. Define `config` variable and configure in UI.
+            All plugins can be configured with UI. Define the `config` variable and configure it in the UI.
             
             @Image(source: SS_plugin_configuration.png)
         }
@@ -29,7 +29,7 @@
     
     @Section(title: "Plugin Utils") {
         @ContentAndMedia {
-           All plugins have `util` variable, that provides more functionality for plugins. Currently have only http request support.
+            All plugins have a `util` variable, which provides more functionality for plugins. Currently, it only has HTTP request support.
         }
         
         @Steps {

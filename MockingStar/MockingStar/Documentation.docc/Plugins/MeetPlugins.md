@@ -1,19 +1,21 @@
-# Meet MockingStar Plugins
+# Meet Mocking Star Plugins
 
-MockingStar can easily adopt for your requirements, only need define your plugins. 
+Mocking Star can be easily adapted to your requirements by defining your plugins. 
 
 @Metadata {
     @PageImage(
                purpose: icon, 
-               source: "appIcon.png")
-    @PageColor(red)
+               source: "plugin.png")
+    @PageColor(blue)
 }
 
-![](process.png)
+Mocking Star offers plugins for key points such as requests to the original server, custom error responses, or providing useful information on the Mock Detail page. The app uses the [JavaScriptCore framework](https://developer.apple.com/documentation/javascriptcore) for plugins.
 
 ## Plugin Types
-- <doc:PluginCommons>
-- <doc:LiveRequestUpdater>
-- <doc:MockDetail>
-- <doc:MockError>
-- <doc:RequestReloader>
+@Links(visualStyle: list) {
+    - <doc:PluginCommons>
+    - <doc:LiveRequestUpdater>
+    - <doc:MockDetail>
+    - <doc:MockError>
+    - <doc:RequestReloader>
+}
