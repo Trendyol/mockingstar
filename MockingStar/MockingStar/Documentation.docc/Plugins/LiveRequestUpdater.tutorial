@@ -1,14 +1,14 @@
 @Tutorial(time: 3) {
     @Intro(title: "Live Request Plugin") {
-        During fetch response from origin server, Live Request Plugin can modify request
+        During fetching a response from the origin server, the Live Request Plugin can modify the request.
         
         @Image(source: server_cluster.png)
     }
     
     @Section(title: "Example Use Cases") {
         @ContentAndMedia {
-            - URL modifications: change your prod requests to stage urls
-            - Authentication: Add token your requests
+            - URL modifications: change your prod requests to stage URLs
+            - Authentication: Add a token to your requests
         }
     }
     
@@ -38,7 +38,7 @@
     
     @Section(title: "Create Live Request Plugin") {
         @ContentAndMedia {
-            You can create project based plugin or mock domain based plugin, only change is file path
+            You can create a project-based plugin or a mock domain-based plugin; the only change is the file path.
         }
             
         @Steps {

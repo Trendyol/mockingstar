@@ -1,0 +1,50 @@
+@Tutorial(time: 5) {
+    @Intro(title: "Using Mocking Star in Xcode UI Tests") {
+        Explore How to Use Mocking Star in Xcode UI Tests
+        
+        @Image(source: xcode-logo.png)
+    }
+    
+    @Section(title: "Create UI Test Case") {
+        @ContentAndMedia {
+            The Mocking Star library provides a ready-made structure for convenient use in UI tests. By conforming your UI test to BaseMockXCTest, you gain access to the setScenario method, allowing you to easily configure and set your test scenarios.
+            
+            
+            @Image(source: mobile-testing.png)
+        }
+        
+        @Steps {
+            @Step {
+                Create Test Class
+                
+                @Code(name: "MockingStarExampleUITests.swift", file: 1-starting.swift)
+            }
+            
+            @Step {
+                Prepare SetUp
+                
+                @Code(name: "MockingStarExampleUITests.swift", file: 2-prepareSetup.swift)
+            }
+            
+            @Step {
+                Create Test Case
+                
+                @Code(name: "MockingStarExampleUITests.swift", file: 3-createTestCase.swift) {
+                    @Image(source: xcuitest-simulator.png)
+                }
+            }
+            
+            @Step {
+                Add scenario to test case
+                
+                @Code(name: "MockingStarExampleUITests.swift", file: 4-UseScenarios.swift) {
+                    @Image(source: xcuitest-simulator-emptycase.png)
+                }
+            }
+        }
+        
+        > Tip:
+        Feel free to clone repository and explore the demo project and UI Tests inside. 
+        https://github.com/Trendyol/mockingstar-ios
+    }
+}
