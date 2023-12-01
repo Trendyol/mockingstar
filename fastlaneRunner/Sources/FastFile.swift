@@ -60,7 +60,7 @@ extension MockingStarFastFile {
                               isKeyContentBase64: true)
 
         let buildNumber = latestTestflightBuildNumber(appIdentifier: "com.trendyol.MockingStar", platform: "osx")
-        incrementBuildNumber(buildNumber: .userDefined("\(buildNumber)"), xcodeproj: "./MockingStar/MockingStar.xcodeproj")
+        incrementBuildNumber(buildNumber: .userDefined("\(buildNumber + 1)"), xcodeproj: "./MockingStar/MockingStar.xcodeproj")
         sh(command: "sed -i '' -e 's/MARKETING_VERSION \\= [^\\;]*\\;/MARKETING_VERSION = \(environmentVariable(get: "VERSION"));/' ./MockingStar/MockingStar.xcodeproj/project.pbxproj"){ error in
             print("update version error: \(error)")
             fatalError(error)
