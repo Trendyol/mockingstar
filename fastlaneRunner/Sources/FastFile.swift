@@ -61,7 +61,10 @@ extension MockingStarFastFile {
 
         let buildNumber = latestTestflightBuildNumber(appIdentifier: "com.trendyol.MockingStar", platform: "osx")
         incrementBuildNumber(buildNumber: .userDefined("\(buildNumber)"), xcodeproj: "./MockingStar/MockingStar.xcodeproj")
-        sh(command: "sed -i '' -e 's/MARKETING_VERSION \\= [^\\;]*\\;/MARKETING_VERSION = \(environmentVariable(get: "VERSION"));/' ./MockingStar/MockingStar.xcodeproj/project.pbxproj")
+        sh(command: "sed -i '' -e 's/MARKETING_VERSION \\= [^\\;]*\\;/MARKETING_VERSION = \(environmentVariable(get: "VERSION"));/' ./MockingStar/MockingStar.xcodeproj/project.pbxproj"){ error in
+            print("update version error: \(error)")
+            fatalError(error)
+        }
 
         print("Build App")
         gym(workspace: "./MockingStar.xcworkspace",
@@ -120,13 +123,13 @@ extension MockingStarFastFile {
         print("Building DocC")
 
         sh(command: "xcodebuild docbuild -scheme MockingStar -derivedDataPath ./.Docc -workspace ./MockingStar.xcworkspace") { error in
-            print("xcodebuild docbuild error:")
-            print(error)
+            print("xcodebuild docbuild error: \(error)")
+            fatalError(error)
         }
 
         sh(command: "$(xcrun --find docc) process-archive transform-for-static-hosting ./.Docc/Build/Products/Debug/MockingStar.doccarchive --output-path ./.docsExport") { error in
-            print("export DocC error:")
-            print(error)
+            print("export DocC error: \(error)")
+            fatalError(error)
         }
     }
 }
@@ -135,7 +138,6 @@ extension MockingStarFastFile {
 extension MockingStarFastFile {
     func createCertificates() {
         print("Creating Certificates")
-        print("Current Directory: \(FileManager.default.currentDirectoryPath)")
 
         var isFolderExist: ObjCBool = false
         if !FileManager.default.fileExists(atPath: "./certs", isDirectory: &isFolderExist) || !isFolderExist.boolValue {
@@ -160,7 +162,10 @@ extension MockingStarFastFile {
     }
 
     func cleanKeychain() {
-        sh(command: #"security default-keychain -s "login.keychain-db""#)
+        sh(command: #"security default-keychain -s "login.keychain-db""#) { error in
+            print("make default keychain error: \(error)")
+            fatalError(error)
+        }
         deleteKeychain(name: "MockingStarKeychain")
 
         try? FileManager.default.removeItem(atPath: "./certs/MockingStarCert.p12")
