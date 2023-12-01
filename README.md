@@ -3,7 +3,7 @@
 [![Unit Tests](https://github.com/Trendyol/mockingstar/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/Trendyol/mockingstar/actions/workflows/unit-tests.yml) 
 [![Release App](https://github.com/Trendyol/mockingstar/actions/workflows/release-app.yml/badge.svg)](https://github.com/Trendyol/mockingstar/actions/workflows/release-app.yml)
 [![Release CLI](https://github.com/Trendyol/mockingstar/actions/workflows/release-cli.yml/badge.svg)](https://github.com/Trendyol/mockingstar/actions/workflows/release-cli.yml)
-[![Release CLI](https://github.com/Trendyol/mockingstar/actions/workflows/release-cli.yml/badge.svg)](https://github.com/Trendyol/mockingstar/actions/workflows/release-cli.yml)
+[![Build and Publish DocC](https://github.com/Trendyol/mockingstar/actions/workflows/build-and-publish-docc.yml/badge.svg)](https://github.com/Trendyol/mockingstar/actions/workflows/build-and-publish-docc.yml)
 
 Mocking Star is a powerful request mocking tool designed to simplify the process of http request mocking, network debugging, and using UI tests for your applications.
 
