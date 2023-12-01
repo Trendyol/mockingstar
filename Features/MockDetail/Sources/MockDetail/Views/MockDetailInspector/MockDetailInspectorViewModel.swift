@@ -36,6 +36,7 @@ final class MockDetailInspectorViewModel {
         onChange()
     }
 
+    @MainActor
     func loadPluginMessage() async {
         pluginMessages.removeAll()
         do {

@@ -52,6 +52,4 @@ private struct MockServerRequestModel: Codable {
     let url: URL
     let header: [String: String]?
     let body: Data?
-    var scenario: String?
-    let deviceId: String?
 }

@@ -214,7 +214,7 @@ extension MockingStarCore: ServerMockHandlerInterface {
         request.httpBody = body
 
         let scenario: String
-        let mockDomain = rawFlags["mockDomain", default: "Dev"]
+        let mockDomain = rawFlags["mockDomain"].isNilOrEmpty ? "Dev" : rawFlags["mockDomain", default: "Dev"]
         let deviceId = rawFlags["deviceId", default: ""]
 
         if rawFlags["scenario"].isNilOrEmpty {
