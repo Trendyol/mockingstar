@@ -11,14 +11,14 @@ import CommonKit
 import SwiftUI
 
 public protocol MockDiscoverInterface {
-    var mockListSubject: CurrentValueSubject<Set<MockModel>, Never> { get }
+    var mockListSubject: CurrentValueSubject<Set<MockModel>?, Never> { get }
 
     func updateMockDomain(_ mockDomain: String) async throws
 }
 
 public final class MockDiscover: MockDiscoverInterface {
     public private(set) var mockDomain: String = ""
-    public let mockListSubject = CurrentValueSubject<Set<MockModel>, Never>([])
+    public let mockListSubject = CurrentValueSubject<Set<MockModel>?, Never>([])
     private let fileManager: FileManagerInterface
     private let fileUrlBuilder: FileUrlBuilderInterface
     private var mocks: Set<MockModel> = []
@@ -37,7 +37,7 @@ public final class MockDiscover: MockDiscoverInterface {
             guard let self else { return }
 
             mocks.removeAll()
-            mockListSubject.send(mocks)
+            mockListSubject.send(nil)
         }.store(in: &cancelableSet)
     }
 
@@ -49,6 +49,8 @@ public final class MockDiscover: MockDiscoverInterface {
         guard !mockDomain.isEmpty && self.mockDomain != mockDomain || mocks.isEmpty else { return }
 
         self.mockDomain = mockDomain
+        mocks.removeAll()
+        mockListSubject.send(nil)
         try await startMockDiscover()
 
         do {
@@ -105,7 +107,7 @@ public final class MockDiscover: MockDiscoverInterface {
             return loadedMocks
         }
 
-        guard self.mocks.map(\.id).sorted() != mocks.map(\.id).sorted() else { return }
+        guard self.mocks.map(\.id).sorted() != mocks.map(\.id).sorted() || mocks.isEmpty else { return }
         self.mocks = Set(mocks)
         mockListSubject.send(self.mocks)
     }

@@ -116,6 +116,9 @@ public struct MockListView: View {
                 }
             }
         }
+        .overlay {
+            if viewModel.isLoading { ProgressView() }
+        }
         .toolbar {
             ToolbarItemGroup {
                 Button(action: {

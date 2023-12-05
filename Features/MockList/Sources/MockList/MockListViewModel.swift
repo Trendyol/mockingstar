@@ -23,6 +23,7 @@ public final class MockListViewModel {
     var searchTerm: String = ""
     var shouldShowDeleteConfirmation: Bool = false
     var selected = Set<MockModel.ID>()
+    var isLoading: Bool = false
 
     // MARK: Error
     var shouldShowErrorMessage = false
@@ -44,7 +45,8 @@ public final class MockListViewModel {
             .debounce(for: .seconds(0.5), scheduler: DispatchQueue.main)
             .receive(on: RunLoop.main)
             .sink { [weak self] mocks in
-                self?.mockModelList = Array(mocks)
+                self?.isLoading = mocks == nil
+                self?.mockModelList = Array(mocks ?? [])
             }
             .store(in: &cancelableSet)
     }

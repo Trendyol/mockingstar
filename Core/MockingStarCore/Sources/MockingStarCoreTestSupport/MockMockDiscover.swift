@@ -14,12 +14,12 @@ public final class MockMockDiscover: MockDiscoverInterface {
     
     public var invokedMockListSubjectSetter = false
     public var invokedMockListSubjectSetterCount = 0
-    public var invokedMockListSubject: CurrentValueSubject<Set<CommonKit.MockModel>, Never>?
-    public var invokedMockListSubjectList: [CurrentValueSubject<Set<CommonKit.MockModel>, Never>] = []
+    public var invokedMockListSubject: CurrentValueSubject<Set<CommonKit.MockModel>?, Never>?
+    public var invokedMockListSubjectList: [CurrentValueSubject<Set<CommonKit.MockModel>?, Never>] = []
     public var invokedMockListSubjectGetter = false
     public var invokedMockListSubjectGetterCount = 0
-    public var stubbedMockListSubject: CurrentValueSubject<Set<CommonKit.MockModel>, Never>!
-    public var mockListSubject: CurrentValueSubject<Set<CommonKit.MockModel>, Never> {
+    public var stubbedMockListSubject: CurrentValueSubject<Set<CommonKit.MockModel>?, Never>!
+    public var mockListSubject: CurrentValueSubject<Set<CommonKit.MockModel>?, Never> {
         set {
             invokedMockListSubjectSetter = true
             invokedMockListSubjectSetterCount += 1
