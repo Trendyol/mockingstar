@@ -12,6 +12,7 @@ import SwiftUI
 @Observable
 final class MockDetailInspectorViewModel {
     private let logger = Logger(category: "MockDetailInspectorViewModel")
+    private let pluginCoreActor: PluginCoreActorInterface
     let mockDomain: String
     let mockModel: MockModel
     var scenario: String
@@ -20,13 +21,17 @@ final class MockDetailInspectorViewModel {
     var pluginMessages: [String] = []
     var onChange: () -> Void
 
-    init(mockDomain: String, mockModel: MockModel, onChange: @escaping () -> Void) {
+    init(mockDomain: String, 
+         mockModel: MockModel,
+         onChange: @escaping () -> Void,
+         pluginCoreActor: PluginCoreActorInterface = PluginCoreActor.shared) {
         self.mockDomain = mockDomain
         self.mockModel = mockModel
         self.scenario = mockModel.metaData.scenario
         self.httpStatus = mockModel.metaData.httpStatus
         self.responseTime = mockModel.metaData.responseTime
         self.onChange = onChange
+        self.pluginCoreActor = pluginCoreActor
     }
 
     func sync() {
@@ -37,12 +42,15 @@ final class MockDetailInspectorViewModel {
     }
 
     @MainActor
-    func loadPluginMessage() async {
+    func loadPluginMessage(shouldLoadAsync: Bool = false) async {
         pluginMessages.removeAll()
         do {
-            let plugin = await PluginCoreActor.shared.pluginCore(for: mockDomain)
+            let plugin = await pluginCoreActor.pluginCore(for: mockDomain)
             pluginMessages.append(try plugin.mockDetailMessagePlugin(mock: mockModel))
-            pluginMessages.append(try await plugin.asyncMockDetailMessagePlugin(mock: mockModel))
+
+            if shouldLoadAsync {
+                pluginMessages.append(try await plugin.asyncMockDetailMessagePlugin(mock: mockModel))
+            }
             pluginMessages.removeAll(where: \.isEmpty)
         } catch {
             logger.error("Mock Detail Plugin Error: \(error)")

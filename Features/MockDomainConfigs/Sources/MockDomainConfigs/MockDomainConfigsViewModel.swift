@@ -23,7 +23,6 @@ public final class MockDomainConfigsViewModel {
     var headerConfigs: [MockHeaderConfigModel] = []
 
     private var configs: ConfigModel = ConfigModel()
-    private var timer: Timer? = nil
     private let fileManager: FileManagerInterface
     private let fileUrlBuilder: FileUrlBuilderInterface
     private var fileStructureMonitor: FileStructureMonitorInterface

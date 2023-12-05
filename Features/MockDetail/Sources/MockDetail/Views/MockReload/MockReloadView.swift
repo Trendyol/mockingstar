@@ -97,7 +97,9 @@ struct MockReloadView: View {
                             RawRequestView(request: viewModel.showUpdatedRequest ? viewModel.updatedRequest() : viewModel.mockModel.asURLRequest)
 
                             Button {
-                                viewModel.reloadMock()
+                                Task { @MainActor in
+                                    await viewModel.reloadMock()
+                                }
                             } label: {
                                 Text("Send Request")
                                     .frame(maxWidth: .infinity)
@@ -212,6 +214,7 @@ struct MockReloadView: View {
         .background(.background)
         .navigationTitle("Reload \(viewModel.mockModel.metaData.url.path())")
         .modifier(ChangeConfirmationViewModifier(hasChange: .constant(false)) {})
+        .task { await viewModel.loadPlugin() }
     }
 }
 

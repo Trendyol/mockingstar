@@ -9,6 +9,7 @@ import AnyCodable
 import CommonKit
 import SwiftUI
 import PluginCore
+import CommonViewsKit
 
 @Observable
 final class MockReloadViewModel {
@@ -25,14 +26,25 @@ final class MockReloadViewModel {
         let updated = updatedRequest()
         return updated.url != original.url || updated.allHTTPHeaderFields != original.allHTTPHeaderFields || updated.httpBody != original.httpBody
     }
-    private var plugin: Plugin? = nil
+    private var plugin: PluginInterface? = nil
+    private let pluginCoreActor: PluginCoreActorInterface
+    private let urlSession: URLSessionInterface
+    private let pasteBoard: NSPasteboardInterface
+    private let notificationManager: NotificationManagerInterface
+    private let mockDomain: String
 
-    init(mockModel: MockModel, mockDomain: String) {
+    init(mockModel: MockModel, 
+         mockDomain: String,
+         pluginCoreActor: PluginCoreActorInterface = PluginCoreActor.shared,
+         urlSession: URLSessionInterface = URLSession.shared,
+         pasteBoard: NSPasteboardInterface = NSPasteboard.general,
+         notificationManager: NotificationManagerInterface = NotificationManager.shared) {
         self.mockModel = mockModel
-
-        Task { [weak self] in
-            self?.plugin = await PluginCoreActor.shared.pluginCore(for: mockDomain)
-        }
+        self.pluginCoreActor = pluginCoreActor
+        self.urlSession = urlSession
+        self.pasteBoard = pasteBoard
+        self.notificationManager = notificationManager
+        self.mockDomain = mockDomain
     }
 
     private func updateDiffEditor() {
@@ -76,31 +88,28 @@ final class MockReloadViewModel {
         }
     }
 
-    func reloadMock() {
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            isMockReloadingProgress = true
+    func reloadMock() async {
+        isMockReloadingProgress = true
 
-            let result: (Data, URLResponse)
+        let result: (Data, URLResponse)
 
-            do {
-                result = try await URLSession.shared.data(for: showUpdatedRequest ? updatedRequest() : mockModel.asURLRequest)
-            } catch {
-                print("Error: \(error)")
-                isMockReloadingProgress = false
-                return
-            }
-            guard let response = result.1 as? HTTPURLResponse else { return }
-            reloadedMockResponse = (result.0, response)
-            updateDiffEditor()
-
-            withAnimation {
-                self.mockReloadSelectedInspectorState = .response
-            }
-
-            isReloadedMockReady = true
+        do {
+            result = try await urlSession.data(for: showUpdatedRequest ? updatedRequest() : mockModel.asURLRequest)
+        } catch {
+            print("Error: \(error)")
             isMockReloadingProgress = false
+            return
         }
+        guard let response = result.1 as? HTTPURLResponse else { return }
+        reloadedMockResponse = (result.0, response)
+        updateDiffEditor()
+
+        withAnimation {
+            self.mockReloadSelectedInspectorState = .response
+        }
+
+        isReloadedMockReady = true
+        isMockReloadingProgress = false
     }
 
     func saveReloadedMock() {
@@ -121,9 +130,13 @@ final class MockReloadViewModel {
         switch shareStyle {
         case .curl:
             let curl = mockModel.asURLRequest.cURL(pretty: true)
-            let pasteBoard = NSPasteboard.general
             pasteBoard.clearContents()
             pasteBoard.setString(curl, forType: .string)
         }
+        notificationManager.show(title: "Request copied to clipboard", color: .green)
+    }
+
+    func loadPlugin() async {
+        plugin = await pluginCoreActor.pluginCore(for: mockDomain)
     }
 }

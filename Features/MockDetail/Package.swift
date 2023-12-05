@@ -17,8 +17,9 @@ let package = Package(
     dependencies: [
         .package(path: "../../Core/CommonViewsKit"),
         .package(path: "../../Core/PluginCore"),
-
         .package(path: "../../Core/Editor"),
+        .package(path: "../../Core/MockingStarCore"),
+        .package(path: "../../Core/CommonKit"),
     ],
     targets: [
         .target(
@@ -28,9 +29,17 @@ let package = Package(
             .product(name: "DiffEditor", package: "Editor"),
             "CommonViewsKit",
             "PluginCore",
+            "MockingStarCore",
         ]),
         .testTarget(
             name: "MockDetailTests",
-            dependencies: ["MockDetail"]),
+            dependencies: [
+                "MockDetail",
+                "CommonKit",
+                .product(name: "CommonViewsKitTestSupport", package: "CommonViewsKit"),
+                .product(name: "MockingStarCoreTestSupport", package: "MockingStarCore"),
+                .product(name: "CommonKitTestSupport", package: "CommonKit"),
+                .product(name: "PluginCoreTestSupport", package: "PluginCore"),
+            ]),
     ]
 )

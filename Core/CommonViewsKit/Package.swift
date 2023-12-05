@@ -12,6 +12,9 @@ let package = Package(
         .library(
             name: "CommonViewsKit",
             targets: ["CommonViewsKit"]),
+        .library(
+            name: "CommonViewsKitTestSupport",
+            targets: ["CommonViewsKitTestSupport"]),
     ],
     dependencies: [
         .package(path: "../CommonKit"),
@@ -22,6 +25,9 @@ let package = Package(
             dependencies: [
                 "CommonKit",
             ]),
+        .target(name: "CommonViewsKitTestSupport", dependencies: [
+            "CommonViewsKit"
+        ]),
         .testTarget(
             name: "CommonViewsKitTests",
             dependencies: ["CommonViewsKit"]),

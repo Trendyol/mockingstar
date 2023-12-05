@@ -128,32 +128,47 @@ public final class MockFileManager: FileManagerInterface {
     public var invokedMoveFileCount = 0
     public var invokedMoveFileParameters: (path: String, newPath: String, Void)?
     public var invokedMoveFileParametersList: [(path: String, newPath: String, Void)] = []
+    public var stubbedMoveFileError: Error? = nil
     public func moveFile(from path: String, to newPath: String) throws {
         invokedMoveFile = true
         invokedMoveFileCount += 1
         invokedMoveFileParameters = (path, newPath, ())
         invokedMoveFileParametersList.append((path, newPath, ()))
+
+        if let stubbedMoveFileError {
+            throw stubbedMoveFileError
+        }
     }
 
     public var invokedRemoveFile = false
     public var invokedRemoveFileCount = 0
     public var invokedRemoveFileParameters: (path: String, Void)?
     public var invokedRemoveFileParametersList: [(path: String, Void)] = []
+    public var stubbedRemoveFileError: Error? = nil
     public func removeFile(at path: String) throws {
         invokedRemoveFile = true
         invokedRemoveFileCount += 1
         invokedRemoveFileParameters = (path, ())
         invokedRemoveFileParametersList.append((path, ()))
+
+        if let stubbedRemoveFileError {
+            throw stubbedRemoveFileError
+        }
     }
 
     public var invokedUpdateFileContent = false
     public var invokedUpdateFileContentCount = 0
     public var invokedUpdateFileContentParameters: (path: String, content: Encodable, Void)?
     public var invokedUpdateFileContentParametersList: [(path: String, content: Encodable, Void)] = []
+    public var stubbedUpdateFileContentError: Error? = nil
     public func updateFileContent(path: String, content: Encodable) throws {
         invokedUpdateFileContent = true
         invokedUpdateFileContentCount += 1
         invokedUpdateFileContentParameters = (path, content, ())
         invokedUpdateFileContentParametersList.append((path, content, ()))
+
+        if let stubbedUpdateFileContentError {
+            throw stubbedUpdateFileContentError
+        }
     }
 }

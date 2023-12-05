@@ -15,7 +15,7 @@ import SwiftUI
 final class PluginConfigViewModel {
     private let plugin: String
     private var pluginType: PluginType? = nil
-    private var pluginCore: Plugin? = nil
+    private var pluginCore: PluginInterface? = nil
     private var originalPluginConfigs: [PluginConfigurationUIModel] = []
     private let manager: NotificationManager = .shared
     var shouldShowUnsavedIndicator: Bool = false

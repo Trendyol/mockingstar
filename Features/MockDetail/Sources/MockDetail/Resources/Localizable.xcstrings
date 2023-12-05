@@ -34,6 +34,12 @@
     "Discard Changes" : {
 
     },
+    "Duplicate Mock" : {
+
+    },
+    "Duplicate..." : {
+
+    },
     "Editor Data" : {
 
     },
@@ -62,6 +68,9 @@
 
     },
     "JSON Validation Error" : {
+
+    },
+    "Load async Plugin" : {
 
     },
     "Mock Reload" : {
@@ -95,9 +104,6 @@
 
     },
     "Query" : {
-
-    },
-    "Reload" : {
 
     },
     "Reload %@" : {

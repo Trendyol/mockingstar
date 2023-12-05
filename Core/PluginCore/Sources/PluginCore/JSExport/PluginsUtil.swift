@@ -17,9 +17,9 @@ protocol PluginUtilJSExport: JSExport {
 
 @objc
 class PluginsUtil: NSObject, PluginUtilJSExport {
-    private let context: JSContext
+    private weak var context: JSContext?
 
-    init(context: JSContext) {
+    init(context: JSContext?) {
         self.context = context
     }
     

@@ -10,8 +10,14 @@ import Combine
 import CommonKit
 import SwiftUI
 
-public final class MockDiscover {
-    public private(set) var mockDomain: String
+public protocol MockDiscoverInterface {
+    var mockListSubject: CurrentValueSubject<Set<MockModel>, Never> { get }
+
+    func updateMockDomain(_ mockDomain: String) async throws
+}
+
+public final class MockDiscover: MockDiscoverInterface {
+    public private(set) var mockDomain: String = ""
     public let mockListSubject = CurrentValueSubject<Set<MockModel>, Never>([])
     private let fileManager: FileManagerInterface
     private let fileUrlBuilder: FileUrlBuilderInterface
@@ -20,11 +26,9 @@ public final class MockDiscover {
     private var cancelableSet = Set<AnyCancellable>()
     @UserDefaultStorage("mockFolderFilePath") var mocksFolderPath: String = "/MockServer"
 
-    public init(mockDomain: String,
-                fileManager: FileManagerInterface = FileManager.default,
+    public init(fileManager: FileManagerInterface = FileManager.default,
                 fileUrlBuilder: FileUrlBuilderInterface = FileUrlBuilder(),
                 fileStructureMonitor: FileStructureMonitorInterface = FileStructureMonitor()) {
-        self.mockDomain = mockDomain
         self.fileManager = fileManager
         self.fileUrlBuilder = fileUrlBuilder
         self.fileStructureMonitor = fileStructureMonitor

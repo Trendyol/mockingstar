@@ -29,6 +29,10 @@ let package = Package(
             ]),
         .testTarget(
             name: "MockListTests",
-            dependencies: ["MockList"]),
+            dependencies: [
+                "MockList",
+                .product(name: "MockingStarCoreTestSupport", package: "MockingStarCore"),
+                .product(name: "CommonKitTestSupport", package: "CommonKit"),
+            ]),
     ]
 )

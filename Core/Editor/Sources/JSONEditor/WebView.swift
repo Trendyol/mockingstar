@@ -17,9 +17,7 @@ final class JSONEditorWebView: NSObject, WKNavigationDelegate, WKUIDelegate, WKS
 
     private override init() {
         super.init()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.createEditor()
-        }
+        createEditor()
     }
 
     private func createEditor() {

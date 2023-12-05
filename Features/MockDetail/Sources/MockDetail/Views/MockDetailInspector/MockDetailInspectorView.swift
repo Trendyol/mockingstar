@@ -47,9 +47,9 @@ struct MockDetailInspectorView: View {
                         .textSelection(.enabled)
                 }
 
-                Button("Reload") {
+                Button("Load async Plugin") {
                     Task { @MainActor in
-                        await viewModel.loadPluginMessage()
+                        await viewModel.loadPluginMessage(shouldLoadAsync: true)
                     }
                 }
             }

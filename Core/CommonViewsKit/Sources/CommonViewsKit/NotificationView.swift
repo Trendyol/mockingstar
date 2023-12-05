@@ -7,8 +7,19 @@
 
 import SwiftUI
 
+public protocol NotificationManagerInterface {
+    func show(title: String, color: Color, dismissTime: TimeInterval)
+    func show(title: String, color: Color)
+}
+
+extension NotificationManagerInterface {
+    public func show(title: String, color: Color) {
+        show(title: title, color: color, dismissTime: 6)
+    }
+}
+
 @Observable
-public final class NotificationManager {
+public final class NotificationManager: NotificationManagerInterface {
     public static let shared = NotificationManager()
     public var notifications: [NotificationModel] = []
 

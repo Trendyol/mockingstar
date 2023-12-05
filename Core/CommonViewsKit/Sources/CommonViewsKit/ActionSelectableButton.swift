@@ -34,6 +34,7 @@ public struct ActionSelectableButton<MenuContent: View>: View {
                 .padding(.horizontal)
                 .padding(.vertical, 6)
                 .frame(maxHeight: .infinity)
+                .foregroundStyle(.white)
                 .background(backgroundColor)
             }
 
@@ -46,6 +47,7 @@ public struct ActionSelectableButton<MenuContent: View>: View {
                     .frame(width: 10)
                     .padding(.horizontal, 8)
                     .frame(maxHeight: .infinity)
+                    .foregroundStyle(.white)
                     .background(backgroundColor.opacity(0.8))
 
             }

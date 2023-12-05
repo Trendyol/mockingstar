@@ -4,6 +4,15 @@
 import Foundation
 import CommonKit
 
+public protocol PluginInterface {
+    func configAvailablePlugins() -> [ConfigurablePluginModel]
+    func requestReloaderPlugin(request: URLRequestModel) throws -> URLRequestModel
+    func liveRequestPlugin(request: URLRequestModel) throws -> URLRequestModel
+    func mockErrorPlugin(message: String) throws -> String
+    func mockDetailMessagePlugin(mock: MockModel) throws -> String
+    func asyncMockDetailMessagePlugin(mock: MockModel) async throws -> String
+}
+
 /// MockingStar Core Plugin helper, automatically loads and execute plugins
 public final class Plugin {
     private let logger = Logger(category: "Plugin")
@@ -156,11 +165,11 @@ public final class Plugin {
     }
 }
 
-public extension Plugin {
+extension Plugin: PluginInterface {
     /// During Request reloader page in mock detail page, app update original plugin with `requestReloader` plugin.
     /// - Parameter request: original http request as ``URLRequestModel``
     /// - Returns: Updated http request as ``URLRequestModel``
-    func requestReloaderPlugin(request: URLRequestModel) throws -> URLRequestModel {
+    public func requestReloaderPlugin(request: URLRequestModel) throws -> URLRequestModel {
         guard let pluginCode = plugins[.requestReloader] else { return request }
 
         let plugin = RequestReloaderPluginJSBridge()
@@ -177,7 +186,7 @@ public extension Plugin {
     /// If a mock not found and has no `disableLive` flag, app request with original request, before that `liveRequestUpdater` plugin can modify original request
     /// - Parameter request: original http request as ``URLRequestModel``
     /// - Returns: Updated http request as ``URLRequestModel``
-    func liveRequestPlugin(request: URLRequestModel) throws -> URLRequestModel {
+    public func liveRequestPlugin(request: URLRequestModel) throws -> URLRequestModel {
         guard let pluginCode = plugins[.liveRequestUpdater] else { return request }
 
         let plugin = LiveRequestPluginJSBridge()
@@ -194,7 +203,7 @@ public extension Plugin {
     /// If a mock not found and has `disableLive` flag, app can not provide success response and it returns fail. `mockError` plugin defines return type and source application can understand problem.
     /// - Parameter message: Error message provides from mock server
     /// - Returns: Response body, should be string
-    func mockErrorPlugin(message: String) throws -> String {
+    public func mockErrorPlugin(message: String) throws -> String {
         guard let pluginCode = plugins[.mockError] else { return .init() }
 
         let plugin = MockErrorPluginJSBridge()
@@ -211,7 +220,7 @@ public extension Plugin {
     /// Mock detail page can offer more information about mock, `mockDetailMessages` can provide more information about mock
     /// - Parameter mock: A model representing mock detail: ``CommonKit/MockModel``.
     /// - Returns: Plugin markdown/plain text response
-    func mockDetailMessagePlugin(mock: MockModel) throws -> String {
+    public func mockDetailMessagePlugin(mock: MockModel) throws -> String {
         guard let pluginCode = plugins[.mockDetailMessages] else { return .init() }
 
         let plugin = MockDetailHelperPluginJSBridge()
@@ -233,7 +242,7 @@ public extension Plugin {
     /// Async method can usable for http request
     /// - Parameter mock: A model representing mock detail: ``CommonKit/MockModel``.
     /// - Returns: Plugin markdown/plain text response
-    func asyncMockDetailMessagePlugin(mock: MockModel) async throws -> String {
+    public func asyncMockDetailMessagePlugin(mock: MockModel) async throws -> String {
         guard let pluginCode = plugins[.mockDetailMessages] else { return .init() }
 
         let plugin = MockDetailHelperPluginJSBridge()

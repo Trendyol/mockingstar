@@ -14,7 +14,7 @@ import Combine
 public final class MockListViewModel {
     private let fileManager: FileManagerInterface
     private var cancelableSet = Set<AnyCancellable>()
-    private let mockDiscover: MockDiscover
+    private let mockDiscover: MockDiscoverInterface
 
     private var listSortTask: Task<(), Never>? = nil
     var sortOrder = [KeyPathComparator(\MockModel.metaData.updateTime, order: .forward)]
@@ -32,9 +32,10 @@ public final class MockListViewModel {
     private(set) var mockModelList: [MockModel] = []
     private(set) var mockListUIModel: [MockModel] = []
 
-    public init(fileManager: FileManagerInterface = FileManager.default) {
+    public init(fileManager: FileManagerInterface = FileManager.default,
+                mockDiscover: MockDiscoverInterface = MockDiscover()) {
         self.fileManager = fileManager
-        self.mockDiscover = .init(mockDomain: .init())
+        self.mockDiscover = mockDiscover
         listenMockDiscover()
     }
 

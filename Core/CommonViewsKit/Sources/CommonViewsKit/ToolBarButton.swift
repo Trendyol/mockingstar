@@ -30,6 +30,7 @@ public struct ToolBarButton: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 6)
+            .foregroundStyle(.white)
             .background(backgroundColor)
             .clipShape(.rect(cornerRadius: 10))
         }

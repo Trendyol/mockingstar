@@ -12,6 +12,9 @@ let package = Package(
         .library(
             name: "MockingStarCore",
             targets: ["MockingStarCore"]),
+        .library(
+            name: "MockingStarCoreTestSupport",
+            targets: ["MockingStarCoreTestSupport"]),
     ],
     dependencies: [
         .package(path: "../Server"),
@@ -27,6 +30,9 @@ let package = Package(
                 "PluginCore"
             ]
         ),
+        .target(name: "MockingStarCoreTestSupport", dependencies: [
+            "MockingStarCore"
+        ]),
         .testTarget(
             name: "MockingStarCoreTests",
             dependencies: [

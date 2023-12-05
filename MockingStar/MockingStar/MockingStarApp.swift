@@ -10,6 +10,7 @@ import CommonViewsKit
 import MockingStarCore
 import SwiftUI
 import TipKit
+import WebKit
 
 @main
 struct MockingStarApp: App {

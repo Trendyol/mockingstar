@@ -9,11 +9,15 @@ import CommonKit
 import Foundation
 import Combine
 
-actor FileSaverActor {
+public protocol FileSaverActorInterface {
+    func saveFile(mock: MockModel, mockDomain: String) async throws
+}
+
+public actor FileSaverActor: FileSaverActorInterface {
     private let logger = Logger(category: "FileSaverActor")
     private let fileManager: FileManagerInterface
     private var cancelableSet = Set<AnyCancellable>()
-    static let shared = FileSaverActor()
+    public static let shared = FileSaverActor()
     @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
     private var folderPath: String {
         if mockFolderFilePath.hasSuffix("/") { return mockFolderFilePath }
@@ -35,7 +39,7 @@ actor FileSaverActor {
     ///   - mock: The `MockModel` to be saved.
     ///   - mockDomain: The mock domain under which the mock is saved.
     /// - Throws: If writing the file encounters an error, it is thrown.
-    func saveFile(mock: MockModel, mockDomain: String) throws {
+    public func saveFile(mock: MockModel, mockDomain: String) throws {
         let filePath = folderPath + "Domains/" + mockDomain + "/Mocks/" + mock.folderPath
 
         guard !fileManager.fileExist(atPath: filePath) else {

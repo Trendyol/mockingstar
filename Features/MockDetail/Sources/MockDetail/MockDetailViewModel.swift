@@ -10,6 +10,7 @@ import Combine
 import CommonKit
 import CommonViewsKit
 import JSONEditor
+import MockingStarCore
 import PluginCore
 import SwiftUI
 
@@ -18,7 +19,10 @@ public final class MockDetailViewModel {
     // MARK: Injections
     private let logger = Logger(category: "MockDetailViewModel")
     private let fileManager: FileManagerInterface
-    private let manager: NotificationManager = .shared
+    private let notificationManager: NotificationManagerInterface
+    private let fileSaver: FileSaverActorInterface
+    private let pasteBoard: NSPasteboardInterface
+    private let nsWorkspace: NSWorkspaceInterface
     @ObservationIgnored @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
 
     // MARK: Data Models
@@ -41,8 +45,16 @@ public final class MockDetailViewModel {
 
     public init(mockModel: MockModel,
                 mockDomain: String,
-                fileManager: FileManagerInterface = FileManager.default) {
+                fileManager: FileManagerInterface = FileManager.default,
+                fileSaver: FileSaverActorInterface = FileSaverActor.shared,
+                notificationManager: NotificationManagerInterface = NotificationManager.shared,
+                pasteBoard: NSPasteboardInterface = NSPasteboard.general,
+                nsWorkspace: NSWorkspaceInterface = NSWorkspace.shared) {
         self.fileManager = fileManager
+        self.fileSaver = fileSaver
+        self.notificationManager = notificationManager
+        self.pasteBoard = pasteBoard
+        self.nsWorkspace = nsWorkspace
         self.originalMockModel = mockModel
         self.mockDomain = mockDomain
         self.mockModel = mockModel.copy() as! MockModel
@@ -169,7 +181,7 @@ public final class MockDetailViewModel {
                 mockModel.fileURL = URL(filePath: newPath)
                 originalMockModel.fileURL = URL(filePath: newPath)
             }
-            manager.show(title: "All changes saved", color: .green)
+            notificationManager.show(title: "All changes saved", color: .green)
         } catch {
             showErrorMessage("Mock couldn't saved\n\(error)")
         }
@@ -194,7 +206,7 @@ public final class MockDetailViewModel {
     func openInFinder() {
         guard let filePath = mockModel.fileURL?.path(percentEncoded: false) else { return }
         let folderPath = filePath.components(separatedBy: "/").dropLast().joined(separator: "/")
-        NSWorkspace.shared.selectFile(filePath, inFileViewerRootedAtPath: folderPath)
+        nsWorkspace.selectFile(filePath, inFileViewerRootedAtPath: folderPath)
     }
 
     /// Checks if the file path of the current mock model matches its expected path.
@@ -229,14 +241,26 @@ public final class MockDetailViewModel {
         switch shareStyle {
         case .curl:
             let curl = mockModel.asURLRequest.cURL(pretty: true)
-            let pasteBoard = NSPasteboard.general
             pasteBoard.clearContents()
             pasteBoard.setString(curl, forType: .string)
         }
-        NotificationManager.shared.show(title: "Request copied to clipboard", color: .green)
+        notificationManager.show(title: "Request copied to clipboard", color: .green)
     }
 
     func checkUnsavedChanges() {
         shouldShowUnsavedIndicator = mockModel != originalMockModel
+    }
+
+    func duplicateMock() async {
+        let mock = originalMockModel.copy() as! MockModel
+        mock.metaData.scenario = .init()
+        mock.metaData.id = UUID().uuidString
+
+        do {
+            try await fileSaver.saveFile(mock: mock, mockDomain: mockDomain)
+            notificationManager.show(title: "Mock duplicated", color: .green)
+        } catch {
+            showErrorMessage("Mock couldn't duplicated\n\(error)")
+        }
     }
 }

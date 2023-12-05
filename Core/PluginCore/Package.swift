@@ -12,6 +12,9 @@ let package = Package(
         .library(
             name: "PluginCore",
             targets: ["PluginCore"]),
+        .library(
+            name: "PluginCoreTestSupport",
+            targets: ["PluginCoreTestSupport"]),
     ],
     dependencies: [
         .package(url: "https://github.com/yusufozgul/SwiftyJS", branch: "main"),
@@ -28,6 +31,10 @@ let package = Package(
                 "AnyCodable",
                 "CommonKit",
             ]),
+        .target(name: "PluginCoreTestSupport", dependencies: [
+            "PluginCore",
+            "CommonKit",
+        ]),
         .testTarget(
             name: "PluginCoreTests",
             dependencies: ["PluginCore",

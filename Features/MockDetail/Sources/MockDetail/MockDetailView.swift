@@ -74,6 +74,14 @@ public struct MockDetailView: View {
                     } label: {
                         Label("Open in Finder", systemImage: "text.viewfinder")
                     }
+
+                    Menu("Duplicate...") {
+                        Button {
+                            Task { await viewModel.duplicateMock() }
+                        } label: {
+                            Label("Duplicate Mock", systemImage: "doc.on.doc.fill")
+                        }
+                    }
                 } label: {
                     Label("Actions", systemImage: "ellipsis.circle.fill")
                 }
