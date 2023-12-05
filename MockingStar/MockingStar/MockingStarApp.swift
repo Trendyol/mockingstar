@@ -7,10 +7,10 @@
 
 import CommonKit
 import CommonViewsKit
+import JSONEditor
 import MockingStarCore
 import SwiftUI
 import TipKit
-import WebKit
 
 @main
 struct MockingStarApp: App {
@@ -25,6 +25,11 @@ struct MockingStarApp: App {
                         .displayFrequency(.immediate),
                         .datastoreLocation(.applicationDefault)
                     ])
+                }
+                .task {
+                    await MainActor.run {
+                        JSONEditorView.warmUp()
+                    }
                 }
         }
 

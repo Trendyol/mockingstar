@@ -273,7 +273,7 @@ public extension MockModel {
         request.allHTTPHeaderFields = try? requestHeader.asDictionary()
         request.httpMethod = metaData.method
 
-        if !requestBody.isEmpty, requestBody != "{}" && requestBody != "{\n\n}" && requestBody != "[\n\n]" && requestBody != "[\n  {\n\n  }\n]" { // TODO: Update check
+        if !requestBody.isEmpty {
             request.httpBody = requestBody.data(using: .utf8)
         }
 

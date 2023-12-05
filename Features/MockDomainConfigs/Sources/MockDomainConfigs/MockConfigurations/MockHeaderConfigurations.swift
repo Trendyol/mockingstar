@@ -96,7 +96,7 @@ public struct MockHeaderConfigurations: View {
                     }
                     .keyboardShortcut(.defaultAction)
                     .buttonStyle(.plain)
-                    .padding()
+                    .padding([.horizontal, .top])
 
                     if let selected {
                         Button {
@@ -106,13 +106,8 @@ public struct MockHeaderConfigurations: View {
                             }
                         } label: {
                             Text("Delete")
-                                .frame(maxWidth: .infinity)
-                                .padding(4)
-                                .background(Color.secondary)
-                                .clipShape(.rect(cornerRadius: 6))
                         }
                         .buttonStyle(.plain)
-                        .padding()
                     }
                 }
             }

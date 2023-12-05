@@ -37,6 +37,7 @@ struct SettingsView: View {
         .fileImporter(isPresented: $isFileImporting, allowedContentTypes: [.folder], allowsMultipleSelection: false) { result in
             viewModel.fileImported(result: result)
         }
+        .background(.background)
     }
 }
 

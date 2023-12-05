@@ -157,11 +157,17 @@ final class MockPathConfigModel: Codable, Equatable, Identifiable, Hashable {
         lhs.executeAllQueries == rhs.executeAllQueries
     }
 
-
     func hash(into hasher: inout Hasher) {
         hasher.combine(path)
         hasher.combine(executeAllQueries)
         hasher.combine(executeAllHeaders)
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case _id = "id"
+        case _path = "path"
+        case _executeAllHeaders = "executeAllHeaders"
+        case _executeAllQueries = "executeAllQueries"
     }
 }
 
@@ -203,6 +209,13 @@ final class MockQueryConfigModel: Codable, Equatable, Identifiable, Hashable {
         hasher.combine(key)
         hasher.combine(value)
     }
+
+    enum CodingKeys: String, CodingKey {
+        case _id = "id"
+        case _path = "path"
+        case _key = "key"
+        case _value = "value"
+    }
 }
 
 @Observable
@@ -243,5 +256,12 @@ final class MockHeaderConfigModel: Codable, Equatable, Identifiable, Hashable {
         hasher.combine(path)
         hasher.combine(key)
         hasher.combine(value)
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case _id = "id"
+        case _path = "path"
+        case _key = "key"
+        case _value = "value"
     }
 }

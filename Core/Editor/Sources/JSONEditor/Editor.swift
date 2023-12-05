@@ -46,4 +46,8 @@ public struct JSONEditorView: NSViewRepresentable {
     public func updateNSView(_ nsView: WKWebView, context: NSViewRepresentableContext<JSONEditorView>) { }
     public func makeCoordinator() -> Coordinator { Coordinator() }
     public class Coordinator {  }
+
+    public static func warmUp() {
+        let _ = JSONEditorWebView.shared
+    }
 }
