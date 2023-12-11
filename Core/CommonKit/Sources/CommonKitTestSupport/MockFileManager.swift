@@ -67,11 +67,17 @@ public final class MockFileManager: FileManagerInterface {
     public var invokedReadJSONFileParameters: (url: URL, Void)?
     public var invokedReadJSONFileParametersList: [(url: URL, Void)] = []
     public var stubbedReadJSONFileResult: Any!
+    public var stubbedReadJSONFileError: Error? = nil
     public func readJSONFile<T>(at url: URL) throws -> T {
         invokedReadJSONFile = true
         invokedReadJSONFileCount += 1
         invokedReadJSONFileParameters = (url, ())
         invokedReadJSONFileParametersList.append((url, ()))
+
+        if let stubbedReadJSONFileError {
+            throw stubbedReadJSONFileError
+        }
+
         return stubbedReadJSONFileResult as! T
     }
 

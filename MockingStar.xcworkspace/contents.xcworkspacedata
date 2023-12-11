@@ -11,9 +11,6 @@
       location = "container:"
       name = "Core">
       <FileRef
-         location = "group:Core/PluginCore">
-      </FileRef>
-      <FileRef
          location = "group:Core/CommonKit">
       </FileRef>
       <FileRef
@@ -26,6 +23,9 @@
          location = "group:Core/MockingStarCore">
       </FileRef>
       <FileRef
+         location = "group:Core/PluginCore">
+      </FileRef>
+      <FileRef
          location = "group:Core/Server">
       </FileRef>
    </Group>
@@ -36,16 +36,16 @@
          location = "group:Logs">
       </FileRef>
       <FileRef
-         location = "group:PluginConfigs">
+         location = "group:MockDetail">
       </FileRef>
       <FileRef
-         location = "group:MockDetail">
+         location = "group:MockDomainConfigs">
       </FileRef>
       <FileRef
          location = "group:MockList">
       </FileRef>
       <FileRef
-         location = "group:MockDomainConfigs">
+         location = "group:PluginConfigs">
       </FileRef>
    </Group>
    <FileRef

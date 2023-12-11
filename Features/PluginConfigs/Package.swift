@@ -29,6 +29,10 @@ let package = Package(
             ]),
         .testTarget(
             name: "PluginConfigsTests",
-            dependencies: ["PluginConfigs"]),
+            dependencies: [
+                "PluginConfigs",
+                .product(name: "CommonViewsKitTestSupport", package: "CommonViewsKit"),
+                .product(name: "PluginCoreTestSupport", package: "PluginCore"),
+            ]),
     ]
 )

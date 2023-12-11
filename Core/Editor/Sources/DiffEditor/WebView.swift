@@ -81,9 +81,9 @@ final class DiffEditorWebView: NSObject, WKNavigationDelegate, WKUIDelegate, WKS
 
     func getDiffCount(diffCount: @escaping (String) -> Void) {
         diffCountBlock = diffCount
-        webView.runJS("aceDiffer.diffs.length") { result, _ in
-            guard let result = result as? String else { return }
-            diffCount(result)
+        webView.runJS("aceDiffer.getNumDiffs()") { result, _ in
+            guard let result = result as? Int else { return }
+            diffCount(String(result))
         }
     }
 
@@ -100,9 +100,9 @@ final class DiffEditorWebView: NSObject, WKNavigationDelegate, WKUIDelegate, WKS
         default: break
         }
 
-        webView.runJS("aceDiffer.diffs.length") { result, _ in
-            guard let result = result as? String else { return }
-            self.diffCountBlock?(result)
+        webView.runJS("aceDiffer.getNumDiffs()") { result, _ in
+            guard let result = result as? Int else { return }
+            self.diffCountBlock?(String(result))
         }
     }
 }

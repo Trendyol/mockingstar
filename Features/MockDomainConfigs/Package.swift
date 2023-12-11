@@ -27,6 +27,10 @@ let package = Package(
         ]),
         .testTarget(
             name: "MockDomainConfigsTests",
-            dependencies: ["MockDomainConfigs"]),
+            dependencies: [
+                "MockDomainConfigs",
+                .product(name: "CommonViewsKitTestSupport", package: "CommonViewsKit"),
+                .product(name: "CommonKitTestSupport", package: "CommonKit"),
+            ]),
     ]
 )

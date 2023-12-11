@@ -17,13 +17,18 @@ final class PluginConfigViewModel {
     private var pluginType: PluginType? = nil
     private var pluginCore: PluginInterface? = nil
     private var originalPluginConfigs: [PluginConfigurationUIModel] = []
-    private let manager: NotificationManager = .shared
+    private let notificationManager: NotificationManagerInterface
+    private let pluginCoreActor: PluginCoreActorInterface
     var shouldShowUnsavedIndicator: Bool = false
     var pluginConfigs: [PluginConfigurationUIModel] = []
     @ObservationIgnored @UserDefaultStorage("_") var pluginConfigStorage: [PluginConfiguration] = []
 
-    init(plugin: String) {
+    init(plugin: String,
+         notificationManager: NotificationManagerInterface = NotificationManager.shared,
+         pluginCoreActor: PluginCoreActorInterface = PluginCoreActor.shared) {
         self.plugin = plugin
+        self.notificationManager = notificationManager
+        self.pluginCoreActor = pluginCoreActor
     }
 
     /// Asynchronously loads plugins and their configurations for the specified mock domain.
@@ -31,7 +36,7 @@ final class PluginConfigViewModel {
         @UserDefaultStorage(mockDomain + plugin) var pluginConfigStorage: [PluginConfiguration] = []
         self._pluginConfigStorage = _pluginConfigStorage
 
-        let pluginCore = await PluginCoreActor.shared.pluginCore(for: mockDomain)
+        let pluginCore = await pluginCoreActor.pluginCore(for: mockDomain)
         self.pluginCore = pluginCore
 
         guard let pluginModel = pluginCore.configAvailablePlugins().first(where: { $0.pluginType.rawValue == plugin }) else { return }
@@ -72,7 +77,7 @@ final class PluginConfigViewModel {
         }
         originalPluginConfigs = pluginConfigs
         checkChanges()
-        manager.show(title: "All changes saved", color: .green)
+        notificationManager.show(title: "All changes saved", color: .green)
     }
 
     /// Checks if there are unsaved changes in plugin configurations.

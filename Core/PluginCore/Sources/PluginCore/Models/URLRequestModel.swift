@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  URLRequestModel.swift
 //  
 //
 //  Created by Yusuf Özgül on 3.11.2023.

@@ -13,7 +13,7 @@ import SwiftUI
 @Observable
 public final class MockDomainConfigsViewModel {
     private let logger = Logger(category: "MockDomainConfigsViewModel")
-    private let manager: NotificationManager = .shared
+    private let notificationManager: NotificationManagerInterface
 
     // MARK: UI Models
     var appFilterConfigs = AppFilterConfigs()
@@ -31,10 +31,12 @@ public final class MockDomainConfigsViewModel {
 
     public init(fileManager: FileManagerInterface = FileManager.default,
                 fileUrlBuilder: FileUrlBuilderInterface = FileUrlBuilder(),
-                fileStructureMonitor: FileStructureMonitorInterface = FileStructureMonitor()) {
+                fileStructureMonitor: FileStructureMonitorInterface = FileStructureMonitor(),
+                notificationManager: NotificationManagerInterface = NotificationManager.shared) {
         self.fileUrlBuilder = fileUrlBuilder
         self.fileManager = fileManager
         self.fileStructureMonitor = fileStructureMonitor
+        self.notificationManager = notificationManager
     }
 
     private func watchConfigs() {
@@ -90,10 +92,10 @@ public final class MockDomainConfigsViewModel {
 
             try fileManager.updateFileContent(path: url.path(), content: updatedConfigs)
             configs = updatedConfigs
-            manager.show(title: "All changes saved", color: .green)
+            notificationManager.show(title: "All changes saved", color: .green)
         } catch {
             logger.error("Save configs error: \(error)")
-            manager.show(title: "Save configs error: \(error)", color: .red)
+            notificationManager.show(title: "Save configs error: \(error)", color: .red)
         }
     }
 
