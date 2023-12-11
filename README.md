@@ -9,6 +9,9 @@ Mocking Star is a powerful request mocking tool designed to simplify the process
 
 ![](https://github.com/Trendyol/mockingstar/blob/main/.github/resources/MockingStarDemo.gif)
 
+## Install Mocking Star
+[<img src=".github/resources/mac-appstore.png" height="50">](https://github.com/Trendyol/mockingstar)
+
 
 ### Key Features
 
@@ -25,3 +28,8 @@ Mocking Star is a powerful request mocking tool designed to simplify the process
 ## Documentations
 Browse the documentation to explore Mocking Star, integrate it into your project, and more.
 - [Documentation](https://trendyol.github.com/mockingstar)
+
+---
+### Optimizing UI Testing Efficiency at Trendyol iOS App:
+[Trendyol iOS](https://apps.apple.com/tr/app/trendyol-fashion-trends/id524362642?l=en) Application has nearly 1000 UI tests running with Mocking Star. 
+Our UI tests are executed approximately 20k times every day, and Mocking Star handles approximately 1 million requests.
