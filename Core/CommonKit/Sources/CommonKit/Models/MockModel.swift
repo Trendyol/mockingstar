@@ -233,7 +233,7 @@ public extension MockModel {
             return (metaData.url.host() ?? metaData.url.absoluteString)
         }
 
-        return metaData.url.path().components(separatedBy: "/").drop(while: \.isEmpty).joined(separator: "/")
+        return metaData.url.path().encodedUrlPathValue
     }
 }
 

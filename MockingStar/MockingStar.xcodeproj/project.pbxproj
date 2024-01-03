@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5514564E2B45ACA5009C5E7E /* PrivacyAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5514564D2B45ACA5009C5E7E /* PrivacyAlertView.swift */; };
 		551918F22AF393C200B93430 /* SideBarPluginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551918F12AF393C200B93430 /* SideBarPluginView.swift */; };
 		551918F42AF393CF00B93430 /* SideBarPluginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551918F32AF393CF00B93430 /* SideBarPluginViewModel.swift */; };
 		5553085A2B000B8A0001C0CC /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 555308592B000B8A0001C0CC /* Localizable.xcstrings */; };
@@ -60,6 +61,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5514564D2B45ACA5009C5E7E /* PrivacyAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyAlertView.swift; sourceTree = "<group>"; };
 		551918F12AF393C200B93430 /* SideBarPluginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideBarPluginView.swift; sourceTree = "<group>"; };
 		551918F32AF393CF00B93430 /* SideBarPluginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideBarPluginViewModel.swift; sourceTree = "<group>"; };
 		555308592B000B8A0001C0CC /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -127,6 +129,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5514564C2B45AC3A009C5E7E /* PrivacyAlert */ = {
+			isa = PBXGroup;
+			children = (
+				5514564D2B45ACA5009C5E7E /* PrivacyAlertView.swift */,
+			);
+			path = PrivacyAlert;
+			sourceTree = "<group>";
+		};
 		551918F02AF393A900B93430 /* SideBarPluginsView */ = {
 			isa = PBXGroup;
 			children = (
@@ -272,6 +282,7 @@
 		55D175602ABC2D3600DD3C8F /* Onboardings */ = {
 			isa = PBXGroup;
 			children = (
+				5514564C2B45AC3A009C5E7E /* PrivacyAlert */,
 				55A4104D2ADDBD3700996105 /* InitialSettings */,
 				55A4104A2ADDBA3600996105 /* Welcome */,
 				55D175622ABC2D6600DD3C8F /* InitializeAppOnboardingView.swift */,
@@ -444,6 +455,7 @@
 				551918F22AF393C200B93430 /* SideBarPluginView.swift in Sources */,
 				55A15B882ABD920C00248B0B /* UnsavedChangesTip.swift in Sources */,
 				55907DEB2AC5909200857AD1 /* SideBarServerView.swift in Sources */,
+				5514564E2B45ACA5009C5E7E /* PrivacyAlertView.swift in Sources */,
 				55A410402ADD58DF00996105 /* SettingsViewModel.swift in Sources */,
 				55A4104F2ADDBD4A00996105 /* InitialSettingsView.swift in Sources */,
 				55D1755F2ABC2C7C00DD3C8F /* AppNavigationSplitView.swift in Sources */,

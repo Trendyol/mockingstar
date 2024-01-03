@@ -8,27 +8,36 @@
 import SwiftUI
 
 struct OnboardingView: View {
-    @State private var isWelcomeView = true
+    @State private var state: OnboardingState = .welcomeView
     @AppStorage("isOnboardingDone") private var isOnboardingDone: Bool = false
 
     var body: some View {
         Group {
-            if isWelcomeView {
-                WelcomeView() {
-                    withAnimation {
-                        isWelcomeView = false
-                    }
+            switch state {
+            case .welcomeView:
+                WelcomeView {
+                    withAnimation { state = .folderSelection }
                 }
                 .frame(maxWidth: .infinity)
                 .transition(.move(edge: .leading))
-                .animation(.linear, value: isWelcomeView)
-            } else {
+                .animation(.linear, value: state)
+            case .folderSelection:
                 InitialSettingsView() {
-                    isOnboardingDone = true
+                    withAnimation { state = .privacyInfo }
                 }
                 .frame(maxWidth: .infinity)
                 .transition(.move(edge: .trailing))
-                .animation(.linear, value: isWelcomeView)
+                .animation(.linear, value: state)
+            case .privacyInfo:
+                PrivacyAlertView() {
+                    withAnimation { state = .done }
+                }
+                .frame(maxWidth: .infinity)
+                .transition(.move(edge: .trailing))
+                .animation(.linear, value: state)
+            case .done:
+                WelcomeView {}
+                    .task { isOnboardingDone = true }
             }
         }
     }
@@ -36,4 +45,11 @@ struct OnboardingView: View {
 
 #Preview {
     OnboardingView()
+}
+
+enum OnboardingState {
+    case welcomeView
+    case folderSelection
+    case privacyInfo
+    case done
 }

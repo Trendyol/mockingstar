@@ -16,6 +16,9 @@
     "Diagnostic" : {
 
     },
+    "For your privacy" : {
+
+    },
     "Mock Domains" : {
 
     },
@@ -33,6 +36,16 @@
     },
     "Select Folder" : {
 
+    },
+    "SENSITIVE_INFO_ALERT" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mocking Star does not collect your data; all processes are conducted on your device and stored locally. Nevertheless, it's important to note that within the saved requests and responses on your device, there may be sensitive information stored without encryption. While using Mocking Star, keep this in mind and prioritize securing your sensitive data."
+          }
+        }
+      }
     },
     "Server Port" : {
 

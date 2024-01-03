@@ -15,6 +15,7 @@ public enum FileManagerError: LocalizedError {
     case fileAlreadyExist
     case moveFileError(Error)
     case deleteError(Error)
+    case fileSaveError
 
     public var errorDescription: String? {
         return switch self {
@@ -25,6 +26,7 @@ public enum FileManagerError: LocalizedError {
         case .fileAlreadyExist: "A file already exists in the location you want to move"
         case .moveFileError(let error): "File moving failed, error: \(error.localizedDescription)"
         case .deleteError(let error): "File couldn't delete, error: \(error.localizedDescription)"
+        case .fileSaveError: "File couldn't save, unknown error"
         }
     }
 }
@@ -131,7 +133,9 @@ extension FileManager: FileManagerInterface {
         do {
             let data = try JSONEncoder.shared.encode(model)
             try createDirectory(at: url, withIntermediateDirectories: true)
-            createFile(atPath: url.path() + "/" + fileName, contents: data)
+            guard createFile(atPath: url.path(percentEncoded: false) + "/" + fileName, contents: data) else {
+                throw FileManagerError.fileSaveError
+            }
         } catch where error is EncodingError {
             throw FileManagerError.modelEncodingError(error)
         } catch {

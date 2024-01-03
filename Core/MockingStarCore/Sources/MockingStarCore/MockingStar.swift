@@ -132,6 +132,11 @@ public final class MockingStarCore {
             shouldSave = true
         }
 
+        if let pathComponents = request.url?.pathComponents, pathComponents.count >= 10 {
+            logger.error("Request path components count more than limit.")
+            shouldSave = false
+        }
+
         guard shouldSave else {
             logger.info("Mock won't save due to filters(\(decider.mockFilters.count), path: \(request.url?.path() ?? "-")")
             return

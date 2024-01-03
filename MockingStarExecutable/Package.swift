@@ -13,7 +13,7 @@ let package = Package(
         .package(path: "../Core/PluginCore"),
         .package(path: "../Core/MockingStarCore"),
         .package(path: "../Core/Server"),
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.0"),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
     ],
     targets: [
         .executableTarget(

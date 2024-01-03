@@ -16,3 +16,13 @@ public extension Optional<String> {
         self?.isEmpty ?? true
     }
 }
+
+public extension String {
+    var encodedUrlPathValue: String {
+        self
+            .components(separatedBy: "/")
+            .drop(while: \.isEmpty)
+            .compactMap { $0.addingPercentEncoding(withAllowedCharacters: .alphanumerics) }
+            .joined(separator: "/")
+    }
+}
