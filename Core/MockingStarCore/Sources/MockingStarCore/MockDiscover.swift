@@ -14,6 +14,7 @@ public protocol MockDiscoverInterface {
     var mockListSubject: CurrentValueSubject<Set<MockModel>?, Never> { get }
 
     func updateMockDomain(_ mockDomain: String) async throws
+    func reloadMocks() async throws
 }
 
 public final class MockDiscover: MockDiscoverInterface {
@@ -70,6 +71,12 @@ public final class MockDiscover: MockDiscoverInterface {
         } catch {
             return
         }
+    }
+
+    public func reloadMocks() async throws {
+        mocks.removeAll()
+        mockListSubject.send(nil)
+        try await startMockDiscover()
     }
 
     /// Discovers and loads available mocks for the current mock domain.

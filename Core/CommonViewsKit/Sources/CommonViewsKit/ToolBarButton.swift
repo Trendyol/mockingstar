@@ -8,12 +8,12 @@
 import SwiftUI
 
 public struct ToolBarButton: View {
-    let title: LocalizedStringKey
+    let title: LocalizedStringKey?
     let icon: String
     let backgroundColor: Color
     let action: () -> Void
 
-    public init(title: LocalizedStringKey, icon: String, backgroundColor: Color, action: @escaping () -> Void) {
+    public init(title: LocalizedStringKey? = nil, icon: String, backgroundColor: Color, action: @escaping () -> Void) {
         self.title = title
         self.icon = icon
         self.backgroundColor = backgroundColor
@@ -26,7 +26,10 @@ public struct ToolBarButton: View {
         } label: {
             HStack {
                 Image(systemName: icon)
-                Text(title)
+
+                if let title {
+                    Text(title)
+                }
             }
             .padding(.horizontal)
             .padding(.vertical, 6)

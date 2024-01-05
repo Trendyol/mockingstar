@@ -121,12 +121,14 @@ public struct MockListView: View {
         }
         .toolbar {
             ToolbarItemGroup {
-                Button(action: {
-                    isSearchActive = true
-                }, label: EmptyView.init)
-                .keyboardShortcut("f")
-                .hidden()
-                
+                Button(action: { isSearchActive = true }, label: EmptyView.init)
+                    .keyboardShortcut("f")
+                    .hidden()
+
+                Button(action: { viewModel.reloadMocks() }, label: EmptyView.init)
+                    .keyboardShortcut("r")
+                    .hidden()
+
                 ActionSelectableButton(title: "Delete", icon: "trash", backgroundColor: .red) {
                     viewModel.shouldShowDeleteConfirmation = true
                 } menuContent: {
@@ -177,7 +179,7 @@ public struct MockListView: View {
                     Divider()
                         .padding(.trailing, 6)
 
-                    CustomSearchbar(text: $viewModel.searchTerm, isSearchActive: $isSearchActive)
+                    CustomSearchbar(text: $viewModel.searchTerm, isSearchActive: $isSearchActive, placeholderCount: $viewModel.mockListCount)
                         .frame(width: 200)
                 }
                 .overlay(
@@ -210,6 +212,18 @@ public struct MockListView: View {
         .task(id: viewModel.filterType) { await viewModel.searchData() }
         .task(id: viewModel.filterStyle) { await viewModel.searchData() }
         .task(id: mockDomain) { await viewModel.mockDomainChanged(mockDomain) }
+        .onReceive(NotificationCenter.default.publisher(for: .reloadMocks)) { _ in
+            viewModel.reloadMocks()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .selectAllMocks)) { _ in
+            withAnimation { viewModel.selected = .init(viewModel.mockListUIModel.map(\.id)) }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .deselectAllMocks)) { _ in
+            withAnimation { viewModel.selected.removeAll() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .removeMock)) { _ in
+            viewModel.shouldShowDeleteConfirmation = true
+        }
     }
 }
 

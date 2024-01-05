@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "App" : {
 
     },
@@ -16,6 +19,9 @@
     "Diagnostic" : {
 
     },
+    "Documentation" : {
+
+    },
     "For your privacy" : {
 
     },
@@ -29,6 +35,12 @@
 
     },
     "Plugins" : {
+
+    },
+    "Reload All Domains" : {
+
+    },
+    "Reload All Plugins" : {
 
     },
     "Restart" : {
@@ -51,6 +63,9 @@
 
     },
     "Servers" : {
+
+    },
+    "Source Code" : {
 
     },
     "Unsaved changes" : {

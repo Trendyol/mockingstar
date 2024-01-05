@@ -22,10 +22,19 @@
     "Method" : {
 
     },
+    "Mocks" : {
+
+    },
     "Ok" : {
 
     },
     "Open Mock Detail" : {
+
+    },
+    "Reload Mocks" : {
+
+    },
+    "Remove Mock(s)" : {
 
     },
     "Remove Selected" : {
@@ -43,7 +52,13 @@
     "Select All" : {
 
     },
+    "Select All Mocks" : {
+
+    },
     "Unselect All" : {
+
+    },
+    "Unselect All Mocks" : {
 
     }
   },

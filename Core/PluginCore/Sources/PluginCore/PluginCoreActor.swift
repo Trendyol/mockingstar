@@ -28,4 +28,8 @@ public actor PluginCoreActor: PluginCoreActorInterface {
         plugins[mockDomain] = plugin
         return plugin
     }
+
+    public func reloadAllPlugins() {
+        plugins.removeAll()
+    }
 }

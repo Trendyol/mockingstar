@@ -43,4 +43,11 @@ public final class MockMockDiscover: MockDiscoverInterface {
         invokedUpdateMockDomainParameters = (mockDomain, ())
         invokedUpdateMockDomainParametersList.append((mockDomain, ()))
     }
+
+    public var invokedReloadMocks = false
+    public var invokedReloadMocksCount = 0
+    public func reloadMocks() async throws {
+        invokedReloadMocks = true
+        invokedReloadMocksCount += 1
+    }
 }

@@ -126,7 +126,7 @@ public final class Plugin {
             let commonPluginURL: URL = try fileUrlBuilder.commonPluginFolderUrl().appending(path: type.fileName)
 
             if fileManager.fileExist(atPath: pluginURL.path()) {
-                logger.info("\(mockDomain) has no plugin")
+                logger.info("\(mockDomain) has no \(type.rawValue) plugin")
                 fileURL = pluginURL
             } else if fileManager.fileExist(atPath: commonPluginURL.path()) {
                 logger.info("Project has no plugin")

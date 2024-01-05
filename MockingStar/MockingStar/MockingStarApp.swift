@@ -32,6 +32,10 @@ struct MockingStarApp: App {
                     }
                 }
         }
+        .commands {
+            SidebarCommands()
+            MenubarCommands()
+        }
 
         Settings {
             SettingsView()

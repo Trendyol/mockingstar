@@ -128,6 +128,9 @@ public struct MockDetailView: View {
         .modifier(ChangeConfirmationViewModifier(hasChange: $viewModel.shouldShowUnsavedIndicator) {
             viewModel.saveChanges()
         })
+        .onReceive(NotificationCenter.default.publisher(for: .removeMock)) { _ in
+            viewModel.shouldShowDeleteConfirmationAlert = true
+        }
     }
 
     func dismiss() {

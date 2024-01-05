@@ -50,11 +50,17 @@ struct SidebarView: View {
 
             SideBarPluginView()
         }
-        .task { @MainActor in
-            try? await domainDiscover.startDomainDiscovery()
-            if mockDomain.isEmpty {
-                mockDomain = domainDiscover.domains.first ?? ""
-            }
+        .task { try? await reloadMockDomains() }
+        .onReceive(NotificationCenter.default.publisher(for: .reloadMockDomains)) { _ in
+            Task { try await reloadMockDomains() }
+        }
+    }
+
+    @MainActor
+    func reloadMockDomains() async throws {
+        try await domainDiscover.startDomainDiscovery()
+        if mockDomain.isEmpty || !domainDiscover.domains.contains(mockDomain) {
+            mockDomain = domainDiscover.domains.first ?? ""
         }
     }
 }

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5514564E2B45ACA5009C5E7E /* PrivacyAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5514564D2B45ACA5009C5E7E /* PrivacyAlertView.swift */; };
+		551456992B47E399009C5E7E /* MenubarCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551456982B47E399009C5E7E /* MenubarCommands.swift */; };
 		551918F22AF393C200B93430 /* SideBarPluginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551918F12AF393C200B93430 /* SideBarPluginView.swift */; };
 		551918F42AF393CF00B93430 /* SideBarPluginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551918F32AF393CF00B93430 /* SideBarPluginViewModel.swift */; };
 		5553085A2B000B8A0001C0CC /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 555308592B000B8A0001C0CC /* Localizable.xcstrings */; };
@@ -62,6 +63,7 @@
 
 /* Begin PBXFileReference section */
 		5514564D2B45ACA5009C5E7E /* PrivacyAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyAlertView.swift; sourceTree = "<group>"; };
+		551456982B47E399009C5E7E /* MenubarCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenubarCommands.swift; sourceTree = "<group>"; };
 		551918F12AF393C200B93430 /* SideBarPluginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideBarPluginView.swift; sourceTree = "<group>"; };
 		551918F32AF393CF00B93430 /* SideBarPluginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideBarPluginViewModel.swift; sourceTree = "<group>"; };
 		555308592B000B8A0001C0CC /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -135,6 +137,14 @@
 				5514564D2B45ACA5009C5E7E /* PrivacyAlertView.swift */,
 			);
 			path = PrivacyAlert;
+			sourceTree = "<group>";
+		};
+		551456972B47E37B009C5E7E /* Commands */ = {
+			isa = PBXGroup;
+			children = (
+				551456982B47E399009C5E7E /* MenubarCommands.swift */,
+			);
+			path = Commands;
 			sourceTree = "<group>";
 		};
 		551918F02AF393A900B93430 /* SideBarPluginsView */ = {
@@ -294,6 +304,7 @@
 		55D9F3D12AB47CFE0056C002 /* Modules */ = {
 			isa = PBXGroup;
 			children = (
+				551456972B47E37B009C5E7E /* Commands */,
 				55D175592ABC2C0500DD3C8F /* Home */,
 				55D175602ABC2D3600DD3C8F /* Onboardings */,
 				55A4103C2ADD58C700996105 /* Settings */,
@@ -448,6 +459,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				55D175632ABC2D6600DD3C8F /* InitializeAppOnboardingView.swift in Sources */,
+				551456992B47E399009C5E7E /* MenubarCommands.swift in Sources */,
 				55A410462ADD64CE00996105 /* DiagnosticViewModel.swift in Sources */,
 				55B4382D2A6FE25A00E2A9DD /* MockingStarApp.swift in Sources */,
 				55A4104C2ADDBA4200996105 /* WelcomeView.swift in Sources */,

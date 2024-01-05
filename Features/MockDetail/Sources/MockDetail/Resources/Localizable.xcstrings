@@ -73,6 +73,9 @@
     "Load async Plugin" : {
 
     },
+    "Mock" : {
+
+    },
     "Mock Reload" : {
 
     },
@@ -110,6 +113,9 @@
 
     },
     "Reload Mock" : {
+
+    },
+    "Remove" : {
 
     },
     "Response Content" : {
