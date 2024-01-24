@@ -85,7 +85,7 @@ final class MockDecider {
             return false
         }
 
-        let shouldIgnoreQueryConfigs = pathConfigs.contains(where: { $0.executeAllQueries }) && configs.configs.appFilterConfigs.queryFilterDefaultStyleIgnore
+        let shouldIgnoreQueryConfigs = (pathConfigs.isEmpty || pathConfigs.contains(where: { $0.executeAllQueries })) && configs.configs.appFilterConfigs.queryFilterDefaultStyleIgnore
         if !shouldIgnoreQueryConfigs {
             var filteredMockQueryList: [URLQueryItem] = []
             var filteredRequestQueryList: [URLQueryItem] = []
@@ -147,7 +147,7 @@ final class MockDecider {
             }
         }
 
-        let shouldIgnoreHeaderConfigs = pathConfigs.contains(where: { $0.executeAllHeaders }) && configs.configs.appFilterConfigs.headerFilterDefaultStyleIgnore
+        let shouldIgnoreHeaderConfigs = (pathConfigs.isEmpty || pathConfigs.contains(where: { $0.executeAllHeaders })) && configs.configs.appFilterConfigs.headerFilterDefaultStyleIgnore
         if !shouldIgnoreHeaderConfigs {
             var filteredMockHeaderList: [String: String] = [:]
             var filteredRequestHeaderList: [String: String] = [:]
