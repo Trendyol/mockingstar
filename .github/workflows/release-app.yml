@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version Tag'     
+        required: true
+        default: '1.0.0-1'
 
 jobs:
   test:
@@ -23,13 +29,22 @@ jobs:
       run: swift run --package-path ./fastlaneRunner fastlaneRunner lane releaseAppLane
       env:
         CERT: ${{ secrets.CERT }}
-        CERT_PASS: ${{ secrets.CERT_PASS }}
-        INSTALLER_CERT_NAME: ${{ secrets.INSTALLER_CERT_NAME }}
-        KEYCHAIN_PASS: ${{ secrets.KEYCHAIN_PASS }}
+        PASS: ${{ secrets.PASS }}
+        CODESIGNING_IDENTITY: ${{ secrets.CODESIGNING_IDENTITY }}
         PROFILE: ${{ secrets.PROFILE }}
         TEAM_ID: ${{ secrets.TEAM_ID }}
-        WWDR: ${{ secrets.WWDR }}
-        AC_KEY_ID: ${{ secrets.AC_KEY_ID }}
-        AC_ISSUER_ID: ${{ secrets.AC_ISSUER_ID }}
-        AC_API_KEY: ${{ secrets.AC_API_KEY }}
+        ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+        ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        ASC_KEY: ${{ secrets.ASC_KEY }}
         VERSION: ${{ env.RELEASE_VERSION }}
+
+    - name: Create Zip
+      run: cd ./.build/appBuildOutput && zip -r MockingStar.zip MockingStar.app
+
+    - name: Create a Release
+      uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ env.RELEASE_VERSION }}
+        name: MockingStar - Release ${{ env.RELEASE_VERSION }}
+        artifacts: '.build/appBuildOutput/MockingStar.zip'
+        allowUpdates: true

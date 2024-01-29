@@ -8,90 +8,87 @@
 import Fastlane
 import Foundation
 
-final class MockingStarFastFile: LaneFile {
-    func afterAll(with lane: String) {
-        guard lane == "releaseAppLane" else { return }
-
-        cleanKeychain()
-    }
-}
+final class MockingStarFastFile: LaneFile {}
 
 // MARK: - Release
 extension MockingStarFastFile {
     func releaseAppLane() {
+        defer {
+            cleanKeychain()
+        }
+
         print("Building MockingStar App")
 
         createCertificates()
 
-        let keychainPassword = environmentVariable(get: "KEYCHAIN_PASS")
-        let certificatePassword = environmentVariable(get: "CERT_PASS")
+        let password = environmentVariable(get: "PASS")
         let teamId = environmentVariable(get: "TEAM_ID")
-        let installerCertName = environmentVariable(get: "INSTALLER_CERT_NAME")
+        let bundleId = "com.trendyol.mocking-star"
 
         createKeychain(name: "MockingStarKeychain",
-                       password: keychainPassword,
+                       password: password,
                        defaultKeychain: true,
                        unlock: true,
                        timeout: 3600)
 
         print("Installing Certificates")
         importCertificate(certificatePath: "./certs/MockingStarCert.p12",
-                          certificatePassword: .userDefined(certificatePassword),
+                          certificatePassword: .userDefined(password),
                           keychainName: "MockingStarKeychain",
-                          keychainPassword: .userDefined(keychainPassword))
-        importCertificate(certificatePath: "./certs/AppleWWDRCAG3.cer",
-                          keychainName: "MockingStarKeychain",
-                          keychainPassword: .userDefined(keychainPassword))
+                          keychainPassword: .userDefined(password))
 
         print("Installing Profiles")
-        installProvisioningProfile(path: "./certs/AppStore_com.trendyol.MockingStar.provisionprofile")
+        installProvisioningProfile(path: "./certs/Direct_com.trendyol.MockingStar.provisionprofile")
+
 
         print("Configure CodeSigning")
-        updateCodeSigningSettings(path: "./MockingStar/MockingStar.xcodeproj", useAutomaticSigning: false)
         updateProjectProvisioning(xcodeproj: "./MockingStar/MockingStar.xcodeproj",
-                                  profile: "./certs/AppStore_com.trendyol.MockingStar.provisionprofile",
+                                  profile: "./certs/Direct_com.trendyol.MockingStar.provisionprofile",
                                   targetFilter: "MockingStar",
                                   buildConfiguration: "Release")
-        updateProjectTeam(path: "./MockingStar/MockingStar.xcodeproj", teamid: teamId)
 
-        appStoreConnectApiKey(keyId: environmentVariable(get: "AC_KEY_ID"),
-                              issuerId: environmentVariable(get: "AC_ISSUER_ID"),
-                              keyContent: .userDefined(environmentVariable(get: "AC_API_KEY")),
-                              isKeyContentBase64: true)
+        guard let buildNumber = environmentVariable(get: "VERSION").components(separatedBy: "-").last,
+              let version = environmentVariable(get: "VERSION").components(separatedBy: "-").first else {
+            print("Decoding version failed: \(environmentVariable(get: "VERSION"))")
+            return
+        }
 
-        let buildNumber = latestTestflightBuildNumber(appIdentifier: "com.trendyol.MockingStar", platform: "osx")
-        incrementBuildNumber(buildNumber: .userDefined("\(buildNumber + 1)"), xcodeproj: "./MockingStar/MockingStar.xcodeproj")
-        sh(command: "sed -i '' -e 's/MARKETING_VERSION \\= [^\\;]*\\;/MARKETING_VERSION = \(environmentVariable(get: "VERSION"));/' ./MockingStar/MockingStar.xcodeproj/project.pbxproj"){ error in
+        incrementBuildNumber(buildNumber: .userDefined(buildNumber), xcodeproj: "./MockingStar/MockingStar.xcodeproj")
+        sh(command: "sed -i '' -e 's/MARKETING_VERSION \\= [^\\;]*\\;/MARKETING_VERSION = \(version);/' ./MockingStar/MockingStar.xcodeproj/project.pbxproj"){ error in
             print("update version error: \(error)")
             fatalError(error)
         }
 
         print("Build App")
-        gym(workspace: "./MockingStar.xcworkspace",
-            scheme: "MockingStar",
-            outputDirectory: "./.appBuildOutput",
-            outputName: "MockingStar",
-            configuration: "Release",
-            exportMethod: "app-store",
-            exportOptions: .userDefined([
-                "provisioningProfiles": [
-                    "com.trendyol.MockingStar": "com.trendyol.MockingStar AppStore"
-                ]
-            ]),
-            installerCertName: .userDefined(installerCertName),
-            buildPath: "./.appBuild",
-            archivePath: "./.archive",
-            derivedDataPath: "./.derivedData",
-            exportTeamId: .userDefined(teamId),
-            xcodebuildFormatter: "xcpretty")
+        buildMacApp(workspace: "./MockingStar.xcworkspace",
+                    scheme: "MockingStar",
+                    clean: true,
+                    outputDirectory: "./.build/appBuildOutput",
+                    outputName: "MockingStar",
+                    configuration: "Release",
+                    codesigningIdentity: .userDefined(environmentVariable(get: "CODESIGNING_IDENTITY")),
+                    exportMethod: "developer-id",
+                    exportOptions: .userDefined([
+                        "provisioningProfiles": [
+                            bundleId: "com.trendyol.mocking-star Direct"
+                        ]
+                    ]),
+                    buildPath: "./.build/appBuild",
+                    archivePath: "./.build/archive",
+                    derivedDataPath: "./.build/derivedData",
+                    exportTeamId: .userDefined(teamId),
+                    xcargs: "CODE_SIGN_STYLE=Manual",
+                    xcodebuildFormatter: "xcpretty")
 
-        print("Upload to Testflight")
 
-        uploadToTestflight(appIdentifier: "com.trendyol.MockingStar",
-                           pkg: "./.appBuildOutput/MockingStar.pkg",
-                           skipWaitingForBuildProcessing: true)
-
-        cleanKeychain()
+        notarize(package: "./.build/appBuildOutput/MockingStar.app",
+                 useNotarytool: false,
+                 bundleId: .userDefined(bundleId),
+                 apiKey: .userDefined([
+                    "filepath": "./certs/ASCKEY.p8",
+                    "key_id": environmentVariable(get: "ASC_KEY_ID"),
+                    "issuer_id": environmentVariable(get: "ASC_ISSUER_ID"),
+                 ]))
     }
 
     func releaseCLILane() {
@@ -149,16 +146,16 @@ extension MockingStarFastFile {
 
         let certificate = environmentVariable(get: "CERT")
         let profile = environmentVariable(get: "PROFILE")
-        let wwdr = environmentVariable(get: "WWDR")
+        let ascKey = environmentVariable(get: "ASC_KEY")
 
         FileManager.default.createFile(atPath: "./certs/MockingStarCert.p12",
                                        contents: Data(base64Encoded: certificate))
 
-        FileManager.default.createFile(atPath: "./certs/AppStore_com.trendyol.MockingStar.provisionprofile",
+        FileManager.default.createFile(atPath: "./certs/Direct_com.trendyol.MockingStar.provisionprofile",
                                        contents: Data(base64Encoded: profile))
 
-        FileManager.default.createFile(atPath: "./certs/AppleWWDRCAG3.cer",
-                                       contents: Data(base64Encoded: wwdr))
+        FileManager.default.createFile(atPath: "./certs/ASCKEY.p8",
+                                       contents: Data(base64Encoded: ascKey))
     }
 
     func cleanKeychain() {
@@ -169,6 +166,7 @@ extension MockingStarFastFile {
         deleteKeychain(name: "MockingStarKeychain")
 
         try? FileManager.default.removeItem(atPath: "./certs/MockingStarCert.p12")
-        try? FileManager.default.removeItem(atPath: "./certs/AppStore_com.trendyol.MockingStar.provisionprofile")
+        try? FileManager.default.removeItem(atPath: "./certs/Direct_com.trendyol.MockingStar.provisionprofile")
+        try? FileManager.default.removeItem(atPath: "./certs/ASCKEY.p8")
     }
 }
