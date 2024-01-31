@@ -21,14 +21,14 @@ jobs:
 
     - name: Build CLI App 
       run: swift run --package-path ./fastlaneRunner fastlaneRunner lane releaseCLILane
-
-    - name: Find Executable
-      run: echo "EXECUTABLE_PATH=$(find ./.build -name MockingStar -type f -not -path '*dSYM*')" >> $GITHUB_ENV
+      
+    - name: Create Zip
+      run: cd ./.build/release/ && zip -r MockingStar-CLI.zip MockingStar
 
     - name: Create a Release
       uses: ncipollo/release-action@v1
       with:
         tag: ${{ env.RELEASE_VERSION }}
         name: MockingStar - Release ${{ env.RELEASE_VERSION }}
-        artifacts: '${{ env.EXECUTABLE_PATH }}'
+        artifacts: '.build/release/MockingStar-CLI.zip'
         allowUpdates: true

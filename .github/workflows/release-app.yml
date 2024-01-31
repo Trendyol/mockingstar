@@ -39,12 +39,12 @@ jobs:
         VERSION: ${{ env.RELEASE_VERSION }}
 
     - name: Create Zip
-      run: cd ./.build/appBuildOutput && zip -r MockingStar.zip MockingStar.app
+      run: cd ./.build/appBuildOutput && zip -r MockingStar-App.zip MockingStar.app
 
     - name: Create a Release
       uses: ncipollo/release-action@v1
       with:
         tag: ${{ env.RELEASE_VERSION }}
         name: MockingStar - Release ${{ env.RELEASE_VERSION }}
-        artifacts: '.build/appBuildOutput/MockingStar.zip'
+        artifacts: '.build/appBuildOutput/MockingStar-App.zip'
         allowUpdates: true
