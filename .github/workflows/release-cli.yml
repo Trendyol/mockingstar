@@ -1,9 +1,8 @@
 name:  Release CLI
 
 on:
-  push:
-    tags:
-      - "*"
+  release:
+    types: [published]
 
 jobs:
   test:
@@ -28,7 +27,7 @@ jobs:
     - name: Create a Release
       uses: ncipollo/release-action@v1
       with:
-        tag: ${{ env.RELEASE_VERSION }}
+        tag: ${{ github.event.release.tag_name }}
         name: MockingStar - Release ${{ env.RELEASE_VERSION }}
         artifacts: '.build/release/MockingStar-CLI.zip'
         allowUpdates: true

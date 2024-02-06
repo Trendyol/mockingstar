@@ -7,6 +7,7 @@
 
 import CommonViewsKit
 import SwiftUI
+import TipKit
 
 public struct MockHeaderConfigurations: View {
     @Bindable var viewModel: MockDomainConfigsViewModel
@@ -110,6 +111,8 @@ public struct MockHeaderConfigurations: View {
                         .buttonStyle(.plain)
                     }
                 }
+
+                TipView(HeaderConfigsTip())
             }
         }
         .toolbar {
@@ -146,4 +149,20 @@ public struct MockHeaderConfigurations: View {
 
 #Preview {
     MockHeaderConfigurations(viewModel: .init())
+}
+
+struct HeaderConfigsTip: Tip {
+    var title: Text {
+        Text("Header Configurations")
+    }
+
+    var message: Text? {
+        Text("Mocking Star ignores all headers normally. If there is a important keys only given request, you can change this rule.")
+    }
+
+    var actions: [Action] {
+        Action(title: "Open Documentations") {
+            NSWorkspace.shared.open(URL(string: "https://github.com/Trendyol/mockingstar")!)
+        }
+    }
 }

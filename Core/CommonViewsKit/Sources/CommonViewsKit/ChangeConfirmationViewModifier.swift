@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import TipKit
 
 public struct ChangeConfirmationViewModifier: ViewModifier {
     @Environment(\.dismiss) var dismiss
     @State private var presentingConfirmationDialog: Bool = false
     @Binding private var hasChange: Bool
     private var saveChanges: () -> Void
+    private let unsavedTip = UnsavedChangesTip()
 
     public init(hasChange: Binding<Bool>, saveChanges: @escaping () -> Void) {
         self._hasChange = hasChange
@@ -43,8 +45,23 @@ public struct ChangeConfirmationViewModifier: ViewModifier {
                     if hasChange {
                         Label("Unsaved", systemImage: "smallcircle.filled.circle.fill")
                             .help("Unsaved Changes")
+                            .popoverTip(unsavedTip)
                     }
                 }
             }
+    }
+}
+
+struct UnsavedChangesTip: Tip {
+    var title: Text {
+        Text("Unsaved Changes")
+    }
+
+    var message: Text? {
+        Text("You can save or discard them")
+    }
+
+    var image: Image? {
+        Image(systemName: "pencil.and.outline")
     }
 }

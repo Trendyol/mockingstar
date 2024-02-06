@@ -53,8 +53,7 @@ struct InitializeAppOnboardingView: View {
 
             try FilePermissionHelper(fileBookMark: fileBookMark).startAccessingSecurityScopedResource()
         } catch {
-            await updateMessage(text: "File Access ERROR: \(error)")
-            return
+            return await updateMessage(text: "File Access ERROR: \(error)")
         }
 
         await updateMessage(text: "Checking File Structure...")

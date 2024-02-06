@@ -8,6 +8,7 @@
 import CommonKit
 import CommonViewsKit
 import SwiftUI
+import TipKit
 
 struct MockDetailInspectorView: View {
     @Bindable var viewModel: MockDetailInspectorViewModel
@@ -52,6 +53,8 @@ struct MockDetailInspectorView: View {
                         await viewModel.loadPluginMessage(shouldLoadAsync: true)
                     }
                 }
+
+                TipView(PluginsDocumentTip())
             }
         }
         .inspectorColumnWidth(min: 300, ideal: 400)
@@ -77,4 +80,24 @@ struct MockDetailInspectorView: View {
                                                                   requestBody: "",
                                                                   responseBody: ""),
                                              onChange: {}))
+}
+
+struct PluginsDocumentTip: Tip {
+    var title: Text {
+        Text("Plugins")
+    }
+
+    var message: Text? {
+        Text("You can review the documentation to learn how to use plugins.")
+    }
+
+    var image: Image? {
+        Image(systemName: "sparkles.rectangle.stack.fill")
+    }
+
+    var actions: [Action] {
+        Action(title: "Open Documentations") {
+            NSWorkspace.shared.open(URL(string: "https://github.com/Trendyol/mockingstar")!)
+        }
+    }
 }

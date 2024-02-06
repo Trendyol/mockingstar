@@ -73,15 +73,15 @@ struct InformationContainerView: View {
     var body: some View {
         VStack(alignment: .leading) {
             InformationDetailView(title: "Easy",
-                                  subTitle: "Match the gradients by moving the Red, Green and Blue sliders for the left and right colors.", 
+                                  subTitle: "Easily mock requests and test different cases with scenarios.",
                                   imageName: "figure.run.square.stack")
 
             InformationDetailView(title: "Powerful",
-                                  subTitle: "More precision with the steppers to get that 100 score.",
+                                  subTitle: "Modify intercepted requests to test different edge cases, allowing you to assess your application's performance under different conditions.",
                                   imageName: "wand.and.stars")
 
             InformationDetailView(title: "And More",
-                                  subTitle: "A detailed score and comparsion of your gradient and the target gradient.",
+                                  subTitle: "Integrate Mocking Star into your UI tests, creating a reliable and controlled testing environment to validate your application's functionality.",
                                   imageName: "pencil.and.outline")
         }
         .padding(.horizontal)

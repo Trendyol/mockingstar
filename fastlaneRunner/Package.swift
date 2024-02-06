@@ -5,6 +5,9 @@ import PackageDescription
 
 let package = Package(
     name: "fastlaneRunner",
+    platforms: [
+        .macOS(.v13)
+    ],
     dependencies: [
         .package(url: "https://github.com/fastlane/fastlane", from: "2.179.0"),
     ],

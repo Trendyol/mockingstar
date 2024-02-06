@@ -1,9 +1,8 @@
 name:  Build and Publish DocC
 
 on:
-  push:
-    tags:
-      - "*"
+  release:
+    types: [published]
 
 jobs:
   test:

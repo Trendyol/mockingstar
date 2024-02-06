@@ -11,6 +11,7 @@
 		551456992B47E399009C5E7E /* MenubarCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551456982B47E399009C5E7E /* MenubarCommands.swift */; };
 		551918F22AF393C200B93430 /* SideBarPluginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551918F12AF393C200B93430 /* SideBarPluginView.swift */; };
 		551918F42AF393CF00B93430 /* SideBarPluginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551918F32AF393CF00B93430 /* SideBarPluginViewModel.swift */; };
+		551CF1AC2B725FB800AF91C7 /* QuickDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551CF1AB2B725FB800AF91C7 /* QuickDemo.swift */; };
 		5553085A2B000B8A0001C0CC /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 555308592B000B8A0001C0CC /* Localizable.xcstrings */; };
 		5557F2712B074077008957B1 /* DiffEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 5557F2702B074077008957B1 /* DiffEditor */; };
 		5557F2732B074077008957B1 /* JSONEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 5557F2722B074077008957B1 /* JSONEditor */; };
@@ -26,7 +27,6 @@
 		5557F2862B07457E008957B1 /* MockingStarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B4383E2A6FE25D00E2A9DD /* MockingStarTests.swift */; };
 		55907DEB2AC5909200857AD1 /* SideBarServerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55907DEA2AC5909200857AD1 /* SideBarServerView.swift */; };
 		55907DED2AC590A900857AD1 /* SideBarServerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55907DEC2AC590A900857AD1 /* SideBarServerViewModel.swift */; };
-		55A15B882ABD920C00248B0B /* UnsavedChangesTip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A15B872ABD920C00248B0B /* UnsavedChangesTip.swift */; };
 		55A4103E2ADD58D500996105 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A4103D2ADD58D500996105 /* SettingsView.swift */; };
 		55A410402ADD58DF00996105 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A4103F2ADD58DF00996105 /* SettingsViewModel.swift */; };
 		55A410442ADD628D00996105 /* DiagnosticView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A410432ADD628D00996105 /* DiagnosticView.swift */; };
@@ -39,6 +39,8 @@
 		55B438342A6FE25D00E2A9DD /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 55B438332A6FE25D00E2A9DD /* Preview Assets.xcassets */; };
 		55B438492A6FE25D00E2A9DD /* MockingStarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B438482A6FE25D00E2A9DD /* MockingStarUITests.swift */; };
 		55B4384B2A6FE25D00E2A9DD /* MockingStarUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B4384A2A6FE25D00E2A9DD /* MockingStarUITestsLaunchTests.swift */; };
+		55CBE2172B6A595D00A330F0 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 55CBE2162B6A595D00A330F0 /* Sparkle */; };
+		55CBE21A2B6A5B7D00A330F0 /* CheckForUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55CBE2192B6A5B7D00A330F0 /* CheckForUpdates.swift */; };
 		55D1755D2ABC2C3C00DD3C8F /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1755C2ABC2C3C00DD3C8F /* SidebarView.swift */; };
 		55D1755F2ABC2C7C00DD3C8F /* AppNavigationSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1755E2ABC2C7C00DD3C8F /* AppNavigationSplitView.swift */; };
 		55D175632ABC2D6600DD3C8F /* InitializeAppOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D175622ABC2D6600DD3C8F /* InitializeAppOnboardingView.swift */; };
@@ -66,12 +68,13 @@
 		551456982B47E399009C5E7E /* MenubarCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenubarCommands.swift; sourceTree = "<group>"; };
 		551918F12AF393C200B93430 /* SideBarPluginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideBarPluginView.swift; sourceTree = "<group>"; };
 		551918F32AF393CF00B93430 /* SideBarPluginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideBarPluginViewModel.swift; sourceTree = "<group>"; };
+		551CF1AB2B725FB800AF91C7 /* QuickDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickDemo.swift; sourceTree = "<group>"; };
 		555308592B000B8A0001C0CC /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		5557F2842B074456008957B1 /* Documentation.docc */ = {isa = PBXFileReference; lastKnownFileType = folder.documentationcatalog; path = Documentation.docc; sourceTree = "<group>"; };
 		55907DEA2AC5909200857AD1 /* SideBarServerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideBarServerView.swift; sourceTree = "<group>"; };
 		55907DEC2AC590A900857AD1 /* SideBarServerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideBarServerViewModel.swift; sourceTree = "<group>"; };
 		55948ABE2AE7FCD5003097B7 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
-		55A15B872ABD920C00248B0B /* UnsavedChangesTip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnsavedChangesTip.swift; sourceTree = "<group>"; };
+		5599FF902B6BD7560095E1BE /* MockingStarDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MockingStarDebug.entitlements; sourceTree = "<group>"; };
 		55A4103D2ADD58D500996105 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		55A4103F2ADD58DF00996105 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		55A410432ADD628D00996105 /* DiagnosticView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticView.swift; sourceTree = "<group>"; };
@@ -90,6 +93,7 @@
 		55B438482A6FE25D00E2A9DD /* MockingStarUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockingStarUITests.swift; sourceTree = "<group>"; };
 		55B4384A2A6FE25D00E2A9DD /* MockingStarUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockingStarUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		55BD7EDE2AF7C365008C5C14 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		55CBE2192B6A5B7D00A330F0 /* CheckForUpdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckForUpdates.swift; sourceTree = "<group>"; };
 		55D1755C2ABC2C3C00DD3C8F /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		55D1755E2ABC2C7C00DD3C8F /* AppNavigationSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigationSplitView.swift; sourceTree = "<group>"; };
 		55D175622ABC2D6600DD3C8F /* InitializeAppOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitializeAppOnboardingView.swift; sourceTree = "<group>"; };
@@ -108,6 +112,7 @@
 				5557F2752B074077008957B1 /* Logs in Frameworks */,
 				5557F2732B074077008957B1 /* JSONEditor in Frameworks */,
 				5557F27F2B074157008957B1 /* MockList in Frameworks */,
+				55CBE2172B6A595D00A330F0 /* Sparkle in Frameworks */,
 				5557F2812B074166008957B1 /* PluginConfigs in Frameworks */,
 				5557F2832B074166008957B1 /* PluginCore in Frameworks */,
 				5557F2772B074077008957B1 /* MockDetail in Frameworks */,
@@ -156,6 +161,14 @@
 			path = SideBarPluginsView;
 			sourceTree = "<group>";
 		};
+		551CF1AA2B725FA100AF91C7 /* Demo */ = {
+			isa = PBXGroup;
+			children = (
+				551CF1AB2B725FB800AF91C7 /* QuickDemo.swift */,
+			);
+			path = Demo;
+			sourceTree = "<group>";
+		};
 		55907DE92AC5907E00857AD1 /* SideBarServerView */ = {
 			isa = PBXGroup;
 			children = (
@@ -163,14 +176,6 @@
 				55907DEC2AC590A900857AD1 /* SideBarServerViewModel.swift */,
 			);
 			path = SideBarServerView;
-			sourceTree = "<group>";
-		};
-		55A15B862ABD91FE00248B0B /* Tips */ = {
-			isa = PBXGroup;
-			children = (
-				55A15B872ABD920C00248B0B /* UnsavedChangesTip.swift */,
-			);
-			path = Tips;
 			sourceTree = "<group>";
 		};
 		55A4103C2ADD58C700996105 /* Settings */ = {
@@ -234,6 +239,7 @@
 			children = (
 				5557F2842B074456008957B1 /* Documentation.docc */,
 				55B438352A6FE25D00E2A9DD /* MockingStar.entitlements */,
+				5599FF902B6BD7560095E1BE /* MockingStarDebug.entitlements */,
 				55BD7EDE2AF7C365008C5C14 /* Info.plist */,
 				55B4382C2A6FE25A00E2A9DD /* MockingStarApp.swift */,
 				55B438302A6FE25D00E2A9DD /* Assets.xcassets */,
@@ -278,6 +284,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		55CBE2182B6A5B7600A330F0 /* CheckForUpdates */ = {
+			isa = PBXGroup;
+			children = (
+				55CBE2192B6A5B7D00A330F0 /* CheckForUpdates.swift */,
+			);
+			path = CheckForUpdates;
+			sourceTree = "<group>";
+		};
 		55D175592ABC2C0500DD3C8F /* Home */ = {
 			isa = PBXGroup;
 			children = (
@@ -304,11 +318,12 @@
 		55D9F3D12AB47CFE0056C002 /* Modules */ = {
 			isa = PBXGroup;
 			children = (
+				55CBE2182B6A5B7600A330F0 /* CheckForUpdates */,
 				551456972B47E37B009C5E7E /* Commands */,
+				551CF1AA2B725FA100AF91C7 /* Demo */,
 				55D175592ABC2C0500DD3C8F /* Home */,
 				55D175602ABC2D3600DD3C8F /* Onboardings */,
 				55A4103C2ADD58C700996105 /* Settings */,
-				55A15B862ABD91FE00248B0B /* Tips */,
 			);
 			path = Modules;
 			sourceTree = "<group>";
@@ -340,6 +355,7 @@
 				5557F27E2B074157008957B1 /* MockList */,
 				5557F2802B074166008957B1 /* PluginConfigs */,
 				5557F2822B074166008957B1 /* PluginCore */,
+				55CBE2162B6A595D00A330F0 /* Sparkle */,
 			);
 			productName = MockingStar;
 			productReference = 55B438292A6FE25A00E2A9DD /* MockingStar.app */;
@@ -415,6 +431,9 @@
 				Base,
 			);
 			mainGroup = 55B438202A6FE25A00E2A9DD;
+			packageReferences = (
+				55CBE2152B6A595D00A330F0 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			productRefGroup = 55B4382A2A6FE25A00E2A9DD /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -458,6 +477,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				551CF1AC2B725FB800AF91C7 /* QuickDemo.swift in Sources */,
 				55D175632ABC2D6600DD3C8F /* InitializeAppOnboardingView.swift in Sources */,
 				551456992B47E399009C5E7E /* MenubarCommands.swift in Sources */,
 				55A410462ADD64CE00996105 /* DiagnosticViewModel.swift in Sources */,
@@ -465,7 +485,6 @@
 				55A4104C2ADDBA4200996105 /* WelcomeView.swift in Sources */,
 				55D1755D2ABC2C3C00DD3C8F /* SidebarView.swift in Sources */,
 				551918F22AF393C200B93430 /* SideBarPluginView.swift in Sources */,
-				55A15B882ABD920C00248B0B /* UnsavedChangesTip.swift in Sources */,
 				55907DEB2AC5909200857AD1 /* SideBarServerView.swift in Sources */,
 				5514564E2B45ACA5009C5E7E /* PrivacyAlertView.swift in Sources */,
 				55A410402ADD58DF00996105 /* SettingsViewModel.swift in Sources */,
@@ -473,6 +492,7 @@
 				55D1755F2ABC2C7C00DD3C8F /* AppNavigationSplitView.swift in Sources */,
 				55907DED2AC590A900857AD1 /* SideBarServerViewModel.swift in Sources */,
 				551918F42AF393CF00B93430 /* SideBarPluginViewModel.swift in Sources */,
+				55CBE21A2B6A5B7D00A330F0 /* CheckForUpdates.swift in Sources */,
 				5557F2852B074456008957B1 /* Documentation.docc in Sources */,
 				55A410492ADDB5D500996105 /* OnboardingView.swift in Sources */,
 				55A4103E2ADD58D500996105 /* SettingsView.swift in Sources */,
@@ -638,12 +658,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = MockingStar/MockingStar.entitlements;
+				CODE_SIGN_ENTITLEMENTS = MockingStar/MockingStarDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"MockingStar/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
@@ -653,7 +673,7 @@
 				INFOPLIST_FILE = MockingStar/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MockingStar;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Trendyol Tech";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -681,7 +701,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"MockingStar/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
@@ -692,7 +712,7 @@
 				INFOPLIST_FILE = MockingStar/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MockingStar;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Trendyol Tech";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -840,6 +860,17 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		55CBE2152B6A595D00A330F0 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		5557F2702B074077008957B1 /* DiffEditor */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -880,6 +911,11 @@
 		5557F2822B074166008957B1 /* PluginCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PluginCore;
+		};
+		55CBE2162B6A595D00A330F0 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 55CBE2152B6A595D00A330F0 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

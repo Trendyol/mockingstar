@@ -47,6 +47,13 @@ public final class LogStorage {
             }
             .store(in: &cancellables)
     }
+
+    public func stdOut() {
+        loggerStream
+            .receive(on: DispatchQueue.global())
+            .sink { print("\($0.date.formatted(.iso8601)) \($0.severity.rawValue) \($0.message)") }
+            .store(in: &cancellables)
+    }
 }
 
 public enum LogSeverity: String, CaseIterable {

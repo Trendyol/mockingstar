@@ -1,15 +1,8 @@
 name:  Release App
 
 on:
-  push:
-    tags:
-      - "*"
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version Tag'     
-        required: true
-        default: '1.0.0-1'
+  release:
+    types: [published]
 
 jobs:
   test:
@@ -36,10 +29,8 @@ jobs:
         ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
         ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         ASC_KEY: ${{ secrets.ASC_KEY }}
-        VERSION: ${{ env.RELEASE_VERSION }}
-
-    - name: Create Zip
-      run: cd ./.build/appBuildOutput && zip -r MockingStar-App.zip MockingStar.app
+        VERSION: ${{ github.event.release.tag_name }}
+        RELEASE_NOTES: ${{ github.event.release.body }}
 
     - name: Create a Release
       uses: ncipollo/release-action@v1

@@ -23,7 +23,7 @@ struct InitialSettingsView: View {
                 TitleView()
 
                 InformationDetailView(title: "Folders for Mocks",
-                                      subTitle: "You can select a folder for mocks or app will use own documents folder. You can change any time",
+                                      subTitle: "You can select a folder for mocks or app will use own documents folder. You can change any time.",
                                       imageName: "plus.rectangle.on.folder.fill")
 
                 Spacer(minLength: 30)

@@ -8,6 +8,7 @@
 import CommonKit
 import CommonViewsKit
 import SwiftUI
+import TipKit
 
 public struct MockPathConfigurations: View {
     @Bindable var viewModel: MockDomainConfigsViewModel
@@ -84,6 +85,8 @@ public struct MockPathConfigurations: View {
                         .buttonStyle(.plain)
                     }
                 }
+
+                TipView(PathConfigsTip())
             }
         }
         .toolbar {
@@ -120,4 +123,20 @@ public struct MockPathConfigurations: View {
 
 #Preview {
     MockPathConfigurations(viewModel: .init())
+}
+
+struct PathConfigsTip: Tip {
+    var title: Text {
+        Text("Path Configurations")
+    }
+
+    var message: Text? {
+        Text("Mocking Star uses exact matching of request paths to determine mocks. \nHowever, there are cases where path components can be ignored. Path Configurations allow you to modify the path matching style.")
+    }
+
+    var actions: [Action] {
+        Action(title: "Open Documentations") {
+            NSWorkspace.shared.open(URL(string: "https://github.com/Trendyol/mockingstar")!)
+        }
+    }
 }

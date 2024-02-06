@@ -15,6 +15,7 @@ import MockingStarCore
 private extension MenubarCommands {
     enum Constant {
         static let githubURL = URL(string: "https://github.com/Trendyol/mockingstar")!
+        static let githubIssuesURL = URL(string: "https://github.com/Trendyol/mockingstar/issues")!
     }
 }
 
@@ -51,6 +52,12 @@ struct MenubarCommands: Commands {
 
             Link("Source Code", destination: Constant.githubURL)
             Link("Documentation", destination: Constant.githubURL)
+            Link("Bug Report", destination: Constant.githubIssuesURL)
+
+            Button("Mocking Star Playground") {
+                @Environment(\.openWindow) var openWindow
+                openWindow(id: "quick-demo")
+            }
         }
     }
 }

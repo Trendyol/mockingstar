@@ -4,13 +4,22 @@
     "" : {
 
     },
+    "1- Tap Send Request button\n2- Return Mocking Star app window\n3- Find and edit mock\n4- Return playground and tap Send Request button and see changes" : {
+
+    },
     "App" : {
+
+    },
+    "Bug Report" : {
 
     },
     "Change Path" : {
 
     },
     "Check" : {
+
+    },
+    "Check for Updates…" : {
 
     },
     "Continue" : {
@@ -25,7 +34,13 @@
     "For your privacy" : {
 
     },
+    "Menubar Actions" : {
+
+    },
     "Mock Domains" : {
+
+    },
+    "Mocking Star Playground" : {
 
     },
     "MockingStar" : {
@@ -35,6 +50,9 @@
 
     },
     "Plugins" : {
+
+    },
+    "Quick Demo" : {
 
     },
     "Reload All Domains" : {
@@ -47,6 +65,9 @@
 
     },
     "Select Folder" : {
+
+    },
+    "Send Request" : {
 
     },
     "SENSITIVE_INFO_ALERT" : {
@@ -68,7 +89,16 @@
     "Source Code" : {
 
     },
-    "Unsaved changes" : {
+    "Test Mocking Star without client." : {
+
+    },
+    "To refresh Domain or Mock list, you can click on **Mocking Star** or **Mocks** from the Menubar and tap refresh." : {
+
+    },
+    "To report any issues, you can use the \"Bug Report\" section located under the \"Help\" menu in the menubar." : {
+
+    },
+    "URL: https://api.github.com/search/repositories?q=Apple" : {
 
     },
     "Use Default Folder" : {
@@ -78,9 +108,6 @@
 
     },
     "Working" : {
-
-    },
-    "You can save or discard them" : {
 
     }
   },

@@ -9,11 +9,21 @@ import CommonKit
 import CommonViewsKit
 import JSONEditor
 import MockingStarCore
+import Sparkle
 import SwiftUI
 import TipKit
 
 @main
 struct MockingStarApp: App {
+    private let updaterController: SPUStandardUpdaterController
+
+    init() {
+        try? Tips.configure([
+            .datastoreLocation(.applicationDefault),
+        ])
+        updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+    }
+
     var body: some Scene {
         WindowGroup {
             AppNavigationSplitView()
@@ -21,20 +31,22 @@ struct MockingStarApp: App {
                 .environment(MockDomainDiscover())
                 .environment(NotificationManager.shared)
                 .task {
-                    try? Tips.configure([
-                        .displayFrequency(.immediate),
-                        .datastoreLocation(.applicationDefault)
-                    ])
-                }
-                .task {
                     await MainActor.run {
                         JSONEditorView.warmUp()
                     }
                 }
         }
+        .defaultSize(width: (NSScreen.main?.visibleFrame.size.width ?? 1000) / 1.5, height: (NSScreen.main?.visibleFrame.size.height ?? 600) / 1.5)
         .commands {
             SidebarCommands()
             MenubarCommands()
+            CommandGroup(after: .appInfo) {
+                CheckForUpdatesView(updater: updaterController.updater)
+            }
+        }
+
+        Window("Mocking Star Playground", id: "quick-demo") {
+            QuickDemo()
         }
 
         Settings {

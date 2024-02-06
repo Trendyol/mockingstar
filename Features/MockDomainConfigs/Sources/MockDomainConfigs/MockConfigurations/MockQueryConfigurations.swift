@@ -7,6 +7,7 @@
 
 import CommonViewsKit
 import SwiftUI
+import TipKit
 
 public struct MockQueryConfigurations: View {
     @Bindable var viewModel: MockDomainConfigsViewModel
@@ -110,6 +111,8 @@ public struct MockQueryConfigurations: View {
                         .buttonStyle(.plain)
                     }
                 }
+
+                TipView(QueryConfigsTip())
             }
         }
         .toolbar {
@@ -146,4 +149,20 @@ public struct MockQueryConfigurations: View {
 
 #Preview {
     MockQueryConfigurations(viewModel: .init())
+}
+
+struct QueryConfigsTip: Tip {
+    var title: Text {
+        Text("Query Configurations")
+    }
+
+    var message: Text? {
+        Text("Mocking Star ignores all queries normally. If there is a important keys only given request, you can change this rule.")
+    }
+
+    var actions: [Action] {
+        Action(title: "Open Documentations") {
+            NSWorkspace.shared.open(URL(string: "https://github.com/Trendyol/mockingstar")!)
+        }
+    }
 }

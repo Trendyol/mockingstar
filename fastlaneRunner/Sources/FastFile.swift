@@ -80,6 +80,7 @@ extension MockingStarFastFile {
                     xcargs: "CODE_SIGN_STYLE=Manual",
                     xcodebuildFormatter: "xcpretty")
 
+        print("Notarize App")
 
         notarize(package: "./.build/appBuildOutput/MockingStar.app",
                  useNotarytool: false,
@@ -89,6 +90,12 @@ extension MockingStarFastFile {
                     "key_id": environmentVariable(get: "ASC_KEY_ID"),
                     "issuer_id": environmentVariable(get: "ASC_ISSUER_ID"),
                  ]))
+
+        print("Archive")
+        sh(command: "ditto -c -k --sequesterRsrc --keepParent ./.build/appBuildOutput/MockingStar.app ./.build/appBuildOutput/MockingStar-App.zip",
+           log: false)
+
+        SparkleActions().updateSparkleChangeLogs()
     }
 
     func releaseCLILane() {
@@ -147,6 +154,7 @@ extension MockingStarFastFile {
         let certificate = environmentVariable(get: "CERT")
         let profile = environmentVariable(get: "PROFILE")
         let ascKey = environmentVariable(get: "ASC_KEY")
+        let sparkleKey = environmentVariable(get: "SPARKLE_PRIVATE_KEY")
 
         FileManager.default.createFile(atPath: "./certs/MockingStarCert.p12",
                                        contents: Data(base64Encoded: certificate))
@@ -156,6 +164,9 @@ extension MockingStarFastFile {
 
         FileManager.default.createFile(atPath: "./certs/ASCKEY.p8",
                                        contents: Data(base64Encoded: ascKey))
+
+        FileManager.default.createFile(atPath: "./certs/Sparkle.key",
+                                       contents: Data(base64Encoded: sparkleKey))
     }
 
     func cleanKeychain() {
@@ -168,5 +179,6 @@ extension MockingStarFastFile {
         try? FileManager.default.removeItem(atPath: "./certs/MockingStarCert.p12")
         try? FileManager.default.removeItem(atPath: "./certs/Direct_com.trendyol.MockingStar.provisionprofile")
         try? FileManager.default.removeItem(atPath: "./certs/ASCKEY.p8")
+        try? FileManager.default.removeItem(atPath: "./certs/Sparkle.key")
     }
 }

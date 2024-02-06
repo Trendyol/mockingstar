@@ -5,8 +5,8 @@
 //  Created by Yusuf Özgül on 16.10.2023.
 //
 
-import SwiftUI
 import CommonKit
+import SwiftUI
 
 struct SettingsView: View {
     @Bindable private var viewModel = SettingsViewModel()

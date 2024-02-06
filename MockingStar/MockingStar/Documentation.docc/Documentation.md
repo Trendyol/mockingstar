@@ -24,6 +24,7 @@ Mocking Star is a powerful request mocking tool designed to simplify the process
     - <doc:GettingStarted>
     - <doc:MeetPlugins>
     - <doc:Configurations>
+    - <doc:MockingStarCLI>
 }
 
 

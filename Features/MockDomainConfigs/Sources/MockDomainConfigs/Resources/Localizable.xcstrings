@@ -37,10 +37,25 @@
     "id" : {
 
     },
+    "In the app-wide configurations, instead of writing the entire path, you can enable the usage of configurations based on a minimum path matching ratio starting from the end. This means that if there is a minimum match ratio of paths from the end, the configuration will be used." : {
+
+    },
     "Key" : {
 
     },
     "Mock Configurations" : {
+
+    },
+    "Mock Filter" : {
+
+    },
+    "Mocking Star ignores all headers normally. If there is a important keys only given request, you can change this rule." : {
+
+    },
+    "Mocking Star ignores all queries normally. If there is a important keys only given request, you can change this rule." : {
+
+    },
+    "Mocking Star uses exact matching of request paths to determine mocks. \nHowever, there are cases where path components can be ignored. Path Configurations allow you to modify the path matching style." : {
 
     },
     "New" : {
@@ -80,6 +95,9 @@
 
     },
     "Value" : {
+
+    },
+    "When saving a new mock, filter check is performed to determine whether mock should be saved. This filter check allows you to configure whether a mock should be saved or not. If there are multiple filters, having at least one filter that matches is sufficient for to be saved." : {
 
     }
   },

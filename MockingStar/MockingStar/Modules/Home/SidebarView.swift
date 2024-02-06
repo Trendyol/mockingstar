@@ -9,6 +9,7 @@ import CommonKit
 import CommonViewsKit
 import MockingStarCore
 import SwiftUI
+import TipKit
 
 struct SidebarView: View {
     @Environment(MockDomainDiscover.self) private var domainDiscover: MockDomainDiscover
@@ -49,6 +50,10 @@ struct SidebarView: View {
             }
 
             SideBarPluginView()
+            TipView(QuickDemoTip())
+            Spacer()
+            TipView(MenubarItemsTip())
+            TipView(BugReport())
         }
         .task { try? await reloadMockDomains() }
         .onReceive(NotificationCenter.default.publisher(for: .reloadMockDomains)) { _ in
@@ -99,5 +104,54 @@ struct SideBarConfigsView: View {
             .onHover { isHovering in
                 withAnimation { self.isHovering = isHovering }
             }
+    }
+}
+
+struct MenubarItemsTip: Tip {
+    var title: Text {
+        Text("Menubar Actions")
+    }
+
+    var message: Text? {
+        Text("To refresh Domain or Mock list, you can click on **Mocking Star** or **Mocks** from the Menubar and tap refresh.")
+    }
+
+    var image: Image? {
+        Image(systemName: "arrow.clockwise")
+    }
+}
+
+struct QuickDemoTip: Tip {   
+    var title: Text {
+        Text("Quick Demo")
+    }
+
+    var message: Text? {
+        Text("Test Mocking Star without client.")
+    }
+
+    var image: Image? {
+        Image(systemName: "testtube.2")
+    }
+
+    var actions: [Action] {
+        Action(title: "Open Playground") {
+            @Environment(\.openWindow) var openWindow
+            openWindow(id: "quick-demo")
+        }
+    }
+}
+
+struct BugReport: Tip {
+    var title: Text {
+        Text("Bug Report")
+    }
+
+    var message: Text? {
+        Text(#"To report any issues, you can use the "Bug Report" section located under the "Help" menu in the menubar."#)
+    }
+
+    var image: Image? {
+        Image(systemName: "ladybug.fill")
     }
 }

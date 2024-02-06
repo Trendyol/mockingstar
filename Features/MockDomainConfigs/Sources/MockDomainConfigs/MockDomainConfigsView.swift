@@ -8,6 +8,7 @@
 import CommonKit
 import CommonViewsKit
 import SwiftUI
+import TipKit
 
 public struct MockDomainConfigsView: View {
     @Bindable var viewModel: MockDomainConfigsViewModel
@@ -77,6 +78,8 @@ public struct MockDomainConfigsView: View {
                     VStack {
                         TextField(value: $viewModel.appFilterConfigs.pathMatchingRatio, format: .number, label: EmptyView.init)
                         Slider(value: $viewModel.appFilterConfigs.pathMatchingRatio, in: 0...1)
+
+                        TipView(PathMatchingRatioTip())
                     }
                 }
 
@@ -108,6 +111,8 @@ public struct MockDomainConfigsView: View {
                         }
                     }
                 }
+
+                TipView(MockFilterTip())
 
                 Spacer()
             }
@@ -189,5 +194,33 @@ struct MockDomainConfigsMockFilterView: View {
             }
         }
         .padding(.bottom, 8)
+    }
+}
+
+struct MockFilterTip: Tip {
+    var title: Text {
+        Text("Mock Filter")
+    }
+
+    var message: Text? {
+        Text("When saving a new mock, filter check is performed to determine whether mock should be saved. This filter check allows you to configure whether a mock should be saved or not. If there are multiple filters, having at least one filter that matches is sufficient for to be saved.")
+    }
+
+    var image: Image? {
+        Image(systemName: "camera.filters")
+    }
+}
+
+struct PathMatchingRatioTip: Tip {
+    var title: Text {
+        Text("Path Matching Ratio")
+    }
+
+    var message: Text? {
+        Text("In the app-wide configurations, instead of writing the entire path, you can enable the usage of configurations based on a minimum path matching ratio starting from the end. This means that if there is a minimum match ratio of paths from the end, the configuration will be used.")
+    }
+
+    var image: Image? {
+        Image(systemName: "slider.horizontal.below.square.filled.and.square")
     }
 }

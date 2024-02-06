@@ -21,10 +21,10 @@ struct MockingStar: ParsableCommand {
             commandName: "start",
             abstract: "Start mock server")
 
-        @Option(name: .shortAndLong, help: "Custom logs folder")
+        @Option(name: .shortAndLong, help: "Logs folder")
         var logsFolder: String? = nil
 
-        @Option(name: .shortAndLong, help: "Custom port (default 8008)")
+        @Option(name: .shortAndLong, help: "HTTP Server Port")
         var port: UInt16 = 8008
 
         @Argument(help: "Mocks folder path")
@@ -38,6 +38,7 @@ struct MockingStar: ParsableCommand {
                 LogStorage.shared.writeToFile(logsFolder)
             }
 
+            LogStorage.shared.stdOut()
             let server = HTTPServer(port: port)
             server.startServer()
 
