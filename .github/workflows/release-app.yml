@@ -33,12 +33,6 @@ jobs:
         RELEASE_NOTES: ${{ github.event.release.body }}
         SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
 
-    - name: Push Appcast.xml
-      run: |
-        git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-        git config --global user.email "${{ env.CI_COMMIT_EMAIL }}"
-        git push
-
     - name: Create a Release
       uses: ncipollo/release-action@v1
       with:
