@@ -66,6 +66,6 @@ final class SparkleActions {
         }
 
         gitCommit(path: ["Appcast.xml"], message: "Release version \(versionTag)! 🎉")
-        pushToGitRemote(remoteBranch: "origin/main")
+        pushToGitRemote(remoteBranch: "main")
     }
 }
