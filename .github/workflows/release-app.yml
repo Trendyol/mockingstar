@@ -35,9 +35,7 @@ jobs:
 
     - name: Push Appcast.xml
       run: |
-        git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-        git config --global user.email "${{ env.CI_COMMIT_EMAIL }}"
-        git push
+        git push origin HEAD:main
 
     - name: Create a Release
       uses: ncipollo/release-action@v1
