@@ -2,6 +2,21 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
         <title>MockingStar</title>
+        <item>
+            <title>Version 1.0.0</title>
+            <description>
+                <![CDATA[
+Initial Release
+                ]]>
+            </description>
+            <pubDate>Çar, 7 Şub 2024 15:13:20 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/1.0.0-1/MockingStar-App.zip"
+            sparkle:version="1" sparkle:shortVersionString="1.0.0"
+            sparkle:edSignature="DTmvZ4NOFoaIVLIgXurj79kyYgntB/w/0VsFlCFGxv10knV6eNUw90m7lwtujmO+cR21wMxayFFbtHGrVKzOBQ==" length="4281995"
+            type="application/octet-stream"/>
+        </item>
+
 
     </channel>
 </rss>
