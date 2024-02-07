@@ -39,3 +39,7 @@ Browse the documentation to explore Mocking Star, integrate it into your project
 ### Optimizing UI Testing Efficiency at Trendyol iOS App:
 [Trendyol iOS](https://apps.apple.com/tr/app/trendyol-fashion-trends/id524362642?l=en) Application has nearly 1000 UI tests running with Mocking Star. 
 Our UI tests are executed approximately 20k times every day, and Mocking Star handles approximately 1 million requests.
+
+## License
+
+This application is released under the MIT license. See [LICENSE](LICENSE) for details.
