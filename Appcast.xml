@@ -3,6 +3,23 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 1.0.0</title>
+            <description>
+                <![CDATA[
+- Added TipKit
+- Fix UI bugs
+**Full Changelog**: https://github.com/Trendyol/mockingstar/compare/1.0.0-1...1.0.0-2
+                ]]>
+            </description>
+            <pubDate>Çar, 7 Şub 2024 14:27:47 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/1.0.0-2/MockingStar-App.zip"
+            sparkle:version="2" sparkle:shortVersionString="1.0.0"
+            sparkle:edSignature="pbm9gwOyYzAhhmKRXFjQOf/hr4woy478VL9FxxJlcTUo4X7jQjZNwM5xMRyuGUjtoMjrraFMbT1cNOejpvDQCg==" length="4282028"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>1.0.0</title>
             <description>
                 <![CDATA[
