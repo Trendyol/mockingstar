@@ -31,6 +31,7 @@ jobs:
         ASC_KEY: ${{ secrets.ASC_KEY }}
         VERSION: ${{ github.event.release.tag_name }}
         RELEASE_NOTES: ${{ github.event.release.body }}
+        SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
 
     - name: Create a Release
       uses: ncipollo/release-action@v1

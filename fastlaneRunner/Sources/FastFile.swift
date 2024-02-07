@@ -149,6 +149,8 @@ extension MockingStarFastFile {
         } else {
             try? FileManager.default.removeItem(atPath: "./certs/MockingStarCert.p12")
             try? FileManager.default.removeItem(atPath: "./certs/AppStore_com.trendyol.MockingStar.provisionprofile")
+            try? FileManager.default.removeItem(atPath: "./certs/ASCKEY.p8")
+            try? FileManager.default.removeItem(atPath: "./certs/Sparkle.key")
         }
 
         let certificate = environmentVariable(get: "CERT")
