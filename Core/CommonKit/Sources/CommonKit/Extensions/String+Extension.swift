@@ -19,10 +19,15 @@ public extension Optional<String> {
 
 public extension String {
     var encodedUrlPathValue: String {
-        self
+        var characterSet: CharacterSet = .alphanumerics
+        characterSet.insert("-")
+        characterSet.insert("_")
+        characterSet.insert("+")
+
+        return self
             .components(separatedBy: "/")
             .drop(while: \.isEmpty)
-            .compactMap { $0.addingPercentEncoding(withAllowedCharacters: .alphanumerics) }
+            .compactMap { $0.addingPercentEncoding(withAllowedCharacters: characterSet) }
             .joined(separator: "/")
     }
 }

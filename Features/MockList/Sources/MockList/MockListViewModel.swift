@@ -75,7 +75,7 @@ public final class MockListViewModel {
 
             let filteredMocks = mockModelList.filter {
                 let filterFields: [String] = switch filterType {
-                case .all: [$0.metaData.url.path(), $0.metaData.url.query(), $0.metaData.scenario, $0.metaData.method].compactMap { $0 }
+                case .all: [$0.metaData.url.path(), $0.metaData.url.query(), $0.metaData.scenario, $0.metaData.method, $0.id].compactMap { $0 }
                 case .path: [$0.metaData.url.path()]
                 case .query: [$0.metaData.url.query()].compactMap { $0 }
                 case .scenario: [$0.metaData.scenario]
@@ -115,8 +115,8 @@ public final class MockListViewModel {
     
     func deleteSelectedMocks() {
         for select in selected {
-            guard let mock = mock(id: select), let filePath = mock.fileURL?.path(percentEncoded: false) else { return }
-            
+            guard let mock = mock(id: select), let filePath = mock.fileURL?.path(percentEncoded: false) else { continue }
+
             do {
                 try fileManager.removeFile(at: filePath)
             } catch {

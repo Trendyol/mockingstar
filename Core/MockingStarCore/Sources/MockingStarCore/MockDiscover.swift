@@ -18,6 +18,7 @@ public protocol MockDiscoverInterface {
 }
 
 public final class MockDiscover: MockDiscoverInterface {
+    private let logger = Logger(category: "MockDiscover")
     public private(set) var mockDomain: String = ""
     public let mockListSubject = CurrentValueSubject<Set<MockModel>?, Never>([])
     private let fileManager: FileManagerInterface
@@ -47,7 +48,11 @@ public final class MockDiscover: MockDiscoverInterface {
     /// - Parameter mockDomain: The new mock domain to be set.
     /// - Throws: If any error occurs during the process, it is thrown.
     public func updateMockDomain(_ mockDomain: String) async throws {
-        guard !mockDomain.isEmpty && self.mockDomain != mockDomain || mocks.isEmpty else { return }
+        logger.debug("update mock domain: \(mockDomain)")
+        guard !mockDomain.isEmpty && self.mockDomain != mockDomain || mocks.isEmpty else {
+            logger.notice("update mock domain: \(mockDomain), not necessary.")
+            return
+        }
 
         self.mockDomain = mockDomain
         mocks.removeAll()
@@ -88,8 +93,8 @@ public final class MockDiscover: MockDiscoverInterface {
 
         let mockAvailableFolders = fileManager.enumerator(at: url,
                                                           includingPropertiesForKeys: nil,
-                                                          options: [.skipsHiddenFiles, .skipsPackageDescendants]) { url, error in
-            print("MockDiscover enumerator error: \(error)")
+                                                          options: [.skipsHiddenFiles, .skipsPackageDescendants]) { [weak self] url, error in
+            self?.logger.critical("Mock Discover enumerator failed: \(error.localizedDescription)")
             return false
         }?
             .compactMap { $0 as? URL }
@@ -114,7 +119,10 @@ public final class MockDiscover: MockDiscoverInterface {
             return loadedMocks
         }
 
-        guard self.mocks.map(\.id).sorted() != mocks.map(\.id).sorted() || mocks.isEmpty else { return }
+        guard self.mocks.map(\.id).sorted() != mocks.map(\.id).sorted() || mocks.isEmpty else {
+            logger.info("Mocks Loaded and not changed.")
+            return
+        }
         self.mocks = Set(mocks)
         mockListSubject.send(self.mocks)
     }
@@ -146,7 +154,7 @@ public final class MockDiscover: MockDiscoverInterface {
     ///
     /// - Parameter url: The URL of the changed mock file.
     private func mockChanged(url: URL) {
-        let filePath = url.path(percentEncoded: false).replacingOccurrences(of: "%E2%80%A2", with: "_")
+        let filePath = url.path(percentEncoded: false)
         let isFileExist = fileManager.fileExist(atPath: filePath)
         let fileURL = URL(filePath: filePath)
 
@@ -157,7 +165,7 @@ public final class MockDiscover: MockDiscoverInterface {
                     mocks.insert(mock)
                 }
             } catch {
-                print("MockDiscover mockChanged error: \(error)")
+                logger.error("MockDiscover mockChanged error: \(error)")
             }
         } else {
             mocks = mocks.filter { $0.fileURL?.path(percentEncoded: false) != fileURL.path(percentEncoded: false) }

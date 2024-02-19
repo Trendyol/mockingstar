@@ -12,6 +12,7 @@ import SwiftUI
 
 @Observable
 public final class MockDomainDiscover {
+    private let logger = Logger(category: "MockDomainDiscover")
     public var domains: [String] = []
     private let fileManager: FileManagerInterface
     private var watcher: DirectoryMonitorInterface!
@@ -31,10 +32,11 @@ public final class MockDomainDiscover {
         guard let url: URL = try? fileUrlBuilder.domainsFolderUrl(), !isWatcherStarted else { return }
         watcher.startMonitoring(url: url) { [weak self] in
             Task { [weak self] in
+                guard let self else { return }
                 do {
-                    try await self?.startDomainDiscovery()
+                    try await startDomainDiscovery()
                 } catch {
-                    print("ERROR: MockDomainDiscover: \(error)")
+                    logger.fault("ERROR: MockDomainDiscover: \(error)")
                 }
             }
         }
@@ -58,6 +60,8 @@ public final class MockDomainDiscover {
         let domains = domainFolders
             .filter { $0.hasDirectoryPath }
             .map(\.lastPathComponent)
+
+        logger.info("Available domain count: \(domains.count)")
 
         startWatcher()
 

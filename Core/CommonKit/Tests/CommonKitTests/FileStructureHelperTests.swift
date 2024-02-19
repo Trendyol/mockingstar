@@ -39,12 +39,10 @@ final class FileStructureHelperTests: XCTestCase {
         XCTAssertTrue(fileManager.invokedFileOrDirectoryExists)
         XCTAssertTrue(fileManager.invokedCreateDirectory)
         XCTAssertEqual(fileManager.invokedFileOrDirectoryExistsParametersList.map(\.path), ["/MockServer/Domains",
-                                                                                            "/MockServer/Plugins",
-                                                                                            "/MockServer/TemplateConfigs"])
+                                                                                            "/MockServer/Plugins"])
         XCTAssertEqual(fileManager.invokedCreateDirectoryParametersList.map(\.url.absoluteString), ["file:///MockServer/Domains",
-                                                                                                    "file:///MockServer/Plugins",
-                                                                                                    "file:///MockServer/TemplateConfigs"])
-        XCTAssertEqual(fileManager.invokedCreateDirectoryParametersList.map(\.createIntermediates), [true, true, true])
+                                                                                                    "file:///MockServer/Plugins"])
+        XCTAssertEqual(fileManager.invokedCreateDirectoryParametersList.map(\.createIntermediates), [true, true])
     }
 
     func test_createFileStructure_FileExist_CreateFolders() throws {
@@ -58,12 +56,10 @@ final class FileStructureHelperTests: XCTestCase {
         XCTAssertTrue(fileManager.invokedFileOrDirectoryExists)
         XCTAssertTrue(fileManager.invokedCreateDirectory)
         XCTAssertEqual(fileManager.invokedFileOrDirectoryExistsParametersList.map(\.path), ["/MockServer/Domains",
-                                                                                            "/MockServer/Plugins",
-                                                                                            "/MockServer/TemplateConfigs"])
+                                                                                            "/MockServer/Plugins"])
         XCTAssertEqual(fileManager.invokedCreateDirectoryParametersList.map(\.url.absoluteString), ["file:///MockServer/Domains",
-                                                                                                    "file:///MockServer/Plugins",
-                                                                                                    "file:///MockServer/TemplateConfigs"])
-        XCTAssertEqual(fileManager.invokedCreateDirectoryParametersList.map(\.createIntermediates), [true, true, true])
+                                                                                                    "file:///MockServer/Plugins"])
+        XCTAssertEqual(fileManager.invokedCreateDirectoryParametersList.map(\.createIntermediates), [true, true])
     }
 
     func test_createFileStructure_FolderExist_CreateFolders() throws {
@@ -79,7 +75,6 @@ final class FileStructureHelperTests: XCTestCase {
         XCTAssertEqual(fileManager.invokedFileOrDirectoryExistsParametersList.map(\.path), [
             "/MockServer/Domains",
             "/MockServer/Plugins",
-            "/MockServer/TemplateConfigs"
         ])
     }
 
@@ -154,8 +149,7 @@ final class FileStructureHelperTests: XCTestCase {
 
         XCTAssertTrue(fileManager.invokedFileOrDirectoryExists)
         XCTAssertEqual(fileManager.invokedFileOrDirectoryExistsParametersList.map(\.path), ["/MockServer/Domains",
-                                                                                            "/MockServer/Plugins",
-                                                                                            "/MockServer/TemplateConfigs"])
+                                                                                            "/MockServer/Plugins"])
     }
 
     func test_fileStructureCheck_ReturnFalse() {

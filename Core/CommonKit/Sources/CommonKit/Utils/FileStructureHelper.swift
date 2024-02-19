@@ -56,7 +56,6 @@ public final class FileStructureHelper {
     private let folderPaths: [String] = [
         "Domains",
         "Plugins",
-        "TemplateConfigs",
     ]
     private let domainFolderPaths: [String] = [
         "Domains/%@/Mocks",
