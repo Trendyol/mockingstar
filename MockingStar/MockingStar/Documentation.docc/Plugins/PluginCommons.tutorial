@@ -29,7 +29,9 @@
     
     @Section(title: "Plugin Utils") {
         @ContentAndMedia {
-            All plugins have a `util` variable, which provides more functionality for plugins. Currently, it only has HTTP request support.
+            All plugins have a `util` variable, which provides more functionality for plugins. Currently, it only has HTTP request and logging support.
+            
+            Severity: `debug`, `info`, `notice`, `warning`, `error`, `critical`, `fault`
         }
         
         @Steps {

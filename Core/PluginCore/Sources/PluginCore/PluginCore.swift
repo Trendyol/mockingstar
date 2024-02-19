@@ -1,8 +1,9 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
-import Foundation
 import CommonKit
+import Foundation
+import JavaScriptCore
 
 public protocol PluginInterface {
     func configAvailablePlugins() -> [ConfigurablePluginModel]
@@ -177,7 +178,7 @@ extension Plugin: PluginInterface {
         plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
 
         if let configs = storage[.requestReloader]?.wrappedValue {
-            try plugin.setConfig(configs)
+            try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
         }
 
         return try plugin.updateRequest(request: request)
@@ -194,7 +195,7 @@ extension Plugin: PluginInterface {
         plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
 
         if let configs = storage[.liveRequestUpdater]?.wrappedValue {
-            try plugin.setConfig(configs)
+            try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
         }
 
         return try plugin.updateRequest(request: request)
@@ -211,7 +212,7 @@ extension Plugin: PluginInterface {
         plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
 
         if let configs = storage[.mockError]?.wrappedValue {
-            try plugin.setConfig(configs)
+            try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
         }
 
         return try plugin.defaultResponseModel(message: message)
@@ -228,7 +229,7 @@ extension Plugin: PluginInterface {
         plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
 
         if let configs = storage[.mockDetailMessages]?.wrappedValue {
-            try plugin.setConfig(configs)
+            try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
         }
 
         return try plugin.mockDetailMessages(path: mock.metaData.url.path(percentEncoded: false),
@@ -250,9 +251,23 @@ extension Plugin: PluginInterface {
         plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
 
         if let configs = storage[.mockDetailMessages]?.wrappedValue {
-            try plugin.setConfig(configs)
+            try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
         }
 
         return try await plugin.asyncMockDetailMessages(mock: mock)
+    }
+
+    private func filterConfigs(storageConfigs: [PluginConfiguration], defaultConfigs: [PluginConfiguration]) -> [PluginConfiguration] {
+        var defaultConfigs = defaultConfigs
+
+        for (index, defaultConfig) in defaultConfigs.enumerated() {
+            if let value = storageConfigs.first(where: { $0.key == defaultConfig.key })?.value {
+                defaultConfigs[index] = .init(key: defaultConfig.key,
+                                              valueType: defaultConfig.valueType,
+                                              value: value)
+            }
+        }
+
+        return defaultConfigs
     }
 }

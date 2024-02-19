@@ -6,6 +6,7 @@
 //
 
 import AnyCodable
+import CommonKit
 import Foundation
 import JSValueCoder
 import JavaScriptCore
@@ -13,10 +14,12 @@ import JavaScriptCore
 @objc
 protocol PluginUtilJSExport: JSExport {
     func urlRequest(_ url: String, _ headers: String, _ method: String, _ body: String) -> JSURLRequestResponse
+    func log(_ message: String, _ severity: String)
 }
 
 @objc
 class PluginsUtil: NSObject, PluginUtilJSExport {
+    private let logger = Logger(category: "PluginsUtil")
     private weak var context: JSContext?
 
     init(context: JSContext?) {
@@ -31,6 +34,7 @@ class PluginsUtil: NSObject, PluginUtilJSExport {
     ///   - body: String presented http body
     /// - Returns: Response Model ``JSURLRequestResponse``
     func urlRequest(_ url: String, _ headers: String, _ method: String, _ body: String) -> JSURLRequestResponse {
+        logger.info("Plugin sending request to: \(url)")
         let semaphore = DispatchSemaphore(value: 0)
         let jsResponse = JSURLRequestResponse(body: .init(), headers: [:], error: "")
 
@@ -63,6 +67,25 @@ class PluginsUtil: NSObject, PluginUtilJSExport {
         semaphore.wait()
 
         return jsResponse
+    }
+
+    func log(_ message: String, _ severity: String) {
+        switch LogSeverity(rawValue: severity) ?? .info {
+        case .debug:
+            logger.debug(message)
+        case .info:
+            logger.info(message)
+        case .notice:
+            logger.notice(message)
+        case .warning:
+            logger.warning(message)
+        case .error:
+            logger.error(message)
+        case .critical:
+            logger.critical(message)
+        case .fault:
+            logger.fault(message)
+        }
     }
 }
 
