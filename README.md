@@ -13,8 +13,8 @@ Mocking Star is a powerful request mocking tool designed to simplify the process
 
 You can download the latest version at the following link:
 
-[Download Latest Version of App](https://github.com/Trendyol/mockingstar/releases/latest)
-[Download Latest Version of CLI](https://github.com/Trendyol/mockingstar/releases/latest)
+- [Mocking Star macOS App](https://github.com/Trendyol/mockingstar/releases/latest) <br>
+- [Mocking Star CLI](https://github.com/Trendyol/mockingstar/releases/latest)
 
 The latest binary can also be found on the releases page or clone and compile in Xcode.
 
@@ -24,6 +24,7 @@ The latest binary can also be found on the releases page or clone and compile in
 - **Modifying Requests**: Modify intercepted requests to test different edge cases, allowing you to assess your application's performance under different conditions.
 - **Debugging Support**: Use Mocking Star to debug your network requests on your mac.
 - **UI Testing**: Integrate Mocking Star into your UI tests, creating a reliable and controlled testing environment to validate your mobile application's functionality.
+- **Plugins**: Write your own plugins and extend functionality.
 
 ## Integrate with your project
 
