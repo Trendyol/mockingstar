@@ -6,6 +6,26 @@
             <title>Version 1.0.0</title>
             <description>
                 <![CDATA[
+## What's Changed
+* Add logging support for plugins by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/5
+* Bug Fixes - File Template Improvements by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/6
+
+
+**Full Changelog**: https://github.com/Trendyol/mockingstar/compare/1.0.0-1...1.0.0-2
+                ]]>
+            </description>
+            <pubDate>Sal, 20 Şub 2024 09:46:03 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/1.0.0-2/MockingStar-App.zip"
+            sparkle:version="2" sparkle:shortVersionString="1.0.0"
+            sparkle:edSignature="xkANfGTmrfnMi3ubIZARwlIw+6H61h15U7gNkYqQHONyphhN0UgOy1uefuisX0w74BafRyC/KPioU8Ly6JuzCQ==" length="4285341"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
+            <title>Version 1.0.0</title>
+            <description>
+                <![CDATA[
 Initial Release
                 ]]>
             </description>
