@@ -95,6 +95,7 @@ public struct MockHeaderConfigurations: View {
                             .background(Color.accentColor)
                             .clipShape(.rect(cornerRadius: 10))
                     }
+                    .disabled(key.isEmpty)
                     .keyboardShortcut(.defaultAction)
                     .buttonStyle(.plain)
                     .padding([.horizontal, .top])
