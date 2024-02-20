@@ -69,6 +69,7 @@ public struct MockPathConfigurations: View {
                             .background(Color.accentColor)
                             .clipShape(.rect(cornerRadius: 10))
                     }
+                    .disabled(path.isEmpty)
                     .keyboardShortcut(.defaultAction)
                     .buttonStyle(.plain)
                     .padding([.horizontal, .top])
