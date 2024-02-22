@@ -15,6 +15,8 @@ struct InitialSettingsView: View {
     @State private var messageText: String = ""
     @UserDefaultStorage("mockFolderFileBookMark") var mockFolderFileBookMark: Data? = nil
     @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
+    private let logger = Logger(category: "InitialSettingsView")
+    private let fileManager: FileManagerInterface = FileManager.default
 
     var body: some View {
         ScrollView {
@@ -65,7 +67,15 @@ struct InitialSettingsView: View {
                     .buttonStyle(.plain)
 
                     Button("Use Default Folder") {
-                        continueButtonTapped()
+                        do {
+                            let url = URL.documentsDirectory
+                            mockFolderFileBookMark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+                            mockFolderFilePath = url.path(percentEncoded: false)
+                            continueButtonTapped()
+                        } catch {
+                            logger.error("Update mocks folder path failed. Error: \(error)")
+                            messageText = "Update mocks folder path failed. Error: \(error)"
+                        }
                     }
                 }
             }
@@ -92,6 +102,7 @@ struct InitialSettingsView: View {
                         folderSelectionDone = true
                     }
                 } catch {
+                    logger.error("Update mocks folder path failed. Error: \(error)")
                     messageText = "Update mocks folder path failed. Error: \(error)"
                 }
             }

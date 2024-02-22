@@ -8,9 +8,10 @@
 import CommonViewsKit
 import MockDetail
 import MockList
-import SwiftUI
-import PluginCore
 import MockingStarCore
+import PluginCore
+import SwiftUI
+import TipKit
 
 private extension MenubarCommands {
     enum Constant {
@@ -57,6 +58,12 @@ struct MenubarCommands: Commands {
             Button("Mocking Star Playground") {
                 @Environment(\.openWindow) var openWindow
                 openWindow(id: "quick-demo")
+            }
+
+            Divider()
+
+            Button("Reset Tips") {
+                try? Tips.resetDatastore()
             }
         }
     }

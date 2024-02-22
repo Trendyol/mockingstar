@@ -14,6 +14,7 @@ import TipKit
 struct SidebarView: View {
     @Environment(MockDomainDiscover.self) private var domainDiscover: MockDomainDiscover
     @SceneStorage("mockDomain") private var mockDomain: String = ""
+    private let logger = Logger(category: "SidebarView")
 
     var body: some View {
         List {
@@ -22,18 +23,22 @@ struct SidebarView: View {
             }
 
             Section("App") {
-                SideBarMockDomainView(domain: "Mock List", isSelected: false)
+                SideBarConfigsView(title: "Mock List", isSelected: NavigationStore.shared.path.isEmpty)
                     .onTapGesture {
                         NavigationStore.shared.path.removeAll()
                     }
 
                 DisclosureGroup {
-                    SideBarConfigsView(title: "Path Configs").onTapGesture { NavigationStore.shared.path.append(.configs_pathConfigs) }
-                    SideBarConfigsView(title: "Query Configs").onTapGesture { NavigationStore.shared.path.append(.configs_queryConfigs) }
-                    SideBarConfigsView(title: "Header Configs").onTapGesture { NavigationStore.shared.path.append(.configs_headerConfigs) }
-                    SideBarConfigsView(title: "Logs").onTapGesture { NavigationStore.shared.path.append(.logs) }
+                    SideBarConfigsView(title: "Path Configs", isSelected: NavigationStore.shared.path.last == .configs_pathConfigs)
+                        .onTapGesture { NavigationStore.shared.path.append(.configs_pathConfigs) }
+                    SideBarConfigsView(title: "Query Configs", isSelected: NavigationStore.shared.path.last == .configs_queryConfigs)
+                        .onTapGesture { NavigationStore.shared.path.append(.configs_queryConfigs) }
+                    SideBarConfigsView(title: "Header Configs", isSelected: NavigationStore.shared.path.last == .configs_headerConfigs)
+                        .onTapGesture { NavigationStore.shared.path.append(.configs_headerConfigs) }
+                    SideBarConfigsView(title: "Logs", isSelected: NavigationStore.shared.path.last == .logs)
+                        .onTapGesture { NavigationStore.shared.path.append(.logs) }
                 } label: {
-                    SideBarConfigsView(title: "Configs")
+                    SideBarConfigsView(title: "Configs", isSelected: NavigationStore.shared.path.last == .configs)
                         .onTapGesture {
                             NavigationStore.shared.path.append(.configs)
                         }
@@ -64,9 +69,13 @@ struct SidebarView: View {
     @MainActor
     func reloadMockDomains() async throws {
         try await domainDiscover.startDomainDiscovery()
-        if mockDomain.isEmpty || !domainDiscover.domains.contains(mockDomain) {
-            mockDomain = domainDiscover.domains.first ?? ""
+        guard mockDomain.isEmpty || !domainDiscover.domains.contains(mockDomain) else { return }
+        guard let firstDomain = domainDiscover.domains.first else {
+            logger.warning("There is no mock domain.")
+            return
         }
+
+        mockDomain = firstDomain
     }
 }
 
@@ -80,26 +89,33 @@ struct SideBarMockDomainView: View {
     @State private var isHovering: Bool = false
 
     var body: some View {
-        Text(domain)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(8)
-            .background(isSelected ? Color.accentColor : isHovering ? Color.accentColor.opacity(0.5) : Color.clear)
-            .clipShape(.rect(cornerRadius: 10))
-            .onHover { isHovering in
-                withAnimation { self.isHovering = isHovering }
+        HStack(spacing: 3) {
+            Text(domain)
+
+            if isSelected {
+                Image(systemName: "checkmark.circle")
             }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(8)
+        .background(isHovering ? Color.accentColor.opacity(0.5) : Color.clear)
+        .clipShape(.rect(cornerRadius: 10))
+        .onHover { isHovering in
+            withAnimation { self.isHovering = isHovering }
+        }
     }
 }
 
 struct SideBarConfigsView: View {
     let title: String
+    let isSelected: Bool
     @State private var isHovering: Bool = false
 
     var body: some View {
         Text(title)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(8)
-            .background(isHovering ? Color.accentColor.opacity(0.5) : Color.clear)
+            .background(isSelected ? Color.accentColor : isHovering ? Color.accentColor.opacity(0.5) : Color.clear)
             .clipShape(.rect(cornerRadius: 10))
             .onHover { isHovering in
                 withAnimation { self.isHovering = isHovering }
@@ -121,7 +137,7 @@ struct MenubarItemsTip: Tip {
     }
 }
 
-struct QuickDemoTip: Tip {   
+struct QuickDemoTip: Tip {
     var title: Text {
         Text("Quick Demo")
     }
