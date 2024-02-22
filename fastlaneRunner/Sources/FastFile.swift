@@ -131,7 +131,7 @@ extension MockingStarFastFile {
             fatalError(error)
         }
 
-        sh(command: "$(xcrun --find docc) process-archive transform-for-static-hosting ./.Docc/Build/Products/Debug/MockingStar.doccarchive --output-path ./.docsExport") { error in
+        sh(command: "$(xcrun --find docc) process-archive transform-for-static-hosting ./.Docc/Build/Products/Debug/MockingStar.doccarchive --output-path ./.docsExport --hosting-base-path mockingstar") { error in
             print("export DocC error: \(error)")
             fatalError(error)
         }
