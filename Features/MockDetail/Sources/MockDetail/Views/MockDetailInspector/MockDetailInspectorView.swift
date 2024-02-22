@@ -97,7 +97,7 @@ struct PluginsDocumentTip: Tip {
 
     var actions: [Action] {
         Action(title: "Open Documentations") {
-            NSWorkspace.shared.open(URL(string: "https://github.com/Trendyol/mockingstar")!)
+            NSWorkspace.shared.open(URL(string: "https://trendyol.github.io/mockingstar/documentation/mockingstar/meetplugins")!)
         }
     }
 }

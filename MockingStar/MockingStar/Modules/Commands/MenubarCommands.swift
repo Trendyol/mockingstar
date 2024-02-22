@@ -17,6 +17,7 @@ private extension MenubarCommands {
     enum Constant {
         static let githubURL = URL(string: "https://github.com/Trendyol/mockingstar")!
         static let githubIssuesURL = URL(string: "https://github.com/Trendyol/mockingstar/issues")!
+        static let documentsURL = URL(string: "https://trendyol.github.io/mockingstar/documentation/mockingstar/documentation")!
     }
 }
 
@@ -52,7 +53,7 @@ struct MenubarCommands: Commands {
             Divider()
 
             Link("Source Code", destination: Constant.githubURL)
-            Link("Documentation", destination: Constant.githubURL)
+            Link("Documentation", destination: Constant.documentsURL)
             Link("Bug Report", destination: Constant.githubIssuesURL)
 
             Button("Mocking Star Playground") {

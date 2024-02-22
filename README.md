@@ -30,11 +30,11 @@ The latest binary can also be found on the releases page or clone and compile in
 
 - [iOS Client Library](https://github.com/Trendyol/mockingstar-ios)
 - [Android Client Library](https://github.com/Trendyol/mockingstar-android)
-- You can check the document for other clients: [Documentation](https://github.com/Trendyol/mockingstar)
+- You can check the document for other clients: [Documentation](https://trendyol.github.io/mockingstar/documentation/mockingstar/gettingstarted-customclient)
 
 ## Documentations
 Browse the documentation to explore Mocking Star, integrate it into your project, and more.
-- [Documentation](https://trendyol.github.com/mockingstar)
+- [Documentation](https://trendyol.github.io/mockingstar/documentation/mockingstar/documentation)
 
 ---
 ### Optimizing UI Testing Efficiency at Trendyol iOS App:
