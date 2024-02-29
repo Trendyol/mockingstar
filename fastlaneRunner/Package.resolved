@@ -5,8 +5,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/fastlane/fastlane",
       "state" : {
-        "revision" : "c902a9dd2e948f5d71406696125e3c3c04361231",
-        "version" : "2.217.0"
+        "revision" : "ebd6dafadac4a6aad4811bb32801af0e1f3ef2df",
+        "version" : "2.219.0"
+      }
+    },
+    {
+      "identity" : "ink",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/johnsundell/ink.git",
+      "state" : {
+        "revision" : "bcc9f219900a62c4210e6db726035d7f03ae757b",
+        "version" : "0.6.0"
       }
     },
     {

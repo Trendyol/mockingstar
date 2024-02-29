@@ -10,11 +10,13 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/fastlane/fastlane", from: "2.179.0"),
+        .package(url: "https://github.com/johnsundell/ink.git", from: "0.6.0"),
     ],
     targets: [
         .executableTarget(
             name: "fastlaneRunner",
             dependencies: [
+                .product(name: "Ink", package: "ink"),
                 .product(name: "Fastlane", package: "fastlane"),
             ]
         ),
