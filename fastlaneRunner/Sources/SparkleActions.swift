@@ -7,6 +7,7 @@
 
 import Fastlane
 import Foundation
+import Ink
 
 final class SparkleActions {
     func updateSparkleChangeLogs() {
@@ -38,13 +39,16 @@ final class SparkleActions {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "E, d MMM yyyy HH:mm:ss Z"
 
+        let parser = MarkdownParser()
+        let versionDescriptionHTML = parser.html(from: versionDescription)
+
         let appcastItem = """
 
                 <item>
                     <title>Version \(version)</title>
                     <description>
                         <![CDATA[
-        \(versionDescription)
+        \(versionDescriptionHTML)
                         ]]>
                     </description>
                     <pubDate>\(dateFormatter.string(from: Date()))</pubDate>
