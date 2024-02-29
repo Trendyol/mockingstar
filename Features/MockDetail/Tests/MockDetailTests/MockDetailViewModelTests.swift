@@ -120,7 +120,7 @@ final class MockDetailViewModelTests: XCTestCase {
 
     func test_saveChanges_Failed_InvokesNecessaryMethods() {
         viewModel.mockModel.metaData.responseTime = 0.1
-        fileManager.stubbedUpdateFileContentError = NSError(domain: "Failed", code: -1)
+        fileManager.stubbedUpdateFileContentError = MockError.error
 
         XCTAssertEqual(viewModel.saveErrorMessage, "")
         XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
@@ -132,7 +132,7 @@ final class MockDetailViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.saveErrorMessage, """
         Mock couldn't saved
-        Error Domain=Failed Code=-1 "(null)"
+        something went wrong
         """)
         XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, true)
         XCTAssertTrue(fileManager.invokedUpdateFileContent)
@@ -157,7 +157,7 @@ final class MockDetailViewModelTests: XCTestCase {
     }
 
     func test_removeMock_Failed_InvokesNecessaryMethods() {
-        fileManager.stubbedRemoveFileError = NSError(domain: "Failed", code: -1)
+        fileManager.stubbedRemoveFileError = MockError.error
 
         XCTAssertFalse(fileManager.invokedRemoveFile)
         XCTAssertEqual(viewModel.saveErrorMessage, "")
@@ -168,7 +168,7 @@ final class MockDetailViewModelTests: XCTestCase {
         XCTAssertTrue(fileManager.invokedRemoveFile)
         XCTAssertEqual(viewModel.saveErrorMessage, """
         Mock couldn't delete
-        Error Domain=Failed Code=-1 "(null)"
+        something went wrong
         """)
         XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, true)
         XCTAssertEqual(fileManager.invokedRemoveFileParametersList.map(\.path), ["/foo/bar/file/path/mock.json"])
@@ -209,7 +209,7 @@ final class MockDetailViewModelTests: XCTestCase {
     }
 
     func test_fixFilePath_Failed_InvokesNecessaryMethods() {
-        fileManager.stubbedMoveFileError = NSError(domain: "Failed", code: -1)
+        fileManager.stubbedMoveFileError = MockError.error
 
         XCTAssertFalse(fileManager.invokedMoveFile)
         XCTAssertEqual(viewModel.saveErrorMessage, "")
@@ -220,7 +220,7 @@ final class MockDetailViewModelTests: XCTestCase {
         XCTAssertTrue(fileManager.invokedMoveFile)
         XCTAssertEqual(fileManager.invokedMoveFileParametersList.map(\.newPath), ["/MockServerDomains/TEST/Mocks/aboutus/GET/aboutus_EmptyCase_9271C0BE-9326-443F-97B8-1ECA29571FC3.json"])
         XCTAssertEqual(fileManager.invokedMoveFileParametersList.map(\.path), ["/foo/bar/file/path/mock.json"])
-        XCTAssertEqual(viewModel.saveErrorMessage, "The operation couldn’t be completed. (Failed error -1.)")
+        XCTAssertEqual(viewModel.saveErrorMessage, "something went wrong")
         XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, true)
     }
 
@@ -287,7 +287,7 @@ final class MockDetailViewModelTests: XCTestCase {
     }
 
     func test_duplicateMock_Failed_InvokesNecessaryMethods() async {
-        fileSaver.stubbedSaveFileError = NSError(domain: "Failed", code: -1)
+        fileSaver.stubbedSaveFileError = MockError.error
 
         XCTAssertFalse(fileSaver.invokedSaveFile)
         XCTAssertFalse(notificationManager.invokedShow)
@@ -303,8 +303,97 @@ final class MockDetailViewModelTests: XCTestCase {
         XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mock.metaData.url.absoluteString), ["https://www.trendyol.com/aboutus"])
         XCTAssertEqual(viewModel.saveErrorMessage, """
                        Mock couldn't duplicated
-                       Error Domain=Failed Code=-1 "(null)"
+                       something went wrong
                        """)
         XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, true)
     }
+
+    func test_copyMock_InvokesNecessaryMethods() async {
+        XCTAssertFalse(fileSaver.invokedSaveFile)
+        XCTAssertFalse(notificationManager.invokedShow)
+        XCTAssertEqual(viewModel.saveErrorMessage, "")
+        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+
+        await viewModel.copyMock(to: "TEMP")
+
+        XCTAssertTrue(fileSaver.invokedSaveFile)
+        XCTAssertTrue(notificationManager.invokedShow)
+        XCTAssertNotEqual(viewModel.mockModel.id, fileSaver.invokedSaveFileParameters?.mock.id)
+        XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mockDomain), ["TEMP"])
+        XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mock.metaData.url.absoluteString), ["https://www.trendyol.com/aboutus"])
+        XCTAssertEqual(viewModel.saveErrorMessage, "")
+        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+    }
+
+    func test_copyMock_Failed_InvokesNecessaryMethods() async {
+        fileSaver.stubbedSaveFileError = MockError.error
+
+        XCTAssertFalse(fileSaver.invokedSaveFile)
+        XCTAssertFalse(notificationManager.invokedShow)
+        XCTAssertEqual(viewModel.saveErrorMessage, "")
+        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+
+        await viewModel.copyMock(to: "TEMP")
+
+        XCTAssertTrue(fileSaver.invokedSaveFile)
+        XCTAssertFalse(notificationManager.invokedShow)
+        XCTAssertNotEqual(viewModel.mockModel.id, fileSaver.invokedSaveFileParameters?.mock.id)
+        XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mockDomain), ["TEMP"])
+        XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mock.metaData.url.absoluteString), ["https://www.trendyol.com/aboutus"])
+        XCTAssertEqual(viewModel.saveErrorMessage, """
+                       Mock couldn't copied
+                       something went wrong
+                       """)
+        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, true)
+    }
+
+    func test_moveMock_InvokesNecessaryMethods() async {
+        XCTAssertFalse(fileSaver.invokedSaveFile)
+        XCTAssertFalse(notificationManager.invokedShow)
+        XCTAssertEqual(viewModel.saveErrorMessage, "")
+        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertFalse(fileManager.invokedRemoveFile)
+
+        await viewModel.moveMock(to: "TEMP")
+
+        XCTAssertTrue(fileSaver.invokedSaveFile)
+        XCTAssertTrue(fileManager.invokedRemoveFile)
+        XCTAssertTrue(notificationManager.invokedShow)
+        XCTAssertNotEqual(viewModel.mockModel.id, fileSaver.invokedSaveFileParameters?.mock.id)
+        XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mockDomain), ["TEMP"])
+        XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mock.metaData.url.absoluteString), ["https://www.trendyol.com/aboutus"])
+        XCTAssertEqual(viewModel.saveErrorMessage, "")
+        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(fileManager.invokedRemoveFileParametersList.map(\.path), ["/foo/bar/file/path/mock.json"])
+    }
+
+    func test_moveMock_Failed_InvokesNecessaryMethods() async {
+        fileSaver.stubbedSaveFileError = MockError.error
+
+        XCTAssertFalse(fileSaver.invokedSaveFile)
+        XCTAssertFalse(notificationManager.invokedShow)
+        XCTAssertEqual(viewModel.saveErrorMessage, "")
+        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertFalse(fileManager.invokedRemoveFile)
+
+        await viewModel.moveMock(to: "TEMP")
+
+        XCTAssertTrue(fileSaver.invokedSaveFile)
+        XCTAssertFalse(notificationManager.invokedShow)
+        XCTAssertFalse(fileManager.invokedRemoveFile)
+        XCTAssertNotEqual(viewModel.mockModel.id, fileSaver.invokedSaveFileParameters?.mock.id)
+        XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mockDomain), ["TEMP"])
+        XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mock.metaData.url.absoluteString), ["https://www.trendyol.com/aboutus"])
+        XCTAssertEqual(viewModel.saveErrorMessage, """
+                       Mock couldn't moved
+                       something went wrong
+                       """)
+        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, true)
+    }
+}
+
+private enum MockError: LocalizedError {
+    case error
+
+    var errorDescription: String? { "something went wrong" }
 }
