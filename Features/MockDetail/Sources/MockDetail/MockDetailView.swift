@@ -8,6 +8,7 @@
 import CommonKit
 import CommonViewsKit
 import JSONEditor
+import MockingStarCore
 import SwiftUI
 import TipKit
 
@@ -17,6 +18,7 @@ public struct MockDetailView: View {
     @State private var shouldShowMockReloadView: Bool = false
     @AppStorage("SelectedShareStyle") private var shareStyle: ShareStyle = .curl
     @Environment(NavigationStore.self) private var navigationStore: NavigationStore
+    @Environment(MockDomainDiscover.self) private var domainDiscover: MockDomainDiscover
     private let inspectorViewModel: MockDetailInspectorViewModel
 
     public init(viewModel: MockDetailViewModel) {
@@ -80,6 +82,24 @@ public struct MockDetailView: View {
                             Task { await viewModel.duplicateMock() }
                         } label: {
                             Label("Duplicate Mock", systemImage: "doc.on.doc.fill")
+                        }
+                    }
+
+                    Menu("Copy to...") {
+                        ForEach(domainDiscover.domains.filter { $0 != viewModel.mockDomain }, id: \.self) { mockDomain in
+                            Button(mockDomain) {
+                                Task { await viewModel.copyMock(to: mockDomain) }
+                            }
+                        }
+                    }
+
+                    Menu("Move to...") {
+                        ForEach(domainDiscover.domains.filter { $0 != viewModel.mockDomain }, id: \.self) { mockDomain in
+                            Button(mockDomain) {
+                                Task {
+                                    await viewModel.moveMock(to: mockDomain)
+                                }
+                            }
                         }
                     }
                 } label: {
