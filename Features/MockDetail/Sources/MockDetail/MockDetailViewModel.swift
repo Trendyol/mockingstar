@@ -183,7 +183,7 @@ public final class MockDetailViewModel {
             }
             notificationManager.show(title: "All changes saved", color: .green)
         } catch {
-            showErrorMessage("Mock couldn't saved\n\(error)")
+            showErrorMessage("Mock couldn't saved\n\(error.localizedDescription)")
         }
         checkUnsavedChanges()
     }
@@ -198,7 +198,7 @@ public final class MockDetailViewModel {
             try fileManager.removeFile(at: filePath)
             viewDismissalModePublisher.send()
         } catch {
-            showErrorMessage("Mock couldn't delete\n\(error)")
+            showErrorMessage("Mock couldn't delete\n\(error.localizedDescription)")
         }
     }
 
@@ -252,15 +252,38 @@ public final class MockDetailViewModel {
     }
 
     func duplicateMock() async {
+        do {
+            try await createCopyMock(mockDomain: mockDomain)
+            notificationManager.show(title: "Mock duplicated", color: .green)
+        } catch {
+            showErrorMessage("Mock couldn't duplicated\n\(error.localizedDescription)")
+        }
+    }
+
+    func copyMock(to mockDomain: String) async {
+        do {
+            try await createCopyMock(mockDomain: mockDomain)
+            notificationManager.show(title: "Mock copied to \(mockDomain)", color: .green)
+        } catch {
+            showErrorMessage("Mock couldn't copied\n\(error.localizedDescription)")
+        }
+    }
+
+    func moveMock(to mockDomain: String) async {
+        do {
+            try await createCopyMock(mockDomain: mockDomain)
+            removeMock()
+            notificationManager.show(title: "Mock moved to \(mockDomain)", color: .green)
+        } catch {
+            showErrorMessage("Mock couldn't moved\n\(error.localizedDescription)")
+        }
+    }
+
+    private func createCopyMock(mockDomain: String) async throws {
         let mock = originalMockModel.copy() as! MockModel
         mock.metaData.scenario = .init()
         mock.metaData.id = UUID().uuidString
 
-        do {
-            try await fileSaver.saveFile(mock: mock, mockDomain: mockDomain)
-            notificationManager.show(title: "Mock duplicated", color: .green)
-        } catch {
-            showErrorMessage("Mock couldn't duplicated\n\(error)")
-        }
+        try await fileSaver.saveFile(mock: mock, mockDomain: mockDomain)
     }
 }

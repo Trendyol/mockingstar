@@ -22,6 +22,9 @@
     "Cancel" : {
 
     },
+    "Copy to..." : {
+
+    },
     "Delete" : {
 
     },
@@ -89,6 +92,9 @@
 
     },
     "Mock Will be Deleted, Are you sure" : {
+
+    },
+    "Move to..." : {
 
     },
     "Open in Finder" : {
