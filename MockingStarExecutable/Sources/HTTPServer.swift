@@ -15,9 +15,10 @@ final class HTTPServer {
     init(port: UInt16) {
         server = Server(port: port)
 
-        let MockingStarCore = MockingStarCore()
-        server.registerMockHandler(MockingStarCore)
-        server.registerScenarioHandler(MockingStarCore)
+        let mockingStarCore = MockingStarCore()
+        server.registerMockHandler(mockingStarCore)
+        server.registerMockSearchHandler(mockingStarCore)
+        server.registerScenarioHandler(mockingStarCore)
     }
 
     func startServer() {

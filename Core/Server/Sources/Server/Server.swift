@@ -10,6 +10,7 @@ public protocol ServerInterface {
     func startServer(onError: @escaping (Error) -> Void)
     func stopServer()
     func registerMockHandler(_ handler: ServerMockHandlerInterface)
+    func registerMockSearchHandler(_ handler: ServerMockSearchHandlerInterface)
     func registerScenarioHandler(_ handler: ScenarioHandlerInterface)
 }
 
@@ -74,6 +75,11 @@ public final class Server: ServerInterface {
     public func registerMockHandler(_ handler: ServerMockHandlerInterface) {
         logger.debug("Server register handler \(String(describing: handler))")
         HandleMock.handler = handler
+    }
+
+    public func registerMockSearchHandler(_ handler: ServerMockSearchHandlerInterface) {
+        logger.debug("Server register handler \(String(describing: handler))")
+        HandleSearchMock.handler = handler
     }
 
     public func registerScenarioHandler(_ handler: ScenarioHandlerInterface) {

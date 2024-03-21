@@ -235,7 +235,7 @@ extension MockingStarCore: ServerMockHandlerInterface {
             scenario = rawFlags["scenario", default: ""]
         }
 
-        let flags = MockServerFlags(mockSource: rawFlags["disableLiveEnvironment", default: "false"] == "true" ? .onlyLive : .default,
+        let flags = MockServerFlags(mockSource: .init(from: rawFlags),
                                     scenario: scenario,
                                     shouldNotMock: rawFlags["shouldNotMock", default: "false"] == "true",
                                     domain: mockDomain,
@@ -244,6 +244,22 @@ extension MockingStarCore: ServerMockHandlerInterface {
         logger.debug("Handle new request with \(flags)")
 
         return try await handle(request: request, flags: flags)
+    }
+}
+
+// MARK: - ServerMockSearchHandlerInterface
+extension MockingStarCore: ServerMockSearchHandlerInterface {
+    public func search(path: String, method: String, scenario: String?, rawFlags: [String : String]) async throws -> (status: Int, body: Data, headers: [String : String]) {
+        let mockDomain = rawFlags["mockDomain"].isNilOrEmpty ? "Dev" : rawFlags["mockDomain", default: "Dev"]
+        let deviceId = rawFlags["deviceId", default: ""]
+
+        let flags = MockServerFlags(mockSource: .init(from: rawFlags),
+                                    scenario: scenario,
+                                    shouldNotMock: rawFlags["shouldNotMock", default: "false"] == "true",
+                                    domain: mockDomain,
+                                    deviceId: deviceId)
+
+        return (0, .init(), [:])
     }
 }
 
