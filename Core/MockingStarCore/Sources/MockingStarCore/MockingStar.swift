@@ -34,7 +34,7 @@ public final class MockingStarCore {
             return (status: mock.metaData.httpStatus,
                     body: bodyData,
                     headers: try mock.responseHeader.asDictionary())
-        case .mockNotFound where !flags.disableLiveEnvironment:
+        case .mockNotFound where flags.mockSource == .default:
             logger.info("Mock not found, trying to request live server: \(request.url?.path() ?? .init())")
 
             let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
@@ -49,7 +49,7 @@ public final class MockingStarCore {
             logger.warning("Mock not found and disable live environment: \(request.url?.path() ?? .init())")
             let pluginMessage = try await pluginActor.pluginCore(for: flags.domain).mockErrorPlugin(message: "Mock not found and disable live environment: \(request.url?.path() ?? .init())")
             return (404, pluginMessage.data(using: .utf8) ?? .init(), [:])
-        case .scenarioNotFound where !flags.disableLiveEnvironment:
+        case .scenarioNotFound where flags.mockSource == .default:
             logger.info("Scenario not found, trying to request live server")
 
             let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
@@ -235,7 +235,7 @@ extension MockingStarCore: ServerMockHandlerInterface {
             scenario = rawFlags["scenario", default: ""]
         }
 
-        let flags = MockServerFlags(disableLiveEnvironment: rawFlags["disableLiveEnvironment", default: "false"] == "true",
+        let flags = MockServerFlags(mockSource: rawFlags["disableLiveEnvironment", default: "false"] == "true" ? .onlyLive : .default,
                                     scenario: scenario,
                                     shouldNotMock: rawFlags["shouldNotMock", default: "false"] == "true",
                                     domain: mockDomain,

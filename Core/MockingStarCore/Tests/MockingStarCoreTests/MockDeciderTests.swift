@@ -79,7 +79,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -116,7 +116,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -153,7 +153,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -192,7 +192,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -232,7 +232,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -274,7 +274,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -314,7 +314,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -354,7 +354,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -396,7 +396,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -443,7 +443,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -492,7 +492,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -541,7 +541,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -590,7 +590,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -639,7 +639,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -688,7 +688,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -711,7 +711,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -749,7 +749,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -787,7 +787,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
                                            shouldNotMock: false,
                                            domain: "Dev",

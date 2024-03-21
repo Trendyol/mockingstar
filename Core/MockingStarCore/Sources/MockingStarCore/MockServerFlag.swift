@@ -8,9 +8,18 @@
 import Foundation
 
 struct MockServerFlags {
-    let disableLiveEnvironment: Bool
+    let mockSource: MockSource
     let scenario: String?
     let shouldNotMock: Bool
     let domain: String
     let deviceId: String
+
+    /// onlyMock: never use live environment
+    /// onlyLive: never use mock response
+    /// `default`: prefer mock response
+    enum MockSource {
+        case onlyMock
+        case onlyLive
+        case `default`
+    }
 }
