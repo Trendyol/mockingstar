@@ -61,8 +61,8 @@ final class MockDeciderTests: XCTestCase {
         configsBuilder.stubbedFindProperHeaderConfigsResult = []
     }
 
-    private func request(query: [URLQueryItem] = [], headers: [String: String] = [:]) throws -> URLRequest {
-        var url = try XCTUnwrap(URL(string: "https://www.trendyol.com/aboutus"))
+    private func request(url: String = "https://www.trendyol.com/aboutus", query: [URLQueryItem] = [], headers: [String: String] = [:]) throws -> URLRequest {
+        var url = try XCTUnwrap(URL(string: url))
         url.append(queryItems: query)
 
         var request = URLRequest(url: url)
@@ -700,5 +700,101 @@ final class MockDeciderTests: XCTestCase {
                                                   flags: flags)
 
         XCTAssertEqual(result, .mockNotFound)
+    }
+
+    func test_decideMock_IgnoreDomain() async throws {
+        configs.stubbedConfigs.appFilterConfigs.domains = ["github.com"]
+
+        XCTAssertFalse(fileManager.invokedFolderContent)
+        XCTAssertFalse(fileUrlBuilder.invokedMockListFolderUrl)
+        XCTAssertFalse(configsBuilder.invokedFindProperPathConfigs)
+        XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
+        XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
+
+        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+                                           scenario: "EmptyResponse",
+                                           shouldNotMock: false,
+                                           domain: "Dev",
+                                           deviceId: "")
+        let result = try await decider.decideMock(request: request(),
+                                                  flags: flags)
+
+        XCTAssertEqual(result, .ignoreDomain)
+    }
+
+    func test_decideMock_NotIgnoreDomain_ScenarioMatched() async throws {
+        configs.stubbedConfigs.appFilterConfigs.domains = ["trendyol.com"]
+        fileUrlBuilder.stubbedMockListFolderUrlResult = URL(string: "stubbedMocksFolderUrlResult")
+        fileManager.stubbedFolderContentResult = [
+            URL(string: "stubbedMocksFolderUrlResult-EmptyResponse"),
+        ].compactMap { $0 }
+        let url = try XCTUnwrap(URL(string: "https://trendyol.com/aboutus"))
+        let mock = MockModel(metaData: .init(url: url,
+                                             method: "GET",
+                                             appendTime: .init(),
+                                             updateTime: .init(),
+                                             httpStatus: 200,
+                                             responseTime: 0.15,
+                                             scenario: "EmptyResponse",
+                                             id: "9271C0BE-9326-443F-97B8-1ECA29571FC3"),
+                             requestHeader: "{}",
+                             responseHeader: "{}",
+                             requestBody: .init(""),
+                             responseBody: .init(""))
+        fileManager.stubbedReadJSONFileResult = mock
+
+        XCTAssertFalse(fileManager.invokedFolderContent)
+        XCTAssertFalse(fileUrlBuilder.invokedMockListFolderUrl)
+        XCTAssertFalse(configsBuilder.invokedFindProperPathConfigs)
+        XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
+        XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
+
+        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+                                           scenario: "EmptyResponse",
+                                           shouldNotMock: false,
+                                           domain: "Dev",
+                                           deviceId: "")
+        let result = try await decider.decideMock(request: request(),
+                                                  flags: flags)
+
+        XCTAssertEqual(result, .useMock(mock: mock))
+    }
+
+    func test_decideMock_NotIgnoreDomain_WithSubdomain_ScenarioMatched() async throws {
+        configs.stubbedConfigs.appFilterConfigs.domains = ["trendyol.com"]
+        fileUrlBuilder.stubbedMockListFolderUrlResult = URL(string: "stubbedMocksFolderUrlResult")
+        fileManager.stubbedFolderContentResult = [
+            URL(string: "stubbedMocksFolderUrlResult-EmptyResponse"),
+        ].compactMap { $0 }
+        let url = try XCTUnwrap(URL(string: "https://subdomain.trendyol.com/aboutus"))
+        let mock = MockModel(metaData: .init(url: url,
+                                             method: "GET",
+                                             appendTime: .init(),
+                                             updateTime: .init(),
+                                             httpStatus: 200,
+                                             responseTime: 0.15,
+                                             scenario: "EmptyResponse",
+                                             id: "9271C0BE-9326-443F-97B8-1ECA29571FC3"),
+                             requestHeader: "{}",
+                             responseHeader: "{}",
+                             requestBody: .init(""),
+                             responseBody: .init(""))
+        fileManager.stubbedReadJSONFileResult = mock
+
+        XCTAssertFalse(fileManager.invokedFolderContent)
+        XCTAssertFalse(fileUrlBuilder.invokedMockListFolderUrl)
+        XCTAssertFalse(configsBuilder.invokedFindProperPathConfigs)
+        XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
+        XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
+
+        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+                                           scenario: "EmptyResponse",
+                                           shouldNotMock: false,
+                                           domain: "Dev",
+                                           deviceId: "")
+        let result = try await decider.decideMock(request: request(),
+                                                  flags: flags)
+
+        XCTAssertEqual(result, .useMock(mock: mock))
     }
 }

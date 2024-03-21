@@ -64,6 +64,9 @@ public final class MockingStarCore {
             logger.warning("Scenario not found and disable live environment")
             let pluginMessage = try await pluginActor.pluginCore(for: flags.domain).mockErrorPlugin(message: "Scenario not found and disable live environment")
             return (404, pluginMessage.data(using: .utf8) ?? .init(), [:])
+        case .ignoreDomain:
+            logger.info("Ignoring domain: \(request.url?.host() ?? "_")")
+            return try await proxyRequest(request: request, mockDomain: nil)
         }
     }
 
@@ -72,17 +75,21 @@ public final class MockingStarCore {
     /// Second: Mock Server paused or do not mock this path
     /// - Parameter request: Fully filled URLRequest, it must has all necessary fields for real request
     /// - Returns: HTTP Response: status code, response body, response headers
-    private func proxyRequest(request: URLRequest, mockDomain: String) async throws -> (status: Int, body: Data, headers: [String: String]) {
-        let updatedRequest = try await pluginActor.pluginCore(for: mockDomain)
-            .liveRequestPlugin(request: .init(url: request.url?.absoluteString ?? .init(),
-                                              headers: request.allHTTPHeaderFields ?? [:],
-                                              body: String(data: request.httpBody ?? .init(), encoding: .utf8) ?? .init(),
-                                              method: request.httpMethod ?? .init()))
+    private func proxyRequest(request: URLRequest, mockDomain: String?) async throws -> (status: Int, body: Data, headers: [String: String]) {
         var liveRequest = request
-        liveRequest.url = URL(string: updatedRequest.url)
-        liveRequest.allHTTPHeaderFields = updatedRequest.headers
-        liveRequest.httpBody = updatedRequest.body.data(using: .utf8)
-        liveRequest.httpMethod = updatedRequest.method
+
+        if let mockDomain {
+            let updatedRequest = try await pluginActor.pluginCore(for: mockDomain)
+                .liveRequestPlugin(request: .init(url: request.url?.absoluteString ?? .init(),
+                                                  headers: request.allHTTPHeaderFields ?? [:],
+                                                  body: String(data: request.httpBody ?? .init(), encoding: .utf8) ?? .init(),
+                                                  method: request.httpMethod ?? .init()))
+
+            liveRequest.url = URL(string: updatedRequest.url)
+            liveRequest.allHTTPHeaderFields = updatedRequest.headers
+            liveRequest.httpBody = updatedRequest.body.data(using: .utf8)
+            liveRequest.httpMethod = updatedRequest.method
+        }
 
         let (data, response) = try await URLSession.shared.data(for: liveRequest)
 
