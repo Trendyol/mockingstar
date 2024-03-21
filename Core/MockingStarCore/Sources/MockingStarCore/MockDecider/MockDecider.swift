@@ -212,6 +212,24 @@ final class MockDecider {
         logger.info("Mock Found: \(mock.id)")
         return true
     }
+    
+    /// Determines should search mock for this domain. Based on configuration.
+    /// If configuration is empty, default behaviours is search.
+    /// When checking subdomains, the root domain variation should also be checked
+    /// - Parameter domain: Current request hostname
+    /// - Returns: Ignore or not searching mocks for this domain.
+    private func shouldSearchMocks(for domain: String) -> Bool {
+        let configDomains = configs.configs.appFilterConfigs.domains
+        guard !configDomains.isEmpty else { return true }
+
+        var requestDomains: [String] = []
+
+        for index in 0..<domain.components(separatedBy: ".").dropLast().count {
+            requestDomains.append(domain.components(separatedBy: ".").dropFirst(index).joined(separator: "."))
+        }
+
+        return configDomains.contains(where: { requestDomains.contains($0) })
+    }
 }
 
 extension MockDecider: MockDeciderInterface {
@@ -237,6 +255,7 @@ extension MockDecider: MockDeciderInterface {
     /// - Throws: If any error occurs during the mock decision process, it is thrown.
     func decideMock(request: URLRequest, flags: MockServerFlags) async throws -> MockDecision {
         guard let url = request.url else { return .mockNotFound }
+        guard shouldSearchMocks(for: url.host().orEmpty) else { return .ignoreDomain }
 
         let urlForSearch = try fileUrlBuilder.mocksFolderUrl(for: mockDomain)
 
@@ -314,4 +333,5 @@ enum MockDecision: Equatable {
     case useMock(mock: MockModel)
     case mockNotFound
     case scenarioNotFound
+    case ignoreDomain
 }
