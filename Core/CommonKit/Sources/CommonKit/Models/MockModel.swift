@@ -208,9 +208,27 @@ public extension MockModel {
         fileName += metaData.id
         fileName += ".json"
 
+        if fileName.count > 256 {
+            logger.warning("File name length is out of limit. Trying to reduce...")
+            fileName = shortFilename
+        }
+
         return fileName
     }
-    
+
+    private var shortFilename: String {
+        var fileName = ""
+
+        if !metaData.scenario.isEmpty {
+            fileName += metaData.scenario + "_"
+        }
+
+        fileName += metaData.id
+        fileName += ".json"
+
+        return fileName
+    }
+
     ///  Mock detail file should be proper path, it's important for find and return mocks.
     ///
     /// Mock Detail File path rule:

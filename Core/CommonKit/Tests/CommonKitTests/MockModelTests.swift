@@ -43,6 +43,12 @@ final class MockModelTests: XCTestCase {
         XCTAssertEqual(model.fileName, "www.trendyol.com_9271C0BE-9326-443F-97B8-1ECA29571FC3.json")
     }
 
+    func test_MockModel_longFileName_WithNoPath() throws {
+        try reCreate(url: "https://www.trendyol.com/aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus")
+
+        XCTAssertEqual(model.fileName, "9271C0BE-9326-443F-97B8-1ECA29571FC3.json")
+    }
+
     func test_MockModel_fileName_WithNoPathJustSlash() throws {
         try reCreate(url: "https://www.trendyol.com/")
 
@@ -53,6 +59,12 @@ final class MockModelTests: XCTestCase {
        try reCreate(scenario: "EmptyResponse")
 
         XCTAssertEqual(model.fileName, "aboutus_EmptyResponse_9271C0BE-9326-443F-97B8-1ECA29571FC3.json")
+    }
+
+    func test_MockModel_longfileName_WithScenario() throws {
+        try reCreate(url: "https://www.trendyol.com/aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus-aboutus", scenario: "EmptyResponse")
+
+        XCTAssertEqual(model.fileName, "EmptyResponse_9271C0BE-9326-443F-97B8-1ECA29571FC3.json")
     }
 
     func test_MockModel_folderPath() {
