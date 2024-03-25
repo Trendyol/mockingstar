@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  MockServerFlags.swift
+//
 //
 //  Created by Yusuf Özgül on 9.09.2023.
 //
