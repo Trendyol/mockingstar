@@ -10,6 +10,16 @@ import Foundation
 @preconcurrency import CommonKit
 
 public protocol ServerMockSearchHandlerInterface {
+    /// The `search` function makes an HTTP request with the specified parameters, using mock data or fetching data from a real server.
+    /// - Parameters:
+    ///   - path: The path of the HTTP request.
+    ///   - method: The method of the HTTP request (GET, POST, etc.).
+    ///   - scenario: Optional. The name of the scenario.
+    ///   - rawFlags: A dictionary containing key-value pairs for custom flags.
+    /// - Returns: The function returns a tuple:
+    ///   - `status`: The HTTP response status code.
+    ///   - `body`: The response body as `Data`.
+    ///   - `headers`: The response headers as `[String : String]`.
     func search(path: String, method: String, scenario: String?, rawFlags: [String: String]) async throws -> (status: Int, body: Data, headers: [String: String])
 }
 

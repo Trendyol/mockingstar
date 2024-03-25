@@ -66,29 +66,24 @@ public final class MockingStarCore {
             return (404, pluginMessage.data(using: .utf8) ?? .init(), [:])
         case .ignoreDomain:
             logger.info("Ignoring domain: \(request.url?.host() ?? "_")")
-            return try await proxyRequest(request: request, mockDomain: nil)
+            return try await proxyRequest(request: request)
         }
     }
 
-    /// Send request to real server, it uses two scenario:
-    /// First: There is no mock, send real request then mock
-    /// Second: Mock Server paused or do not mock this path
+    /// Send request to real server, it uses multiple scenarios:
+    ///   - There is no mock, send real request then mock.
+    ///   - Mock Server paused or do not mock this path.
+    ///   - Domain should not mock and ignore.
+    ///   - Request live response based on mocked request.
     /// - Parameter request: Fully filled URLRequest, it must has all necessary fields for real request
     /// - Returns: HTTP Response: status code, response body, response headers
-    private func proxyRequest(request: URLRequest, mockDomain: String?) async throws -> (status: Int, body: Data, headers: [String: String]) {
-        var liveRequest = request
+    private func proxyRequest(request: URLRequest, mockDomain: String? = nil) async throws -> (status: Int, body: Data, headers: [String: String]) {
+        let liveRequest: URLRequest
 
         if let mockDomain {
-            let updatedRequest = try await pluginActor.pluginCore(for: mockDomain)
-                .liveRequestPlugin(request: .init(url: request.url?.absoluteString ?? .init(),
-                                                  headers: request.allHTTPHeaderFields ?? [:],
-                                                  body: String(data: request.httpBody ?? .init(), encoding: .utf8) ?? .init(),
-                                                  method: request.httpMethod ?? .init()))
-
-            liveRequest.url = URL(string: updatedRequest.url)
-            liveRequest.allHTTPHeaderFields = updatedRequest.headers
-            liveRequest.httpBody = updatedRequest.body.data(using: .utf8)
-            liveRequest.httpMethod = updatedRequest.method
+            liveRequest = try await updateProxyRequestWithPlugin(request: request, mockDomain: mockDomain)
+        } else {
+            liveRequest = request
         }
 
         let (data, response) = try await URLSession.shared.data(for: liveRequest)
@@ -101,6 +96,28 @@ public final class MockingStarCore {
         return (status: httpResponse.statusCode,
                 body: data,
                 headers: httpResponse.headersDictionary)
+    }
+    
+    /// Update request before sending real server with plugin.
+    /// - Parameters:
+    ///   - request: mocked or original request from client.
+    ///   - mockDomain: Currently working mock domain.
+    /// - Returns: Updated `URLRequest` by `liveRequestPlugin`.
+    private func updateProxyRequestWithPlugin(request: URLRequest, mockDomain: String) async throws -> URLRequest {
+        var liveRequest = request
+
+        let updatedRequest = try await pluginActor.pluginCore(for: mockDomain)
+            .liveRequestPlugin(request: .init(url: request.url?.absoluteString ?? .init(),
+                                              headers: request.allHTTPHeaderFields ?? [:],
+                                              body: String(data: request.httpBody ?? .init(), encoding: .utf8) ?? .init(),
+                                              method: request.httpMethod ?? .init()))
+
+        liveRequest.url = URL(string: updatedRequest.url)
+        liveRequest.allHTTPHeaderFields = updatedRequest.headers
+        liveRequest.httpBody = updatedRequest.body.data(using: .utf8)
+        liveRequest.httpMethod = updatedRequest.method
+
+        return liveRequest
     }
 
     private func saveFileIfNeeded(request: URLRequest, flags: MockServerFlags, status: Int, body: Data, headers: [String: String], decider: MockDeciderInterface) {
@@ -249,6 +266,16 @@ extension MockingStarCore: ServerMockHandlerInterface {
 
 // MARK: - ServerMockSearchHandlerInterface
 extension MockingStarCore: ServerMockSearchHandlerInterface {
+    /// The `search` function makes an HTTP request with the specified parameters, using mock data or fetching data from a real server.
+    /// - Parameters:
+    ///   - path: The path of the HTTP request.
+    ///   - method: The method of the HTTP request (GET, POST, etc.).
+    ///   - scenario: Optional. The name of the scenario.
+    ///   - rawFlags: A dictionary containing key-value pairs for custom flags.
+    /// - Returns: The function returns a tuple:
+    ///   - `status`: The HTTP response status code.
+    ///   - `body`: The response body as `Data`.
+    ///   - `headers`: The response headers as `[String : String]`.
     public func search(path: String, method: String, scenario: String?, rawFlags: [String : String]) async throws -> (status: Int, body: Data, headers: [String : String]) {
         let mockDomain = rawFlags["mockDomain"].isNilOrEmpty ? "Dev" : rawFlags["mockDomain", default: "Dev"]
         let deviceId = rawFlags["deviceId", default: ""]
@@ -259,7 +286,27 @@ extension MockingStarCore: ServerMockSearchHandlerInterface {
                                     domain: mockDomain,
                                     deviceId: deviceId)
 
-        return (0, .init(), [:])
+        let decider = try await deciderActor.decider(for: flags.domain)
+        let result = try await decider.searchMock(path: path, method: method, flags: flags)
+
+        switch result {
+        case .useMock(let mock) where flags.mockSource == .onlyLive:
+            logger.info("Mock found, loading live response")
+            return try await proxyRequest(request: mock.asURLRequest, mockDomain: mockDomain)
+        case .useMock(let mock):
+            logger.info("Mock found, waiting response time")
+
+            try await Task.sleep(for: .seconds(mock.metaData.responseTime))
+
+            let bodyData = mock.responseBody.data(using: .utf8) ?? .init()
+            return (status: mock.metaData.httpStatus,
+                    body: bodyData,
+                    headers: try mock.responseHeader.asDictionary())
+        default:
+            logger.warning("Mock searched and not found: \(path)")
+            let pluginMessage = try await pluginActor.pluginCore(for: flags.domain).mockErrorPlugin(message: "Mock not found and disable live environment: \(path)")
+            return (404, pluginMessage.data(using: .utf8) ?? .init(), [:])
+        }
     }
 }
 
