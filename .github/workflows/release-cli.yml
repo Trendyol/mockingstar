@@ -32,5 +32,6 @@ jobs:
       with:
         tag: ${{ github.event.release.tag_name }}
         name: MockingStar - Release ${{ env.RELEASE_VERSION }}
-        artifacts: '.build/release/MockingStar-CLI.zip'
+        artifacts: '.build/MockingStar-CLI.zip'
         allowUpdates: true
+        omitBodyDuringUpdate: true
