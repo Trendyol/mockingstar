@@ -80,20 +80,11 @@ extension MockingStarFastFile {
                     xcargs: "CODE_SIGN_STYLE=Manual",
                     xcodebuildFormatter: "xcpretty")
 
+        print("Zip Archive")
+        sh(command: "ditto -c -k --sequesterRsrc --keepParent ./.build/appBuildOutput/MockingStar.app ./.build/appBuildOutput/MockingStar-App.zip")
+
         print("Notarize App")
-
-        notarize(package: "./.build/appBuildOutput/MockingStar.app",
-                 useNotarytool: false,
-                 bundleId: .userDefined(bundleId),
-                 apiKey: .userDefined([
-                    "filepath": "./certs/ASCKEY.p8",
-                    "key_id": environmentVariable(get: "ASC_KEY_ID"),
-                    "issuer_id": environmentVariable(get: "ASC_ISSUER_ID"),
-                 ]))
-
-        print("Archive")
-        sh(command: "ditto -c -k --sequesterRsrc --keepParent ./.build/appBuildOutput/MockingStar.app ./.build/appBuildOutput/MockingStar-App.zip",
-           log: false)
+        sh(command: "xcrun notarytool submit ./.build/appBuildOutput/MockingStar-App.zip --issuer \(environmentVariable(get: "ASC_ISSUER_ID")) --key-id \(environmentVariable(get: "ASC_KEY_ID")) --key ./certs/ASCKEY.p8 --wait")
 
         SparkleActions().updateSparkleChangeLogs()
     }
