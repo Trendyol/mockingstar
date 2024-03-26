@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 1.0.1</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed <em> Improve fastlane by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/10 </em> Feature/add move copy support for selected domain by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/11 <em> add missing domain check by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/13 </em> Overwrite scenario when new scenario handled for same configuration by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/12 * add extra check for os file name limit by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/14</h2><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/1.0.0-3...1.0.1-4</p>
+                ]]>
+            </description>
+            <pubDate>Sal, 26 Mar 2024 13:18:14 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/1.0.1-4/MockingStar-App.zip"
+            sparkle:version="4" sparkle:shortVersionString="1.0.1"
+            sparkle:edSignature="64+x5wKzCzt85eyi3TSrndgnKFs7kOOC73khzq5ZStvN1yVFh4DE5rv7N6ULGQ17Ke10yybQ+mcc12Wyprg8BQ==" length="4305476"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 1.0.0</title>
             <description>
                 <![CDATA[
