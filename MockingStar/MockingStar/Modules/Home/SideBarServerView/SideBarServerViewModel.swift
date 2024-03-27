@@ -22,9 +22,10 @@ final class SideBarServerViewModel {
 
     func prepareDefaultHTTPServer() {
         for server in defaultServers {
-            let MockingStarCore = MockingStarCore()
-            server.registerMockHandler(MockingStarCore)
-            server.registerScenarioHandler(MockingStarCore)
+            let mockingStarCore = MockingStarCore()
+            server.registerMockHandler(mockingStarCore)
+            server.registerMockSearchHandler(mockingStarCore)
+            server.registerScenarioHandler(mockingStarCore)
 
             let uiModel: ServerUIModel = .init(address: server.address,
                                                type: server.serverType,

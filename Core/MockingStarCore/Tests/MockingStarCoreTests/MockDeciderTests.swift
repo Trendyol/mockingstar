@@ -79,7 +79,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -116,7 +116,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -153,7 +153,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -192,7 +192,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -232,7 +232,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -274,7 +274,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -314,7 +314,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -354,7 +354,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -396,7 +396,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -443,7 +443,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -492,7 +492,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -541,7 +541,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -590,7 +590,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -639,7 +639,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -688,7 +688,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -711,7 +711,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -749,7 +749,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -787,7 +787,7 @@ final class MockDeciderTests: XCTestCase {
         XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
         XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
 
-        let flags: MockServerFlags = .init(disableLiveEnvironment: false,
+        let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
                                            shouldNotMock: false,
                                            domain: "Dev",
@@ -796,5 +796,117 @@ final class MockDeciderTests: XCTestCase {
                                                   flags: flags)
 
         XCTAssertEqual(result, .useMock(mock: mock))
+    }
+
+    func test_searchMock_ReturnMock() async throws {
+        fileUrlBuilder.stubbedMockListFolderUrlResult = URL(string: "stubbedMocksFolderUrlResult")
+        fileManager.stubbedFolderContentResult = [
+            URL(string: "stubbedMocksFolderUrlResult-EmptyResponse"),
+        ].compactMap { $0 }
+        let url = try XCTUnwrap(URL(string: "https://www.trendyol.com/aboutus"))
+        let mock = MockModel(metaData: .init(url: url,
+                                             method: "GET",
+                                             appendTime: .init(),
+                                             updateTime: .init(),
+                                             httpStatus: 200,
+                                             responseTime: 0.15,
+                                             scenario: "EmptyResponse",
+                                             id: "9271C0BE-9326-443F-97B8-1ECA29571FC3"),
+                             requestHeader: "{}",
+                             responseHeader: "{}",
+                             requestBody: .init(""),
+                             responseBody: .init(""))
+        fileManager.stubbedReadJSONFileResult = mock
+
+        XCTAssertFalse(fileManager.invokedFolderContent)
+        XCTAssertFalse(fileUrlBuilder.invokedMockListFolderUrl)
+        XCTAssertFalse(configsBuilder.invokedFindProperPathConfigs)
+        XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
+        XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
+
+        let flags: MockServerFlags = .init(mockSource: .default,
+                                           scenario: "EmptyResponse",
+                                           shouldNotMock: false,
+                                           domain: "Dev",
+                                           deviceId: "")
+        let result = try await decider.searchMock(path: "/aboutus",
+                                                  method: "GET",
+                                                  flags: flags)
+
+        XCTAssertEqual(result, .useMock(mock: mock))
+    }
+
+    func test_searchMock_ScenarioNotMatched() async throws {
+        fileUrlBuilder.stubbedMockListFolderUrlResult = URL(string: "stubbedMocksFolderUrlResult")
+        fileManager.stubbedFolderContentResult = [
+            URL(string: "stubbedMocksFolderUrlResult-ErrorResponse"),
+        ].compactMap { $0 }
+        let url = try XCTUnwrap(URL(string: "https://www.trendyol.com/aboutus"))
+        let mock = MockModel(metaData: .init(url: url,
+                                             method: "GET",
+                                             appendTime: .init(),
+                                             updateTime: .init(),
+                                             httpStatus: 200,
+                                             responseTime: 0.15,
+                                             scenario: "ErrorResponse",
+                                             id: "9271C0BE-9326-443F-97B8-1ECA29571FC3"),
+                             requestHeader: "{}",
+                             responseHeader: "{}",
+                             requestBody: .init(""),
+                             responseBody: .init(""))
+        fileManager.stubbedReadJSONFileResult = mock
+
+        XCTAssertFalse(fileManager.invokedFolderContent)
+        XCTAssertFalse(fileUrlBuilder.invokedMockListFolderUrl)
+        XCTAssertFalse(configsBuilder.invokedFindProperPathConfigs)
+        XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
+        XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
+
+        let flags: MockServerFlags = .init(mockSource: .default,
+                                           scenario: "EmptyResponse",
+                                           shouldNotMock: false,
+                                           domain: "Dev",
+                                           deviceId: "")
+        let result = try await decider.searchMock(path: "/aboutus",
+                                                  method: "GET",
+                                                  flags: flags)
+
+        XCTAssertEqual(result, .scenarioNotFound)
+    }
+
+    func test_searchMock_ScenarioNotMatched_EmptyMocks() async throws {
+        fileUrlBuilder.stubbedMockListFolderUrlResult = URL(string: "stubbedMocksFolderUrlResult")
+        fileManager.stubbedFolderContentResult = []
+        let url = try XCTUnwrap(URL(string: "https://www.trendyol.com/aboutus"))
+        let mock = MockModel(metaData: .init(url: url,
+                                             method: "GET",
+                                             appendTime: .init(),
+                                             updateTime: .init(),
+                                             httpStatus: 200,
+                                             responseTime: 0.15,
+                                             scenario: "ErrorResponse",
+                                             id: "9271C0BE-9326-443F-97B8-1ECA29571FC3"),
+                             requestHeader: "{}",
+                             responseHeader: "{}",
+                             requestBody: .init(""),
+                             responseBody: .init(""))
+        fileManager.stubbedReadJSONFileResult = mock
+
+        XCTAssertFalse(fileManager.invokedFolderContent)
+        XCTAssertFalse(fileUrlBuilder.invokedMockListFolderUrl)
+        XCTAssertFalse(configsBuilder.invokedFindProperPathConfigs)
+        XCTAssertFalse(configsBuilder.invokedFindProperQueryConfigs)
+        XCTAssertFalse(configsBuilder.invokedFindProperHeaderConfigs)
+
+        let flags: MockServerFlags = .init(mockSource: .default,
+                                           scenario: "ErrorResponse",
+                                           shouldNotMock: false,
+                                           domain: "Dev",
+                                           deviceId: "")
+        let result = try await decider.searchMock(path: "/aboutus",
+                                                  method: "GET",
+                                                  flags: flags)
+
+        XCTAssertEqual(result, .scenarioNotFound)
     }
 }

@@ -25,6 +25,20 @@ protocol MockDeciderInterface {
     /// There are multiple possible location, one for exact path and path configs count.
     /// Because mock can saved before configs.
     func decideMock(request: URLRequest, flags: MockServerFlags) async throws -> MockDecision
+
+    /// The `searchMock` function searches for a mock file that matches the given path, method, and flags.
+    /// - Parameters:
+    ///   - path: The path of the HTTP request.
+    ///   - method: The method of the HTTP request (GET, POST, etc.).
+    ///   - flags: Flags indicating mock server configurations and scenarios.
+    /// - Returns: The function returns a `MockDecision` enum:
+    ///   - `.useMock(mock: MockModel)`: If a matching mock is found, it returns the mock model.
+    ///   - `.scenarioNotFound`: If the specified scenario is not found.
+    ///   - `.mockNotFound`: If no matching mock is found.
+    /// - Throws: Search can throw errors:
+    ///   - `FileManagerError`: When there is an error accessing the file system.
+    ///   - `JSONDecodingError`: When there is an error decoding JSON data.
+    func searchMock(path: String, method: String, flags: MockServerFlags) async throws -> MockDecision
 }
 
 /// Find proper mock or fetch original response and save if needed.
@@ -325,6 +339,63 @@ extension MockDecider: MockDeciderInterface {
         }
 
         logger.warning("Mock not found for: \(request.url?.path() ?? .init())")
+        return .mockNotFound
+    }
+    
+    /// The `searchMock` function searches for a mock file that matches the given path, method, and flags.
+    /// - Parameters:
+    ///   - path: The path of the HTTP request.
+    ///   - method: The method of the HTTP request (GET, POST, etc.).
+    ///   - flags: Flags indicating mock server configurations and scenarios.
+    /// - Returns: The function returns a `MockDecision` enum:
+    ///   - `.useMock(mock: MockModel)`: If a matching mock is found, it returns the mock model.
+    ///   - `.scenarioNotFound`: If the specified scenario is not found.
+    ///   - `.mockNotFound`: If no matching mock is found.
+    /// - Throws: Search can throw errors:
+    ///   - `FileManagerError`: When there is an error accessing the file system.
+    ///   - `JSONDecodingError`: When there is an error decoding JSON data.
+    func searchMock(path: String, method: String, flags: MockServerFlags) async throws -> MockDecision {
+        let urlForSearch = try fileUrlBuilder.mocksFolderUrl(for: mockDomain)
+        var folderContents: [URL] = []
+
+        do {
+            folderContents = try fileManager.folderContent(at: fileUrlBuilder.mockListFolderUrl(mocksFolderURL: urlForSearch, requestPath: path.encodedUrlPathValue, method: method.uppercased()))
+        } catch {
+            logger.error("Folder contents error: \(error)")
+        }
+
+        logger.info("Search decidable mock count: \(folderContents.count) for \(path)")
+
+        if let scenario = flags.scenario, !scenario.isEmpty {
+            guard folderContents.contains(where: { $0.absoluteString.contains(scenario) }) else {
+                logger.warning("Scenario not found \(scenario) for: \(path)")
+                return .scenarioNotFound
+            }
+
+            folderContents.sort(by: { url1, url2 in
+                url1.absoluteString.contains(scenario)
+            })
+        }
+
+        for url in folderContents {
+            let mock: MockModel
+
+            do {
+                mock = try fileManager.readJSONFile(at: url)
+            } catch {
+                logger.critical("Mock can not read, will continue next mock. Error: \(error)")
+                continue
+            }
+
+            guard mock.metaData.scenario == flags.scenario.orEmpty else {
+                logger.info("Requested scenario and mock scenario not matched")
+                continue
+            }
+
+            return .useMock(mock: mock)
+        }
+
+        logger.warning("Mock not found for: \(path)")
         return .mockNotFound
     }
 }
