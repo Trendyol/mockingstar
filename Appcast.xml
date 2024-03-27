@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 1.1.0</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed <em> Fix/improve date format by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/16 </em> Feature/new route for endpoint testing by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/15</h2><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/1.0.1-4...1.1.0-5</p>
+                ]]>
+            </description>
+            <pubDate>Çar, 27 Mar 2024 16:40:21 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/1.1.0-5/MockingStar-App.zip"
+            sparkle:version="5" sparkle:shortVersionString="1.1.0"
+            sparkle:edSignature="ZRZPDOoGMo+X6O7+jnnG5D1q4NO/gL6LXb8J5S0JJtbK6WRZpALw8EN5Elu1fWEjBPbPkFc/ySietZogM/TNCg==" length="4325518"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 1.0.1</title>
             <description>
                 <![CDATA[
