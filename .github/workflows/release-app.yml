@@ -43,3 +43,4 @@ jobs:
         name: MockingStar - Release ${{ env.RELEASE_VERSION }}
         artifacts: '.build/appBuildOutput/MockingStar-App.zip'
         allowUpdates: true
+        omitBodyDuringUpdate: true
