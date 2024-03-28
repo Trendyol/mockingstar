@@ -132,7 +132,7 @@ public final class FileUrlBuilder: FileUrlBuilderInterface {
 
 
         for (index, configPathComponent) in configPathComponents.enumerated() {
-            guard configPathComponent != requestPathComponents[index] else { continue }
+            guard configPathComponent != requestPathComponents[safe: index] else { continue }
 
             if configPathComponent == "*" {
                 requestPathComponents[index] = "*"
@@ -177,7 +177,9 @@ public final class FileUrlBuilder: FileUrlBuilderInterface {
 
         for (index, configPathComponent) in configPathComponents.enumerated() {
             guard configPathComponent != requestPathComponents[safe: index] && configPathComponent != "*" else {
-                controlPathComponents.append(requestPathComponents[index])
+                if let component = requestPathComponents[safe: index] {
+                    controlPathComponents.append(component)
+                }
                 continue
             }
             return false
