@@ -6,6 +6,21 @@
             <title>Version 1.1.0</title>
             <description>
                 <![CDATA[
+<h2>What's Changed</h2><ul><li>fix/AddMoreCheckForCollectionAccessing by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/17</li></ul><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/1.1.0-5...1.1.0-6</p>
+                ]]>
+            </description>
+            <pubDate>Per, 28 Mar 2024 11:07:35 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/1.1.0-6/MockingStar-App.zip"
+            sparkle:version="6" sparkle:shortVersionString="1.1.0"
+            sparkle:edSignature="qNEsJ8HzoJPuIJfR8LarFVX2d451yBikLa4SiwPu4zc4AY9Mu4uVglpeyHaRoX4rZzDXPmxDpvHu+pyoGNh8Bg==" length="4325574"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
+            <title>Version 1.1.0</title>
+            <description>
+                <![CDATA[
 <h2>What's Changed <em> Fix/improve date format by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/16 </em> Feature/new route for endpoint testing by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/15</h2><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/1.0.1-4...1.1.0-5</p>
                 ]]>
             </description>
