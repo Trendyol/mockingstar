@@ -5,7 +5,6 @@
 //  Created by Yusuf Özgül on 21.09.2023.
 //
 
-import Combine
 import CommonKit
 import CommonViewsKit
 import Logs
@@ -27,6 +26,7 @@ struct AppNavigationSplitView: View {
 
     init() {
         lastMockFolderFilePath = mockFolderFilePath
+        listenMockFolderPathChanges()
     }
 
     var body: some View {
@@ -68,11 +68,16 @@ struct AppNavigationSplitView: View {
                 }
             }
         }
-        .onReceive(_mockFolderFilePath.projectedValue) { lastMockFolderFilePath = $0 }
         .task(id: lastMockFolderFilePath, priority: .userInitiated) {
             initializeAppOnboardingDone = false
         }
         .overlay { NotificationView() }
+    }
+
+    func listenMockFolderPathChanges() {
+        _mockFolderFilePath.onChange { path in
+            lastMockFolderFilePath = path
+        }
     }
 }
 

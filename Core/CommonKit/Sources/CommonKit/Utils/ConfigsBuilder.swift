@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 
 public protocol ConfigsBuilderInterface {
     /// Find all suitable path configs for given mock url

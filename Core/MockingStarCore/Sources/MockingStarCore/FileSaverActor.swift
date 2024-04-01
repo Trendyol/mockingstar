@@ -7,7 +7,6 @@
 
 import CommonKit
 import Foundation
-import Combine
 
 public protocol FileSaverActorInterface {
     func saveFile(mock: MockModel, mockDomain: String) async throws
@@ -16,7 +15,6 @@ public protocol FileSaverActorInterface {
 public actor FileSaverActor: FileSaverActorInterface {
     private let logger = Logger(category: "FileSaverActor")
     private let fileManager: FileManagerInterface
-    private var cancelableSet = Set<AnyCancellable>()
     public static let shared = FileSaverActor()
     @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
     private var folderPath: String {

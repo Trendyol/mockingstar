@@ -4,7 +4,15 @@
 import AnyCodable
 import CommonKit
 import Foundation
+#if os(macOS)
 import PluginCore
+#elseif os(Linux)
+import PluginCoreLinux
+#endif
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+
 import Server
 
 public final class MockingStarCore {

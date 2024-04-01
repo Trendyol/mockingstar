@@ -6,12 +6,15 @@
 //
 
 import Foundation
-import Combine
 import CommonKit
-import SwiftUI
+
+public enum MockDiscoverResult {
+    case loading
+    case result([MockModel])
+}
 
 public protocol MockDiscoverInterface {
-    var mockListSubject: CurrentValueSubject<Set<MockModel>?, Never> { get }
+    var mockDiscoverResult: AsyncStream<MockDiscoverResult> { get }
 
     func updateMockDomain(_ mockDomain: String) async throws
     func reloadMocks() async throws
@@ -20,12 +23,12 @@ public protocol MockDiscoverInterface {
 public final class MockDiscover: MockDiscoverInterface {
     private let logger = Logger(category: "MockDiscover")
     public private(set) var mockDomain: String = ""
-    public let mockListSubject = CurrentValueSubject<Set<MockModel>?, Never>([])
+    public let mockDiscoverResult: AsyncStream<MockDiscoverResult>
+    private let mockDiscoverResultContinuation: AsyncStream<MockDiscoverResult>.Continuation
     private let fileManager: FileManagerInterface
     private let fileUrlBuilder: FileUrlBuilderInterface
     private var mocks: Set<MockModel> = []
     private var fileStructureMonitor: FileStructureMonitorInterface
-    private var cancelableSet = Set<AnyCancellable>()
     @UserDefaultStorage("mockFolderFilePath") var mocksFolderPath: String = "/MockServer"
 
     public init(fileManager: FileManagerInterface = FileManager.default,
@@ -34,13 +37,14 @@ public final class MockDiscover: MockDiscoverInterface {
         self.fileManager = fileManager
         self.fileUrlBuilder = fileUrlBuilder
         self.fileStructureMonitor = fileStructureMonitor
+        (mockDiscoverResult, mockDiscoverResultContinuation) = AsyncStream<MockDiscoverResult>.makeStream()
 
-        _mocksFolderPath.projectedValue.sink { [weak self] _ in
+        _mocksFolderPath.onChange { [weak self] _ in
             guard let self else { return }
 
             mocks.removeAll()
-            mockListSubject.send(nil)
-        }.store(in: &cancelableSet)
+            mockDiscoverResultContinuation.yield(.loading)
+        }
     }
 
     /// Updates the mock domain and initiates the process of discovering and monitoring mock changes.
@@ -56,7 +60,7 @@ public final class MockDiscover: MockDiscoverInterface {
 
         self.mockDomain = mockDomain
         mocks.removeAll()
-        mockListSubject.send(nil)
+        mockDiscoverResultContinuation.yield(.loading)
         try await startMockDiscover()
 
         do {
@@ -80,7 +84,7 @@ public final class MockDiscover: MockDiscoverInterface {
 
     public func reloadMocks() async throws {
         mocks.removeAll()
-        mockListSubject.send(nil)
+        mockDiscoverResultContinuation.yield(.loading)
         try await startMockDiscover()
     }
 
@@ -124,7 +128,7 @@ public final class MockDiscover: MockDiscoverInterface {
             return
         }
         self.mocks = Set(mocks)
-        mockListSubject.send(self.mocks)
+        mockDiscoverResultContinuation.yield(.result(Array(self.mocks)))
     }
 
     /// Loads mocks from the specified URL, excluding subdirectories.
@@ -171,7 +175,7 @@ public final class MockDiscover: MockDiscoverInterface {
             mocks = mocks.filter { $0.fileURL?.path(percentEncoded: false) != fileURL.path(percentEncoded: false) }
         }
 
-        mockListSubject.send(mocks)
+        mockDiscoverResultContinuation.yield(.result(Array(mocks)))
     }
 
     /// Handles changes to the "Mocks" folder.
@@ -182,6 +186,6 @@ public final class MockDiscover: MockDiscoverInterface {
             .filter { $0.fileURL?.path().hasPrefix(url.path()) ?? false }
             .filter { !fileManager.fileExist(atPath: URL(filePath: $0.fileURL?.path() ?? "").path()) }
             .forEach { mocks.remove($0) }
-        mockListSubject.send(mocks)
+        mockDiscoverResultContinuation.yield(.result(Array(mocks)))
     }
 }

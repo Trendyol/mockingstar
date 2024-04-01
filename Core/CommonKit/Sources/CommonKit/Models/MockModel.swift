@@ -7,6 +7,9 @@
 
 import AnyCodable
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 public typealias MockModelHeader = [String: String]
 public typealias MockModelHeaderString = String

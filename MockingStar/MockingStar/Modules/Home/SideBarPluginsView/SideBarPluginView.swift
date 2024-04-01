@@ -17,6 +17,7 @@ struct SideBarPluginView: View {
 
     init() {
         lastMockFolderFilePath = mockFolderFilePath
+        listenMockFolderPathChanges()
     }
 
     var body: some View {
@@ -30,7 +31,12 @@ struct SideBarPluginView: View {
         }
         .task(id: mockDomain) { await viewModel.loadPlugins(for: mockDomain) }
         .task(id: lastMockFolderFilePath) { await viewModel.loadPlugins(for: mockDomain) }
-        .onReceive(_mockFolderFilePath.projectedValue) { lastMockFolderFilePath = $0 }
+    }
+
+    func listenMockFolderPathChanges() {
+        _mockFolderFilePath.onChange { path in
+           lastMockFolderFilePath = path
+        }
     }
 }
 

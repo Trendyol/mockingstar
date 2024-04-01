@@ -7,7 +7,6 @@
 
 import CommonKit
 import Foundation
-import Combine
 
 public protocol ConfigurationsInterface {
     var configs: ConfigModel { get }
@@ -20,7 +19,6 @@ public final class Configurations: ConfigurationsInterface {
     private(set) public var configs: ConfigModel
     private var mockDomain: String
     private let fileManager: FileManagerInterface
-    private var cancelableSet = Set<AnyCancellable>()
     private var isFileMonitorStarted: Bool = false
     private var fileStructureMonitor: FileStructureMonitorInterface
     private let fileUrlBuilder: FileUrlBuilderInterface
@@ -35,14 +33,14 @@ public final class Configurations: ConfigurationsInterface {
         self.fileStructureMonitor = fileStructureMonitor
         self.fileUrlBuilder = fileUrlBuilder
 
-        _mockFolderFilePath.projectedValue.sink { [weak self] path in
+        _mockFolderFilePath.onChange {  [weak self] _ in
             guard let self else { return }
             do {
                 try readConfigs()
             } catch {
                 logger.error("Read configs error: \(error)")
             }
-        }.store(in: &cancelableSet)
+        }
 
         do {
             try readConfigs()

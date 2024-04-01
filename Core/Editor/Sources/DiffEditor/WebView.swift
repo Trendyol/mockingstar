@@ -7,7 +7,6 @@
 
 import SwiftUI
 import WebKit
-import Combine
 
 final class DiffEditorWebView: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
     static var shared = DiffEditorWebView()

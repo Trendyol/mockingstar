@@ -13,6 +13,9 @@ let package = Package(
             name: "PluginCore",
             targets: ["PluginCore"]),
         .library(
+            name: "PluginCoreLinux",
+            targets: ["PluginCoreLinux"]),
+        .library(
             name: "PluginCoreTestSupport",
             targets: ["PluginCoreTestSupport"]),
     ],
@@ -31,6 +34,11 @@ let package = Package(
                 "AnyCodable",
                 "CommonKit",
             ]),
+        .target(name: "PluginCoreLinux",
+                dependencies: [
+                    "AnyCodable",
+                    "CommonKit",
+                ]),
         .target(name: "PluginCoreTestSupport", dependencies: [
             "PluginCore",
             "CommonKit",
@@ -39,6 +47,6 @@ let package = Package(
             name: "PluginCoreTests",
             dependencies: ["PluginCore",
                            .product(name: "CommonKitTestSupport", package: "CommonKit")
-                          ]),
+            ]),
     ]
 )

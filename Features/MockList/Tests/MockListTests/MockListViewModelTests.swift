@@ -5,42 +5,50 @@
 //  Created by Yusuf Özgül on 5.12.2023.
 //
 
-import XCTest
-import MockingStarCoreTestSupport
 @testable import MockList
-import CommonKitTestSupport
 import CommonKit
+import CommonKitTestSupport
+import MockingStarCore
+import MockingStarCoreTestSupport
+import XCTest
 
 final class MockListViewModelTests: XCTestCase {
     private var viewModel: MockListViewModel!
     private var fileManager: MockFileManager!
     private var mockDiscover: MockMockDiscover!
-    private let exp = XCTestExpectation(description: "Load Mocks")
+    private let exp = XCTestExpectation(description: "MockListViewModelTests")
+    private var mockDiscoverResult: AsyncStream<MockDiscoverResult>!
+    private var mockDiscoverResultContinuation: AsyncStream<MockDiscoverResult>.Continuation!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
+        (mockDiscoverResult, mockDiscoverResultContinuation) = AsyncStream<MockDiscoverResult>.makeStream()
 
         fileManager = .init()
         mockDiscover = .init()
-        mockDiscover.stubbedMockListSubject = .init([])
+        mockDiscover.stubbedMockDiscoverResult = mockDiscoverResult
 
         viewModel = .init(fileManager: fileManager,
                           mockDiscover: mockDiscover)
 
-        mockDiscover.stubbedMockListSubject.send(mockModels)
-        waitLoadMocks()
-        wait(for: [exp], timeout: 10)
+        mockDiscoverResultContinuation.yield(.result(mockModels))
     }
 
-    func waitLoadMocks() {
-        guard viewModel.mockModelList.isEmpty else {
+    func test_handleData_IsLoading() {
+        XCTAssertFalse(viewModel.isLoading)
+        XCTAssertFalse(viewModel.mockModelList.isEmpty)
+
+        mockDiscoverResultContinuation.yield(.loading)
+
+        let exp = XCTestExpectation(description: "MockListViewModelTests")
+
+        Task(priority: .low) {
             exp.fulfill()
-            return
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.waitLoadMocks()
-        }
+        wait(for: [exp], timeout: 10)
+        XCTAssertTrue(viewModel.isLoading)
+        XCTAssertTrue(viewModel.mockModelList.isEmpty)
     }
 
     func test_searchData_NoResult() async {
@@ -250,7 +258,7 @@ Error Domain=Failed Code=-1 "(null)"
 }
 
 extension MockListViewModelTests {
-    private var mockModels: Set<MockModel> {
+    private var mockModels: [MockModel] {
         let url1 = try! XCTUnwrap(URL(string: "https://www.trendyol.com/aboutus"))
         let model1 = MockModel(metaData: .init(url: url1,
                                               method: "GET",

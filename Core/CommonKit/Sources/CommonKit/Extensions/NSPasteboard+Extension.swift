@@ -5,6 +5,7 @@
 //  Created by Yusuf Özgül on 4.12.2023.
 //
 
+#if os(macOS)
 import Foundation
 import AppKit
 
@@ -14,3 +15,4 @@ public protocol NSPasteboardInterface {
 }
 
 extension NSPasteboard: NSPasteboardInterface {}
+#endif

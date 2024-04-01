@@ -5,7 +5,6 @@
 //  Created by Yusuf Özgül on 25.09.2023.
 //
 
-import Combine
 import Foundation
 
 public protocol DirectoryMonitorInterface {
@@ -24,7 +23,7 @@ public class DirectoryMonitor: DirectoryMonitorInterface {
     deinit {
         stopMonitoring()
     }
-    
+
     /// Starts monitoring given url and notify with handler
     /// - Parameters:
     ///   - url: Folder url for monitoring
@@ -36,8 +35,10 @@ public class DirectoryMonitor: DirectoryMonitorInterface {
             return
         }
 
+#if os(macOS)
         monitoredDirectoryFileDescriptor = open((url as NSURL).fileSystemRepresentation, O_EVTONLY)
         directoryMonitorSource = DispatchSource.makeFileSystemObjectSource(fileDescriptor: monitoredDirectoryFileDescriptor, eventMask: DispatchSource.FileSystemEvent.write, queue: directoryMonitorQueue) as? DispatchSource
+#endif
 
         directoryMonitorSource?.setEventHandler {
             folderDidChangeHandler()
@@ -52,10 +53,10 @@ public class DirectoryMonitor: DirectoryMonitorInterface {
 
         directoryMonitorSource?.resume()
     }
-    
+
     /// Ends folder change monitoring
     public func stopMonitoring() {
-        guard directoryMonitorSource != nil else { 
+        guard directoryMonitorSource != nil else {
             logger.warning("Monitoring can not stop, already not monitoring")
             return
         }

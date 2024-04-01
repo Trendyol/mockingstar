@@ -29,7 +29,6 @@
 // https://github.com/jessesquires/Foil
 
 import Foundation
-import Combine
 
 @propertyWrapper
 public final class UserDefaultStorage<T: Codable>: NSObject {
@@ -37,55 +36,66 @@ public final class UserDefaultStorage<T: Codable>: NSObject {
     public var wrappedValue: T {
         get {
             if let data = userDefaults.data(forKey: key) {
-                return (try? decoder.decode(T.self, from: data)) ?? subject.value
+                return (try? decoder.decode(T.self, from: data)) ?? defaultValue
             }
-            return subject.value
+            return defaultValue
         }
         set {
             if let data = try? encoder.encode(newValue) {
+#if os(macOS)
                 userDefaults.setValue(data, forKey: key)
+#else
+                userDefaults.set(data, forKey: key)
+#endif
             }
         }
-    }
-    public var projectedValue: AnyPublisher<T, Never> {
-        return subject.eraseToAnyPublisher()
     }
 
     private let key: String
     private let userDefaults: UserDefaults
     private var observerContext = 0
-    private let subject: CurrentValueSubject<T, Never>
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
+    private let defaultValue: T
+    private var onChangeHandler: ((T) -> Void)? = nil
 
     public init(wrappedValue defaultValue: T, _ key: String, userDefaults: UserDefaults = .standard) {
         self.key = key
         self.userDefaults = userDefaults
-        self.subject = CurrentValueSubject(defaultValue)
+        self.defaultValue = defaultValue
         super.init()
 
         if let data = try? encoder.encode(defaultValue) {
             userDefaults.register(defaults: [key: data])
         }
+#if os(macOS)
         // This fulfills requirement 4. Some implementations use NSUserDefaultsDidChangeNotification
         // but that is sent every time any value is updated in UserDefaults.
         userDefaults.addObserver(self, forKeyPath: key, options: .new, context: &observerContext)
-        subject.value = wrappedValue
+#endif
     }
 
+#if os(macOS)
     override public func observeValue(
         forKeyPath keyPath: String?,
         of object: Any?,
         change: [NSKeyValueChangeKey : Any]?,
         context: UnsafeMutableRawPointer?) {
             if context == &observerContext {
-                subject.value = wrappedValue
+                onChangeHandler?(wrappedValue)
             } else {
                 super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
             }
         }
+#endif
 
+    public func onChange(_ completion: @escaping (T) -> Void) {
+        onChangeHandler = completion
+    }
+
+#if os(macOS)
     deinit {
         userDefaults.removeObserver(self, forKeyPath: key, context: &observerContext)
     }
+#endif
 }
