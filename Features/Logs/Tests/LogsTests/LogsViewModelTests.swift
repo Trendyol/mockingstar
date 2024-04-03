@@ -6,19 +6,19 @@
 //
 
 import CommonKit
-import Combine
 import XCTest
 @testable import Logs
 
 final class LogsViewModelTests: XCTestCase {
     private var viewModel: LogsViewModel!
-    private var logsSubject: CurrentValueSubject<[LogModel], Never>!
+    private var allLogsStream: AsyncStream<[LogModel]>!
+    private var allLogsContinuation: AsyncStream<[LogModel]>.Continuation!
 
     override func setUp() {
         super.setUp()
 
-        logsSubject = .init([])
-        viewModel = .init(logsSubject: logsSubject)
+        (allLogsStream, allLogsContinuation) = AsyncStream.makeStream(of: [LogModel].self)
+        viewModel = .init(logsStream: allLogsStream)
     }
 
     func test_ListenLogs_Fill_filteredLogs() {
@@ -26,7 +26,7 @@ final class LogsViewModelTests: XCTestCase {
 
         let log =  LogModel(severity: .debug, message: "Test Data", category: "LogsViewModelTests")
 
-        logsSubject.send([log])
+        allLogsContinuation.yield([log])
 
         expectation(description: "logs").isInverted = true
         waitForExpectations(timeout: 1, handler: nil)
@@ -34,12 +34,12 @@ final class LogsViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.filteredLogs, [log])
     }
 
-    func test_filterLogs_search() {
+    @MainActor func test_filterLogs_search() {
         XCTAssertEqual(viewModel.filteredLogs, [])
 
         let log =  LogModel(severity: .debug, message: "Test Data", category: "LogsViewModelTests")
 
-        logsSubject.send([log])
+        allLogsContinuation.yield([log])
 
         expectation(description: "logs").isInverted = true
         waitForExpectations(timeout: 1, handler: nil)
@@ -52,12 +52,12 @@ final class LogsViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.filteredLogs, [])
     }
 
-    func test_filterLogs_filter() {
+    @MainActor func test_filterLogs_filter() {
         XCTAssertEqual(viewModel.filteredLogs, [])
 
         let log =  LogModel(severity: .debug, message: "Test Data", category: "LogsViewModelTests")
 
-        logsSubject.send([log])
+        allLogsContinuation.yield([log])
 
         expectation(description: "logs").isInverted = true
         waitForExpectations(timeout: 1, handler: nil)

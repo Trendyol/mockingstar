@@ -9,7 +9,7 @@ Run CLI version of Mocking Star
     @PageColor(gray)
 }
 
-You can use all operations independently of the UI with the Mocking Star CLI. Features such as listing and editing mocks are not available in the CLI version. CLI version is developed specifically for use in CI/CD pipelines.
+You can use all operations independently of the UI with the Mocking Star CLI. Features such as listing and editing mocks are not available in the CLI version. CLI version is developed specifically for use in CI/CD pipelines. CLI version has **Linux** and **macOS** support.
 
 **CLI Usage**
 ```
@@ -35,3 +35,6 @@ To achieve this, you need to add the header `disableLiveEnvironment=true` to you
 
 > Tip:
 Mocking Star allows multiple applications to use the same mock folder. For example, if you are running your application with multiple instances/simulators/emulators, a single Mocking Star instance is sufficient.
+
+> Warning:
+Linux CLI version does not support Plugins due to JavaScriptCore not available on Linux.

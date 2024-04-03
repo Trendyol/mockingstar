@@ -7,7 +7,6 @@
 
 import CommonKit
 import Foundation
-import Combine
 import SwiftUI
 
 @Observable
@@ -15,30 +14,20 @@ final class LogsViewModel {
     private var allLogs: [LogModel] = []
     private var clearedLogs: [LogModel] = []
     private(set) var filteredLogs: [LogModel] = []
-    private var cancellables = Set<AnyCancellable>()
-    private let logsSubject: CurrentValueSubject<[LogModel], Never>
-
     var filterType: Set<LogSeverity> = Set(LogSeverity.allCases)
     var searchTerm: String = ""
 
-    init(logsSubject: CurrentValueSubject<[LogModel], Never> = LogStorage.shared.logsSubject) {
-        self.logsSubject = logsSubject
-        registerStream()
-    }
-
-    /// Registers a stream to observe changes in logs and updates the UI accordingly.
-    private func registerStream() {
-        logsSubject
-            .receive(on: DispatchQueue.main)
-            .debounce(for: .seconds(0.3), scheduler: DispatchQueue.main)
-            .sink { [weak self] logs in
-                self?.allLogs = logs
-                self?.filterLogs()
+    init(logsStream: AsyncStream<[LogModel]> = LogStorage.shared.allLogsStream) {
+        Task { @MainActor in
+            for await logs in logsStream {
+                allLogs = logs
+                filterLogs()
             }
-            .store(in: &cancellables)
+        }
     }
 
     /// Filters the logs based on the current search term and filter type.
+    @MainActor
     func filterLogs() {
         withAnimation {
             if searchTerm.isEmpty {
@@ -49,7 +38,7 @@ final class LogsViewModel {
         }
     }
 
-    func clearLogs() {
+    @MainActor func clearLogs() {
         clearedLogs.append(contentsOf: filteredLogs)
         filterLogs()
     }

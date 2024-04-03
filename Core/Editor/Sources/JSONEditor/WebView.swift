@@ -7,7 +7,6 @@
 
 import SwiftUI
 import WebKit
-import Combine
 
 final class JSONEditorWebView: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
     static var shared = JSONEditorWebView()

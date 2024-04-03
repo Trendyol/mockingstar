@@ -18,7 +18,9 @@ public final class Server: ServerInterface {
     private let logger = Logger(category: "Server")
     private let server: HTTPServer
     private var task: Task<(), Never>? = nil
+#if os(macOS)
     private var serverActivity: NSObjectProtocol? = nil
+#endif
     private(set) public var id: UUID = .init()
     private(set) public var address: String = ""
     public var serverType: String { "HTTP" }
@@ -41,13 +43,17 @@ public final class Server: ServerInterface {
         logger.debug("Server starting...")
 
         task?.cancel()
+#if os(macOS)
         if let serverActivity = serverActivity {
             ProcessInfo.processInfo.endActivity(serverActivity)
         }
+#endif
 
         task = Task(priority: .high) {
             do {
+#if os(macOS)
                 serverActivity = ProcessInfo.processInfo.beginActivity(options: ProcessInfo.ActivityOptions.userInitiated, reason: "Mock Server")
+#endif
                 await prepareServer()
                 try await server.start()
             } catch {
@@ -67,10 +73,12 @@ public final class Server: ServerInterface {
         }
 
         task?.cancel()
+#if os(macOS)
         if let serverActivity = serverActivity {
             ProcessInfo.processInfo.endActivity(serverActivity)
             self.serverActivity = nil
         }
+#endif
     }
 
     public func registerMockHandler(_ handler: ServerMockHandlerInterface) {

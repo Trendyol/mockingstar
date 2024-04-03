@@ -47,7 +47,9 @@ public struct LogsView: View {
             }
             .onChange(of: viewModel.filteredLogs) {
                 if isFollowing, let log = viewModel.filteredLogs.last {
-                    proxy.scrollTo(log.message+log.date.ISO8601Format(), anchor: .bottom)
+                    DispatchQueue.main.async {
+                        proxy.scrollTo(log.message+log.date.ISO8601Format(), anchor: .bottom)
+                    }
                 }
             }
             .onChange(of: isFollowing) {

@@ -139,7 +139,10 @@ public struct MockDetailView: View {
         .navigationDestination(isPresented: $shouldShowMockReloadView) {
             MockReloadView(viewModel: .init(mockModel: viewModel.mockModel, mockDomain: viewModel.mockDomain))
         }
-        .onReceive(viewModel.viewDismissalModePublisher) { withAnimation { dismiss() } }
+        .onChange(of: viewModel.shouldDismissView) { _, _ in
+            guard viewModel.shouldDismissView else { return }
+            withAnimation { dismiss() }
+        }
         .task(id: viewModel.mockModel.responseBody) { viewModel.jsonEditorModelTypeChanged() }
         .task(id: viewModel.mockModel.responseHeader) { viewModel.jsonEditorModelTypeChanged() }
         .task(id: viewModel.mockModel.metaData) { viewModel.checkUnsavedChanges() }

@@ -27,6 +27,7 @@ public struct CustomSearchbar: NSViewRepresentable {
         return textField
     }
 
+    @MainActor
     public func updateNSView(_ nsView: NSTextField, context: Context) {
         nsView.stringValue = text
 

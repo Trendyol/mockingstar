@@ -8,13 +8,11 @@
 import CommonKit
 import SwiftUI
 import MockingStarCore
-import Combine
 
 @Observable
 public final class MockListViewModel {
     private let logger = Logger(category: "MockListViewModel")
     private let fileManager: FileManagerInterface
-    private var cancelableSet = Set<AnyCancellable>()
     private let mockDiscover: MockDiscoverInterface
 
     private var listSortTask: Task<(), Never>? = nil
@@ -47,16 +45,20 @@ public final class MockListViewModel {
     }
 
     private func listenMockDiscover() {
-        mockDiscover.mockListSubject
-            .debounce(for: .seconds(0.5), scheduler: DispatchQueue.main)
-            .receive(on: RunLoop.main)
-            .sink { [weak self] mocks in
-                self?.isLoading = mocks == nil
-                self?.mockModelList = Array(mocks ?? [])
+        Task {
+            for await result in mockDiscover.mockDiscoverResult {
+                switch result {
+                case .loading:
+                    isLoading = true
+                    mockModelList.removeAll()
+                case .result(let mocks):
+                    isLoading = false
+                    mockModelList = mocks
+                }
             }
-            .store(in: &cancelableSet)
+        }
     }
-    
+
     /// Searches and filters mock data based on the specified search term, filter type, and filter style.
     ///
     /// This asynchronous function performs a case-insensitive search on the mock model list based on the specified search term. It filters the mocks based on the selected filter type, filter style, and the specified conditions.

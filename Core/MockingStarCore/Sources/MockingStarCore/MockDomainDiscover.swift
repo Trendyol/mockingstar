@@ -6,18 +6,17 @@
 //
 
 import Foundation
-import Combine
 import CommonKit
-import SwiftUI
 
+#if os(macOS)
 @Observable
+#endif
 public final class MockDomainDiscover {
     private let logger = Logger(category: "MockDomainDiscover")
     public var domains: [String] = []
     private let fileManager: FileManagerInterface
     private var watcher: DirectoryMonitorInterface!
     private let fileUrlBuilder: FileUrlBuilderInterface
-    private var cancelableSet = Set<AnyCancellable>()
     private var isWatcherStarted = false
 
     public init(fileManager: FileManagerInterface = FileManager.default,

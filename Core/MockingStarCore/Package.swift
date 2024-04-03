@@ -27,7 +27,8 @@ let package = Package(
             dependencies: [
                 "Server",
                 "CommonKit",
-                "PluginCore"
+                .product(name: "PluginCore", package: "PluginCore", condition: .when(platforms: [.macOS])),
+                .product(name: "PluginCoreLinux", package: "PluginCore", condition: .when(platforms: [.linux])),
             ]
         ),
         .target(name: "MockingStarCoreTestSupport", dependencies: [

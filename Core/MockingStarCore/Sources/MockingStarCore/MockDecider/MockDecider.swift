@@ -6,9 +6,10 @@
 //
 
 import Foundation
-import Combine
 import CommonKit
-
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 protocol MockDeciderInterface {
     /// Active state mock filter configurations

@@ -6,7 +6,6 @@
 //
 
 import AnyCodable
-import Combine
 import CommonKit
 import CommonViewsKit
 import JSONEditor
@@ -35,7 +34,7 @@ public final class MockDetailViewModel {
     var jsonValidationTask: Task<(), Never>? = nil
 
     // MARK: Alerts & Navigations
-    let viewDismissalModePublisher = PassthroughSubject<Void, Never>()
+    private(set) var shouldDismissView: Bool = false
     private(set) var jsonValidationMessage: String? = nil
     var shouldShowSaveErrorAlert = false
     private(set) var saveErrorMessage = ""
@@ -196,7 +195,7 @@ public final class MockDetailViewModel {
 
         do {
             try fileManager.removeFile(at: filePath)
-            viewDismissalModePublisher.send()
+            shouldDismissView = true
         } catch {
             showErrorMessage("Mock couldn't delete\n\(error.localizedDescription)")
         }

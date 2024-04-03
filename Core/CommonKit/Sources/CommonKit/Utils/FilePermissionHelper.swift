@@ -11,18 +11,18 @@ public final class FilePermissionHelper {
     private static var shared: FilePermissionHelper? = nil
     private let logger = Logger(category: "FilePermissionHelper")
     let fileBookMark: Data
-
+    
     public init(fileBookMark: Data) {
         self.fileBookMark = fileBookMark
         logger.debug("initialize")
         FilePermissionHelper.shared = self
     }
-
+    
     deinit {
         logger.debug("deinitialize")
         try? stopAccessingSecurityScopedResource()
     }
-
+    
     /// Starts accessing a security-scoped resource using a bookmark.
     ///
     /// This function resolves the provided bookmark data into a URL and starts accessing the security-scoped resource.
@@ -31,10 +31,11 @@ public final class FilePermissionHelper {
     /// - Throws:
     ///   - If resolving the bookmark data or starting the access process encounters an error, a `FilePermissionHelperError` is thrown.
     public func startAccessingSecurityScopedResource() throws {
+#if os(macOS)
         do {
             var isStale = false
             let bookMarkUrl = try URL(resolvingBookmarkData: fileBookMark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
-
+            
             guard bookMarkUrl.startAccessingSecurityScopedResource() else {
                 logger.critical("startAccessingSecurityScopedResource failed")
                 throw FilePermissionHelperError.fileBookMarkAccessingFailed
@@ -43,8 +44,9 @@ public final class FilePermissionHelper {
             logger.critical("startAccessingSecurityScopedResource failed. Error: \(error)")
             throw FilePermissionHelperError.fileBookMarkLoadingError(error)
         }
+#endif
     }
-
+    
     /// Stops accessing a security-scoped resource using a bookmark.
     ///
     /// This function resolves the provided bookmark data into a URL and stops accessing the security-scoped resource.
@@ -52,6 +54,7 @@ public final class FilePermissionHelper {
     /// - Throws:
     ///   - If resolving the bookmark data or stopping the access process encounters an error, a `FilePermissionHelperError` is thrown.
     public func stopAccessingSecurityScopedResource() throws {
+#if os(macOS)
         do {
             var isStale = false
             let bookMarkUrl = try URL(resolvingBookmarkData: fileBookMark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
@@ -60,13 +63,14 @@ public final class FilePermissionHelper {
             logger.critical("stopAccessingSecurityScopedResource failed. Error: \(error)")
             throw FilePermissionHelperError.fileBookMarkLoadingError(error)
         }
+#endif
     }
 }
 
 public enum FilePermissionHelperError: LocalizedError {
     case fileBookMarkLoadingError(Error)
     case fileBookMarkAccessingFailed
-
+    
     public var errorDescription: String? {
         switch self {
         case .fileBookMarkLoadingError(let error):

@@ -8,7 +8,6 @@
 import Foundation
 import CommonKit
 import SwiftUI
-import Combine
 
 @Observable
 final class SettingsViewModel {

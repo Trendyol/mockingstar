@@ -5,30 +5,32 @@
 //  Created by Yusuf Özgül on 16.10.2023.
 //
 
-import Combine
 import FlyingSocks
 import Foundation
+#if canImport(os)
 @preconcurrency import os
+#endif
 
 public final class LogStorage {
     public static let shared = LogStorage()
     private var logs: [LogModel] = []
-    private let loggerStream: PassthroughSubject<LogModel, Never> = .init()
-    public let logsSubject: CurrentValueSubject<[LogModel], Never> = .init([])
-    private var cancellables = Set<AnyCancellable>()
+    private let (logStream, logContinuation) = AsyncStream.makeStream(of: LogModel.self)
+    public let allLogsStream: AsyncStream<[LogModel]>
+    private let allLogsContinuation: AsyncStream<[LogModel]>.Continuation
 
     private init() {
-        loggerStream
-            .receive(on: DispatchQueue.global())
-            .sink { log in
-                self.logs.append(log)
-                self.logsSubject.send(self.logs)
+       (allLogsStream, allLogsContinuation) = AsyncStream.makeStream(of: [LogModel].self)
+
+        Task {
+            for await log in logStream {
+                logs.append(log)
+                allLogsContinuation.yield(logs)
             }
-            .store(in: &cancellables)
+        }
     }
 
     fileprivate static func addLog(_ log: LogModel) {
-        LogStorage.shared.loggerStream.send(log)
+        LogStorage.shared.logContinuation.yield(log)
     }
 
     public func writeToFile(_ folder: String) {
@@ -37,22 +39,24 @@ public final class LogStorage {
             FileManager.default.createFile(atPath: filePath.path(), contents: nil)
         }
 
-        logsSubject
-            .receive(on: DispatchQueue.global())
-            .sink { logs in
-                try? logs
-                    .map { "\($0.date.formatted(.iso8601)) \($0.severity.rawValue) \($0.message)" }
-                    .joined(separator: "\n")
-                    .write(toFile: filePath.path(), atomically: true, encoding: .utf8)
+        guard let fileHandle = try? FileHandle(forWritingTo: filePath) else { return }
+
+        Task {
+            for await log in logStream {
+                let data = "\(log.date.formatted(.iso8601)) \(log.severity.rawValue) \(log.message)".data(using: .utf8) ?? .init()
+
+                fileHandle.seekToEndOfFile()
+                fileHandle.write(data)
             }
-            .store(in: &cancellables)
+        }
     }
 
     public func stdOut() {
-        loggerStream
-            .receive(on: DispatchQueue.global())
-            .sink { print("\($0.date.formatted(.iso8601)) \($0.severity.rawValue) \($0.message)") }
-            .store(in: &cancellables)
+        Task {
+            for await log in logStream {
+                print("\(log.date.formatted(.iso8601)) \(log.severity.rawValue) \(log.message)")
+            }
+        }
     }
 }
 

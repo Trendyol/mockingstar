@@ -7,6 +7,9 @@
 
 import CommonKit
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 actor ScenarioDecidersActor {
     private var deciderList: [String: ScenarioDecider] = [:]
