@@ -40,7 +40,7 @@ jobs:
             security list-keychains -d user -s MockingStarKeychain.keychain
             security set-keychain-settings -u -t 3600 MockingStarKeychain.keychain
             
-            security import ./certs/MockingStarCert.p12 -k MockingStarKeychain.keychain -P ${{ secrets.PASS }}
+            security import ./certs/MockingStarCert.p12 -k MockingStarKeychain.keychain -P ${{ secrets.PASS }} -T /usr/bin/codesign
             cp ./certs/Direct_com.trendyol.MockingStar.provisionprofile ~/Library/MobileDevice/Provisioning\ Profiles/7a785103-ddb5-42f4-99b5-d7cdb5b6cae9.provisionprofile
 
     - name: Update App Version
