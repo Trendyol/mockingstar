@@ -30,18 +30,19 @@ jobs:
     - name: Install Certs and Profiles
       run: |
             mkdir ./certs
-            echo ${{ secrets.CERT }} | base64 -D > MockingStarCert.p12
-            echo ${{ secrets.PROFILE }} | base64 -D > Direct_com.trendyol.MockingStar.provisionprofile
-            echo ${{ secrets.ASC_KEY }} | base64 -D > ASCKEY.p8
-            echo ${{ secrets.SPARKLE_PRIVATE_KEY }} | base64 -D > Sparkle.key
+            echo ${{ secrets.CERT }} | base64 -D > ./certs/MockingStarCert.p12
+            echo ${{ secrets.PROFILE }} | base64 -D > ./certs/Direct_com.trendyol.MockingStar.provisionprofile
+            echo ${{ secrets.ASC_KEY }} | base64 -D > ./certs/ASCKEY.p8
+            echo ${{ secrets.SPARKLE_PRIVATE_KEY }} | base64 -D > ./certs/Sparkle.key
 
             security create-keychain -p ${{ secrets.PASS }} MockingStarKeychain.keychain
             security unlock-keychain -p ${{ secrets.PASS }} MockingStarKeychain.keychain
             security list-keychains -d user -s MockingStarKeychain.keychain
             security set-keychain-settings -u -t 3600 MockingStarKeychain.keychain
             
-            security import MockingStarCert.p12 -k MockingStarKeychain.keychain -P ${{ secrets.PASS }}
-            cp Direct_com.trendyol.MockingStar.provisionprofile ~/Library/MobileDevice/Provisioning\ Profiles/7a785103-ddb5-42f4-99b5-d7cdb5b6cae9.provisionprofile
+            security import ./certs/MockingStarCert.p12 -k MockingStarKeychain.keychain -P ${{ secrets.PASS }} -A
+            security set-key-partition-list -S apple-tool:,apple: -k ${{ secrets.PASS }} ~/Library/Keychains/MockingStarKeychain.keychain-db >/dev/null || true
+            cp ./certs/Direct_com.trendyol.MockingStar.provisionprofile ~/Library/MobileDevice/Provisioning\ Profiles/7a785103-ddb5-42f4-99b5-d7cdb5b6cae9.provisionprofile
 
     - name: Update App Version
       run: |
@@ -54,12 +55,13 @@ jobs:
                 -workspace MockingStar.xcworkspace \
                 -scheme MockingStar \
                 -archivePath ./.build/archive \
+                -derivedDataPath ./.build/derivedData \
                 -skipMacroValidation \
                 DEVELOPMENT_TEAM=${{ secrets.TEAM_ID }} \
                 CODE_SIGN_STYLE=Manual \
                 CODE_SIGN_IDENTITY="${{ secrets.CODESIGNING_IDENTITY }}" \
                 PROVISIONING_PROFILE="com.trendyol.mocking-star Direct" \
-                OTHER_CODE_SIGN_FLAGS=--keychain '~/Library/Keychains/MockingStarKeychain.keychain-db' | xcbeautify --renderer github-actions
+                OTHER_CODE_SIGN_FLAGS="--keychain '~/Library/Keychains/MockingStarKeychain.keychain-db'" | xcbeautify --renderer github-actions
 
     - name: Export Archive
       run: |
@@ -79,20 +81,21 @@ jobs:
 
     - name: Create Sparkle Update
       run: |
-            MinimumVersion=$(plutil -extract LSMinimumSystemVersion raw -o - .build/appBuildOutput/MockingStar.app/Contents/Info.plist
+            MinimumVersion=$(plutil -extract LSMinimumSystemVersion raw -o - .build/appBuildOutput/MockingStar.app/Contents/Info.plist)
             Signature=$(./.build/derivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update -f certs/Sparkle.key .build/appBuildOutput/MockingStar-App.zip)
             Signature=$(echo "$Signature" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
-            RELEASE_VERSION=${{ env.RELEASE_VERSION }} \
-                BUILD_NUMBER=${{ env.BUILD_NUMBER }} \
-                RELEASE_VERSION_TAG=${{ github.event.release.tag_name }} \
-                RELEASE_NOTES=${{ github.event.release.body }} \
-                MinimumVersion=$MinimumVersion \
-                Signature=$Signature \
-                swift run --package-path ./SparkleActions
+            export RELEASE_VERSION="${{ env.RELEASE_VERSION }}"
+            export BUILD_NUMBER="${{ env.BUILD_NUMBER }}"
+            export RELEASE_VERSION_TAG="${{ github.event.release.tag_name }}"
+            export RELEASE_NOTES="${{ github.event.release.body }}"
+            export MinimumVersion="$MinimumVersion"
+            export Signature="$Signature"
+            
+            swift run --package-path ./SparkleActions
 
             git commit -m 'Release version ${{ github.event.release.tag_name }}! 🎉' Appcast.xml
-            git push
+            git push -u origin main
 
     - name: Create a Release
       uses: ncipollo/release-action@v1
