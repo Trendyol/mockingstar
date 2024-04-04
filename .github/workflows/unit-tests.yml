@@ -15,4 +15,4 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Run Xcode Unit Tests
-      run: set -o pipefail && xcodebuild test -workspace MockingStar.xcworkspace -scheme MockingStar -testPlan TestPlan | xcbeautify --renderer github-actions
+      run: set -o pipefail && xcodebuild test -workspace MockingStar.xcworkspace -scheme MockingStar -testPlan TestPlan -skipMacroValidation | xcbeautify --renderer github-actions
