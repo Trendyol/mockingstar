@@ -102,13 +102,11 @@ jobs:
         artifacts: '.build/appBuildOutput/MockingStar-App.zip'
         allowUpdates: true
         omitBodyDuringUpdate: true
-  clean:
+    
+    clean:
     name: Clean Keychain And Files
     run: |
           security delete-keychain MockingStarKeychain.keychain-db
           rm -rf ./certs
           rm ~/Library/MobileDevice/Provisioning\ Profiles/7a785103-ddb5-42f4-99b5-d7cdb5b6cae9.provisionprofile
-    needs: [
-       release
-    ]
     if: always()
