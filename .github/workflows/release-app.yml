@@ -60,7 +60,7 @@ jobs:
                 CODE_SIGN_STYLE=Manual \
                 CODE_SIGN_IDENTITY="${{ secrets.CODESIGNING_IDENTITY }}" \
                 PROVISIONING_PROFILE="com.trendyol.mocking-star Direct" \
-                OTHER_CODE_SIGN_FLAGS=--keychain '~/Library/Keychains/MockingStarKeychain.keychain-db' | xcbeautify --renderer github-actions
+                OTHER_CODE_SIGN_FLAGS="--keychain '~/Library/Keychains/MockingStarKeychain.keychain-db'" | xcbeautify --renderer github-actions
 
     - name: Export Archive
       run: |
