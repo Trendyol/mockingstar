@@ -80,7 +80,7 @@ jobs:
 
     - name: Create Sparkle Update
       run: |
-            MinimumVersion=$(plutil -extract LSMinimumSystemVersion raw -o - .build/appBuildOutput/MockingStar.app/Contents/Info.plist
+            MinimumVersion=$(plutil -extract LSMinimumSystemVersion raw -o - .build/appBuildOutput/MockingStar.app/Contents/Info.plist)
             Signature=$(./.build/derivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update -f certs/Sparkle.key .build/appBuildOutput/MockingStar-App.zip)
             Signature=$(echo "$Signature" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
