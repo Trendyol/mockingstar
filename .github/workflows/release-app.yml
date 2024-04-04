@@ -30,18 +30,18 @@ jobs:
     - name: Install Certs and Profiles
       run: |
             mkdir ./certs
-            echo ${{ secrets.CERT }} | base64 -D > MockingStarCert.p12
-            echo ${{ secrets.PROFILE }} | base64 -D > Direct_com.trendyol.MockingStar.provisionprofile
-            echo ${{ secrets.ASC_KEY }} | base64 -D > ASCKEY.p8
-            echo ${{ secrets.SPARKLE_PRIVATE_KEY }} | base64 -D > Sparkle.key
+            echo ${{ secrets.CERT }} | base64 -D > ./certs/MockingStarCert.p12
+            echo ${{ secrets.PROFILE }} | base64 -D > ./certs/Direct_com.trendyol.MockingStar.provisionprofile
+            echo ${{ secrets.ASC_KEY }} | base64 -D > ./certs/ASCKEY.p8
+            echo ${{ secrets.SPARKLE_PRIVATE_KEY }} | base64 -D > ./certs/Sparkle.key
 
             security create-keychain -p ${{ secrets.PASS }} MockingStarKeychain.keychain
             security unlock-keychain -p ${{ secrets.PASS }} MockingStarKeychain.keychain
             security list-keychains -d user -s MockingStarKeychain.keychain
             security set-keychain-settings -u -t 3600 MockingStarKeychain.keychain
             
-            security import MockingStarCert.p12 -k MockingStarKeychain.keychain -P ${{ secrets.PASS }}
-            cp Direct_com.trendyol.MockingStar.provisionprofile ~/Library/MobileDevice/Provisioning\ Profiles/7a785103-ddb5-42f4-99b5-d7cdb5b6cae9.provisionprofile
+            security import ./certs/MockingStarCert.p12 -k MockingStarKeychain.keychain -P ${{ secrets.PASS }}
+            cp ./certs/Direct_com.trendyol.MockingStar.provisionprofile ~/Library/MobileDevice/Provisioning\ Profiles/7a785103-ddb5-42f4-99b5-d7cdb5b6cae9.provisionprofile
 
     - name: Update App Version
       run: |
