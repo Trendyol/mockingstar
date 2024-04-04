@@ -42,8 +42,11 @@ final class MockListViewModelTests: XCTestCase {
 
         let exp = XCTestExpectation(description: "MockListViewModelTests")
 
-        Task(priority: .low) {
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
+        Task {
+            while !viewModel.isLoading {
+                try? await Task.sleep(nanoseconds: 50_000_000)
+            }
+
             exp.fulfill()
         }
 

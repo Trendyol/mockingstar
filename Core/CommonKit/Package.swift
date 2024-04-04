@@ -17,7 +17,7 @@ let package = Package(
             targets: ["CommonKitTestSupport"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/yusufozgul/AnyCodable", .upToNextMajor(from: "1.1.1")),
+        .package(url: "https://github.com/yusufozgul/AnyCodable", .upToNextMajor(from: "1.1.4")),
         .package(url: "https://github.com/aus-der-Technik/FileMonitor.git", from: "1.0.0"),
         .package(url: "https://github.com/swhitty/FlyingFox.git", .upToNextMajor(from: "0.12.1")),
     ],

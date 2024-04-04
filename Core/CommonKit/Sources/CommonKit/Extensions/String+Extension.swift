@@ -25,8 +25,8 @@ public extension String {
         characterSet.insert("+")
 
         return self
-            .components(separatedBy: "/")
-            .drop(while: \.isEmpty)
+            . components(separatedBy: "/")
+            .filter { !$0.isEmpty }
             .compactMap { $0.addingPercentEncoding(withAllowedCharacters: characterSet) }
             .joined(separator: "/")
     }

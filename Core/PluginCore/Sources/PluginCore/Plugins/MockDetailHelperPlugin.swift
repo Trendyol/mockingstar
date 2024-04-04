@@ -7,7 +7,6 @@
 
 import CommonKit
 import Foundation
-import JSValueCoder
 import JavaScriptCore
 import SwiftyJS
 

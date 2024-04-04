@@ -17,7 +17,7 @@ let package = Package(
     dependencies: [
         .package(path: "../../Core/CommonViewsKit"),
         .package(path: "../../Core/PluginCore"),
-        .package(url: "https://github.com/yusufozgul/AnyCodable", .upToNextMajor(from: "1.1.1")),
+        .package(url: "https://github.com/yusufozgul/AnyCodable", .upToNextMajor(from: "1.1.4")),
     ],
     targets: [
         .target(
