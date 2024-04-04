@@ -20,6 +20,11 @@ jobs:
     - name: Set env
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
+    - name: Prepare Dependencies
+      run: |
+            sudo apt update
+            sudo apt install curl -y
+
     - name: Build Mocking Star CLI
       run: swift build -c release --package-path ./MockingStarExecutable --static-swift-stdlib
 

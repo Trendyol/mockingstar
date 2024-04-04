@@ -95,7 +95,7 @@ jobs:
             swift run --package-path ./SparkleActions
 
             git commit -m 'Release version ${{ github.event.release.tag_name }}! 🎉' Appcast.xml
-            git push
+            git push -u origin main
 
     - name: Create a Release
       uses: ncipollo/release-action@v1
