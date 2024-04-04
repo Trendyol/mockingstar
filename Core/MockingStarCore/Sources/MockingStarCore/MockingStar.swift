@@ -174,6 +174,17 @@ public final class MockingStarCore {
             return
         }
 
+        guard (try? JSONSerialization.jsonObject(with: body)) != nil else {
+            logger.warning("Mock won't save due to response body is not json, path: \(request.url?.path() ?? "-")")
+            return
+        }
+
+        if let requestBody = request.httpBody,
+           (try? JSONSerialization.jsonObject(with: requestBody)) == nil {
+            logger.warning("Mock won't save due to request body is not json, path: \(request.url?.path() ?? "-")")
+            return
+        }
+
         Task {
             do {
                 logger.debug("Saving file")

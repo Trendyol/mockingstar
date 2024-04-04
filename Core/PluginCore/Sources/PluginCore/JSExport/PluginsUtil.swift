@@ -8,8 +8,8 @@
 import AnyCodable
 import CommonKit
 import Foundation
-import JSValueCoder
 import JavaScriptCore
+import SwiftyJS
 
 @objc
 protocol PluginUtilJSExport: JSExport {

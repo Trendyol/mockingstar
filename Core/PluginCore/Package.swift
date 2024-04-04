@@ -20,9 +20,8 @@ let package = Package(
             targets: ["PluginCoreTestSupport"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/yusufozgul/SwiftyJS", branch: "main"),
-        .package(url: "https://github.com/theolampert/JSValueCoder", branch: "main"),
-        .package(url: "https://github.com/yusufozgul/AnyCodable", .upToNextMajor(from: "1.1.1")),
+        .package(url: "https://github.com/yusufozgul/SwiftyJS", .upToNextMinor(from: "0.0.4")),
+        .package(url: "https://github.com/yusufozgul/AnyCodable", .upToNextMajor(from: "1.1.4")),
         .package(path: "../CommonKit"),
     ],
     targets: [
@@ -30,7 +29,6 @@ let package = Package(
             name: "PluginCore",
             dependencies: [
                 "SwiftyJS",
-                "JSValueCoder",
                 "AnyCodable",
                 "CommonKit",
             ]),
