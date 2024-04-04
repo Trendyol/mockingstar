@@ -40,7 +40,8 @@ jobs:
             security list-keychains -d user -s MockingStarKeychain.keychain
             security set-keychain-settings -u -t 3600 MockingStarKeychain.keychain
             
-            security import ./certs/MockingStarCert.p12 -k MockingStarKeychain.keychain -P ${{ secrets.PASS }} -T /usr/bin/codesign
+            security import ./certs/MockingStarCert.p12 -k MockingStarKeychain.keychain -P ${{ secrets.PASS }} -A
+            security set-key-partition-list -S apple-tool:,apple: -k ${{ secrets.PASS }} ~/Library/Keychains/MockingStarKeychain.keychain-db >/dev/null || true
             cp ./certs/Direct_com.trendyol.MockingStar.provisionprofile ~/Library/MobileDevice/Provisioning\ Profiles/7a785103-ddb5-42f4-99b5-d7cdb5b6cae9.provisionprofile
 
     - name: Update App Version
@@ -83,13 +84,14 @@ jobs:
             Signature=$(./.build/derivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update -f certs/Sparkle.key .build/appBuildOutput/MockingStar-App.zip)
             Signature=$(echo "$Signature" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
-            RELEASE_VERSION=${{ env.RELEASE_VERSION }} \
-                BUILD_NUMBER=${{ env.BUILD_NUMBER }} \
-                RELEASE_VERSION_TAG=${{ github.event.release.tag_name }} \
-                RELEASE_NOTES=${{ github.event.release.body }} \
-                MinimumVersion=$MinimumVersion \
-                Signature=$Signature \
-                swift run --package-path ./SparkleActions
+            export RELEASE_VERSION="${{ env.RELEASE_VERSION }}"
+            export BUILD_NUMBER="${{ env.BUILD_NUMBER }}"
+            export RELEASE_VERSION_TAG="${{ github.event.release.tag_name }}"
+            export RELEASE_NOTES="${{ github.event.release.body }}"
+            export MinimumVersion="$MinimumVersion"
+            export Signature="$Signature"
+            
+            swift run --package-path ./SparkleActions
 
             git commit -m 'Release version ${{ github.event.release.tag_name }}! 🎉' Appcast.xml
             git push
