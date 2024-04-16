@@ -16,7 +16,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Reset Dependencies
-      run: swift packege purge-cache
+      run: swift package purge-cache
 
     - name: Build DocC
       run: |
