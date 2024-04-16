@@ -15,8 +15,15 @@ jobs:
     - name: Check out Repository
       uses: actions/checkout@v2
 
+    - name: Reset Dependencies
+      run: swift packege purge-cache
+
     - name: Build DocC
-      run: set -o pipefail && xcodebuild docbuild -scheme MockingStar -derivedDataPath ./.Docc -workspace ./MockingStar.xcworkspace | xcbeautify --renderer github-actions
+      run: |
+            set -o pipefail && xcodebuild docbuild \
+                -scheme MockingStar \
+                -derivedDataPath ./.Docc \
+                -workspace ./MockingStar.xcworkspace | xcbeautify --renderer github-actions
 
     - name: Export DocC
       run: $(xcrun --find docc) process-archive transform-for-static-hosting ./.Docc/Build/Products/Debug/MockingStar.doccarchive --output-path ./.docsExport --hosting-base-path mockingstar

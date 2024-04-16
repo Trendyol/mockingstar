@@ -92,3 +92,4 @@ iOSInjectionProject/
 .idea
 .vscode
 fastlaneRunner/.swiftpm/*
+.swiftpm

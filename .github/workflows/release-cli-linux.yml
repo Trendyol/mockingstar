@@ -23,7 +23,7 @@ jobs:
     - name: Prepare Dependencies
       run: |
             sudo apt update
-            sudo apt install curl -y
+            sudo NEEDRESTART_MODE=a apt install curl -y
 
     - name: Build Mocking Star CLI
       run: swift build -c release --package-path ./MockingStarExecutable --static-swift-stdlib
