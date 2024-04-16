@@ -41,7 +41,7 @@ actor ScenarioDecider {
     ///
     /// - Parameter scenario: The ``ScenarioModel` to be added.
     func addNewScenario(_ scenario: ScenarioModel) {
-        scenarios.removeAll(where: { $0.deviceId == scenario.deviceId && $0.mockDomain == scenario.mockDomain && $0.path == scenario.path })
+        scenarios.removeAll(where: { $0.deviceId == scenario.deviceId && $0.mockDomain == scenario.mockDomain && $0.path == scenario.path && $0.method == scenario.method })
         scenarios.append(scenario)
     }
 
