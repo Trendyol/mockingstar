@@ -19,6 +19,7 @@ jobs:
       run: |
             set -o pipefail && xcodebuild docbuild \
                 -scheme MockingStar \
+                -skipMacroValidation \
                 -derivedDataPath ./.Docc \
                 -workspace ./MockingStar.xcworkspace | xcbeautify --renderer github-actions
 
