@@ -101,11 +101,12 @@ jobs:
     - name: Create a Release
       uses: ncipollo/release-action@v1
       with:
-        tag: ${{ env.RELEASE_VERSION }}
-        name: MockingStar - Release ${{ env.RELEASE_VERSION }}
+        tag: ${{ github.event.release.tag_name }}
+        name: MockingStar - Release ${{ github.event.release.tag_name }}
         artifacts: '.build/appBuildOutput/MockingStar-App.zip'
         allowUpdates: true
         omitBodyDuringUpdate: true
+        makeLatest: false
     
     - name: Clean Keychain And Files
       if: always()

@@ -31,7 +31,8 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         tag: ${{ github.event.release.tag_name }}
-        name: MockingStar - Release ${{ env.RELEASE_VERSION }}
+        name: MockingStar - Release ${{ github.event.release.tag_name }}
         artifacts: '.build/MockingStar-CLI.zip'
         allowUpdates: true
         omitBodyDuringUpdate: true
+        makeLatest: false
