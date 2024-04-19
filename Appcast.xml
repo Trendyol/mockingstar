@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 1.1.2</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed</h2><ul><li>fix/check-path-remove-scenario by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/21</li></ul><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/1.1.1-7...1.1.2-8</p>
+                ]]>
+            </description>
+            <pubDate>Çar, 17 Nis 2024 15:04:07 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/1.1.2-8/MockingStar-App.zip"
+            sparkle:version="8" sparkle:shortVersionString="1.1.2"
+            sparkle:edSignature="FJuNsmxMujtUJiHjJnH2yjtXSsf7FSHc6mxLZrJdDdkLZxNMiF9C4A/WrzSAXkBm6mxRbvgKWJiNN27h//2uAw==" length="4321895"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 1.1.1</title>
             <description>
                 <![CDATA[
