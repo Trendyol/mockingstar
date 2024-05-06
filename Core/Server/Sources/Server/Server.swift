@@ -27,7 +27,7 @@ public final class Server: ServerInterface {
 
 
     public init(port: UInt16 = 8008) {
-        server = .init(port: port, logger: ServerLogger())
+        server = .init(port: port, logger: Logger(category: "Server"))
         logger.debug("Server initialized on \(port)")
         address = "localhost:\(port)"
     }

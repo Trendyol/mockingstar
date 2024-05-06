@@ -16,13 +16,20 @@ final class LogsViewModel {
     private(set) var filteredLogs: [LogModel] = []
     var filterType: Set<LogSeverity> = Set(LogSeverity.allCases)
     var searchTerm: String = ""
+    private let logStreamHandler: LogStreamHandlerInterface
 
-    init(logsStream: AsyncStream<[LogModel]> = LogStorage.shared.allLogsStream) {
-        Task { @MainActor in
-            for await logs in logsStream {
-                allLogs = logs
-                filterLogs()
-            }
+    init(logStreamHandler: LogStreamHandlerInterface = LogStreamHandler.shared) {
+        self.logStreamHandler = logStreamHandler
+    }
+
+    @MainActor
+    func readLogs() async {
+        allLogs = logStreamHandler.readAllLogs()
+        filterLogs()
+
+        for await log in logStreamHandler.stream() {
+            allLogs.append(log)
+            filterLogs()
         }
     }
 
