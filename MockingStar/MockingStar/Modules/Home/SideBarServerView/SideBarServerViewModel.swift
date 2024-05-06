@@ -5,9 +5,10 @@
 //  Created by Yusuf Özgül on 28.09.2023.
 //
 
-import SwiftUI
-import Server
+import CommonKit
 import MockingStarCore
+import Server
+import SwiftUI
 
 @Observable
 final class SideBarServerViewModel {
@@ -16,7 +17,10 @@ final class SideBarServerViewModel {
     private let defaultServers: [ServerInterface]
 
     private init() {
-        defaultServers = [Server()]
+        @UserDefaultStorage("httpServerPort") var httpServerPort: UInt16 = 8008
+        defaultServers = [
+            Server(port: httpServerPort)
+        ]
         prepareDefaultHTTPServer()
     }
 
