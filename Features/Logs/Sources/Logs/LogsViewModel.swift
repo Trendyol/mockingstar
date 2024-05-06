@@ -14,7 +14,7 @@ final class LogsViewModel {
     private var allLogs: [LogModel] = []
     private var clearedLogs: [LogModel] = []
     private(set) var filteredLogs: [LogModel] = []
-    var filterType: Set<LogSeverity> = Set(LogSeverity.allCases)
+    var filterType: Set<LogSeverity> = [.critical, .error, .fault, .warning]
     var searchTerm: String = ""
     private let logStreamHandler: LogStreamHandlerInterface
 
