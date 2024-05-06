@@ -8,6 +8,7 @@
 import Foundation
 import Logging
 
+#if os(macOS)
 public protocol LogStreamHandlerInterface {
     func readAllLogs() -> [LogModel]
     func stream() -> AsyncStream<LogModel>
@@ -47,3 +48,4 @@ public final class LogStreamHandler: LogHandler, LogStreamHandlerInterface {
         return logStream
     }
 }
+#endif

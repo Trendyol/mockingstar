@@ -8,6 +8,7 @@
 import Foundation
 import Logging
 
+#if os(macOS)
 final class JSONFileLogHandler: LogHandler {
     static let shared = JSONFileLogHandler()
     private let fileURL: URL
@@ -38,3 +39,4 @@ final class JSONFileLogHandler: LogHandler {
         fileHandle?.write(data)
     }
 }
+#endif

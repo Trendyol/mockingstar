@@ -55,13 +55,14 @@ public final class Logger {
         self.category = category
         logger = .init(label: category, factory: { label in
             var logHandlers: [LogHandler] = []
-#if DEBUG
-            logHandlers.append(OSLogHandler(category: category))
-#endif
 
 #if os(macOS)
             logHandlers.append(JSONFileLogHandler.shared)
             logHandlers.append(LogStreamHandler.shared)
+
+#if DEBUG
+            logHandlers.append(OSLogHandler(category: category))
+#endif
 #else
             logHandlers.append(ConsoleLogHandler())
 #endif
