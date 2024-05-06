@@ -7,7 +7,7 @@
 
 import FlyingFox
 import Foundation
-@preconcurrency import CommonKit
+import CommonKit
 
 public protocol ServerMockHandlerInterface {
     func handle(url: URL, method: String, headers: [String: String], body: Data?, rawFlags: [String: String]) async throws -> (status: Int, body: Data, headers: [String: String])

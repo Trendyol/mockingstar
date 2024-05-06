@@ -26,6 +26,9 @@ struct SettingsView: View {
             }
 
             TextField("Server Port", value: $viewModel.httpServerPort, format: .port(), prompt: Text("Server Port"))
+            Text("If you change server port, please restart application.")
+                .foregroundStyle(.secondary)
+                .font(.footnote)
 
             LabeledContent("Diagnostic") {
                 DiagnosticView()

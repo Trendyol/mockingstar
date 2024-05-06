@@ -17,17 +17,11 @@ import SwiftUI
 
 struct AppNavigationSplitView: View {
     @State private var initializeAppOnboardingDone: Bool = false
-    @State private var lastMockFolderFilePath: String = ""
     @Bindable private var navigationStore = NavigationStore.shared
     @SceneStorage("mockDomain") var mockDomain: String = ""
     @AppStorage("isOnboardingDone") private var isOnboardingDone: Bool = false
     @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
     private let mockListViewModel = MockListViewModel()
-
-    init() {
-        lastMockFolderFilePath = mockFolderFilePath
-        listenMockFolderPathChanges()
-    }
 
     var body: some View {
         Group {
@@ -68,15 +62,11 @@ struct AppNavigationSplitView: View {
                 }
             }
         }
-        .task(id: lastMockFolderFilePath, priority: .userInitiated) {
-            initializeAppOnboardingDone = false
-        }
         .overlay { NotificationView() }
-    }
-
-    func listenMockFolderPathChanges() {
-        _mockFolderFilePath.onChange { path in
-            lastMockFolderFilePath = path
+        .onAppear {
+            _mockFolderFilePath.onChange { path in
+                initializeAppOnboardingDone = false
+            }
         }
     }
 }
