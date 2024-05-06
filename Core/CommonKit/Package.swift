@@ -20,14 +20,16 @@ let package = Package(
         .package(url: "https://github.com/yusufozgul/AnyCodable", .upToNextMajor(from: "1.1.4")),
         .package(url: "https://github.com/aus-der-Technik/FileMonitor.git", from: "1.0.0"),
         .package(url: "https://github.com/swhitty/FlyingFox.git", .upToNextMajor(from: "0.12.1")),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     ],
     targets: [
         .target(
             name: "CommonKit",
         dependencies: [
             "AnyCodable",
-            .product(name: "FileMonitor", package: "FileMonitor"),
             "FlyingFox",
+            .product(name: "FileMonitor", package: "FileMonitor"),
+            .product(name: "Logging", package: "swift-log"),
         ]),
         .target(
             name: "CommonKitTestSupport",

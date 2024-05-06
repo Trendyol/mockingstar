@@ -16,3 +16,37 @@ jobs:
 
     - name: Run Xcode Unit Tests
       run: set -o pipefail && xcodebuild test -workspace MockingStar.xcworkspace -scheme MockingStar -testPlan TestPlan -skipMacroValidation | xcbeautify --renderer github-actions
+
+  linux-test:
+    name: 'Linux Build Check'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out Repository
+      uses: actions/checkout@v2
+
+    - uses: swift-actions/setup-swift@v2
+
+    - name: Prepare Dependencies
+      run: |
+            sudo apt update
+            sudo NEEDRESTART_MODE=a apt-get install \
+                  binutils \
+                  git \
+                  gnupg2 \
+                  libc6-dev \
+                  libcurl4-openssl-dev \
+                  libedit2 \
+                  libgcc-9-dev \
+                  libpython3.8 \
+                  libsqlite3-0 \
+                  libstdc++-9-dev \
+                  libxml2-dev \
+                  libz3-dev \
+                  pkg-config \
+                  tzdata \
+                  unzip \
+                  zlib1g-dev -y
+
+    - name: Linux Build Check
+      run: swift build -c release --package-path ./MockingStarExecutable

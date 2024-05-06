@@ -35,10 +35,9 @@ struct MockingStar: ParsableCommand {
             mocksFolderPath = folder
 
             if let logsFolder, !logsFolder.isEmpty {
-                LogStorage.shared.writeToFile(logsFolder)
+                Logger.Constant.logsWriteFilePath = logsFolder
             }
-
-            LogStorage.shared.stdOut()
+            
             let server = HTTPServer(port: port)
             server.startServer()
 

@@ -24,6 +24,9 @@ let package = Package(
             dependencies: ["CommonKit", "CommonViewsKit"]),
         .testTarget(
             name: "LogsTests",
-            dependencies: ["Logs"]),
+            dependencies: [
+                "Logs",
+                .product(name: "CommonKitTestSupport", package: "CommonKit"),
+            ]),
     ]
 )

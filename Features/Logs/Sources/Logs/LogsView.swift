@@ -34,7 +34,7 @@ public struct LogsView: View {
                     .font(.caption)
                     .foregroundStyle(log.severity.color)
                 }
-                .id(log.message+log.date.ISO8601Format())
+                .id(log.id)
                 .padding(.vertical, 6)
                 .onAppear {
                     guard log == viewModel.filteredLogs.last else { return }
@@ -48,13 +48,13 @@ public struct LogsView: View {
             .onChange(of: viewModel.filteredLogs) {
                 if isFollowing, let log = viewModel.filteredLogs.last {
                     DispatchQueue.main.async {
-                        proxy.scrollTo(log.message+log.date.ISO8601Format(), anchor: .bottom)
+                        proxy.scrollTo(log.id, anchor: .bottom)
                     }
                 }
             }
             .onChange(of: isFollowing) {
                 if isFollowing, let log = viewModel.filteredLogs.last {
-                    proxy.scrollTo(log.message+log.date.ISO8601Format(), anchor: .bottom)
+                    proxy.scrollTo(log.id, anchor: .bottom)
                 }
             }
         }
@@ -147,6 +147,7 @@ public struct LogsView: View {
         }
         .task(id: viewModel.filterType) { viewModel.filterLogs() }
         .task(id: viewModel.searchTerm) { viewModel.filterLogs() }
+        .task { await viewModel.readLogs() }
     }
 }
 
