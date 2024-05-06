@@ -7,7 +7,7 @@
 
 import FlyingFox
 import Foundation
-@preconcurrency import CommonKit
+import CommonKit
 
 public protocol ServerMockSearchHandlerInterface {
     /// The `search` function makes an HTTP request with the specified parameters, using mock data or fetching data from a real server.

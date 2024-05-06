@@ -7,7 +7,7 @@
 
 import FlyingFox
 import Foundation
-@preconcurrency import CommonKit
+import CommonKit
 
 public protocol ScenarioHandlerInterface {
     func addScenario(scenario: ScenarioModel) async throws
