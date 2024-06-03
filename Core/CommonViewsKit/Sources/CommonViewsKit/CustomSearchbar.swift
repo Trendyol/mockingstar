@@ -27,8 +27,11 @@ public struct CustomSearchbar: NSViewRepresentable {
         return textField
     }
 
-    @MainActor
     public func updateNSView(_ nsView: NSTextField, context: Context) {
+        guard Thread.isMainThread else {
+            return DispatchQueue.main.async { self.updateNSView(nsView, context: context) }
+        }
+
         nsView.stringValue = text
 
         if placeholderCount != 0 {

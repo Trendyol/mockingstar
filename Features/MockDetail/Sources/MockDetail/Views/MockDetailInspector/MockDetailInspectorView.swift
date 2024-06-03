@@ -14,48 +14,91 @@ struct MockDetailInspectorView: View {
     @Bindable var viewModel: MockDetailInspectorViewModel
 
     var body: some View {
-        Form {
-            Section("Overview") {
-                LabeledContent("URL", value: viewModel.mockModel.metaData.url.absoluteString)
-                LabeledContent("Path", value: viewModel.mockModel.metaData.url.path())
-                LabeledContent("Query", value: viewModel.mockModel.metaData.url.query() ?? "")
-            }
-
-            Section("Mock State") {
-                LabeledContent("Is Modified", value: viewModel.mockModel.metaData.appendTime == viewModel.mockModel.metaData.updateTime ? "No" : "Yes")
-
-                TextField("Mock Scenario", text: $viewModel.scenario, prompt: Text("Enter a scenario"), axis: .vertical)
-                    .lineLimit(1...10)
-                TextField("HTTP Status", value: $viewModel.httpStatus, format: .httpStatus(), prompt: Text("HTTP Status Code"))
-
-                LabeledContent("Append Date", value: viewModel.mockModel.metaData.appendTime, format: .dateTime)
-
-                if viewModel.mockModel.metaData.appendTime != viewModel.mockModel.metaData.updateTime {
-                    LabeledContent("Update Date", value: viewModel.mockModel.metaData.updateTime, format: .dateTime)
+        List {
+            GroupBox {
+                VStack {
+                    LabeledContent("URL", value: viewModel.mockModel.metaData.url.absoluteString)
+                    Divider()
+                    LabeledContent("Path", value: viewModel.mockModel.metaData.url.path())
+                    Divider()
+                    LabeledContent("Query", value: viewModel.mockModel.metaData.url.query() ?? "")
                 }
+                .padding(6)
+            } label: {
+                Label("Overview", systemImage: "book.pages")
+                    .labelStyle(.titleOnly)
+                    .font(.title3)
+            }
+            .listRowSeparator(.hidden)
 
-                VStack(alignment: .leading) {
-                    Text("Response Time")
-                    Slider(value: $viewModel.responseTime, in: 0.0...30.0) {
-                        TextField(String(), value: $viewModel.responseTime, format: .number.precision(.fractionLength(2)), prompt: Text("Response Time (Second)"))
+            GroupBox {
+                VStack {
+                    LabeledContent("Is Modified", value: viewModel.mockModel.metaData.appendTime == viewModel.mockModel.metaData.updateTime ? "No" : "Yes")
+                    Divider()
+
+                    LabeledContent("Mock Scenario") {
+                        TextField("Mock Scenario", text: $viewModel.scenario, prompt: Text("Enter a scenario"), axis: .vertical)
+                            .lineLimit(1...10)
+                            .multilineTextAlignment(.trailing)
+                    }
+
+                    Divider()
+
+                    LabeledContent("HTTP Status") {
+                        TextField("HTTP Status", value: $viewModel.httpStatus, format: .httpStatus(), prompt: Text("HTTP Status Code"))
+                            .multilineTextAlignment(.trailing)
+                    }
+
+                    Divider()
+
+                    LabeledContent("Append Date", value: viewModel.mockModel.metaData.appendTime, format: .dateTime)
+                    Divider()
+
+                    if viewModel.mockModel.metaData.appendTime != viewModel.mockModel.metaData.updateTime {
+                        LabeledContent("Update Date", value: viewModel.mockModel.metaData.updateTime, format: .dateTime)
+                        Divider()
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text("Response Time")
+                        Slider(value: $viewModel.responseTime, in: 0.0...30.0) {
+                            TextField(String(), value: $viewModel.responseTime, format: .number.precision(.fractionLength(2)), prompt: Text("Response Time (Second)"))
+                        }
                     }
                 }
+                .padding(6)
+            } label: {
+                Label("Mock State", systemImage: "book.pages")
+                    .labelStyle(.titleOnly)
+                    .font(.title3)
             }
+            .listRowSeparator(.hidden)
 
-            Section("Plugin") {
-                ForEach(viewModel.pluginMessages, id: \.self) { message in
-                    Text(LocalizedStringKey(message))
-                        .textSelection(.enabled)
-                }
+            GroupBox {
+                VStack {
+                    ForEach(viewModel.pluginMessages, id: \.self) { message in
+                        Text(LocalizedStringKey(message))
+                            .textSelection(.enabled)
 
-                Button("Load async Plugin") {
-                    Task { @MainActor in
-                        await viewModel.loadPluginMessage(shouldLoadAsync: true)
+                        Divider()
+                            .padding(.vertical, 6)
                     }
-                }
 
-                TipView(PluginsDocumentTip())
+                    Button("Load async Plugin") {
+                        Task { @MainActor in
+                            await viewModel.loadPluginMessage(shouldLoadAsync: true)
+                        }
+                    }
+
+                    TipView(PluginsDocumentTip())
+                }
+                .padding(6)
+            } label: {
+                Label("Plugin", systemImage: "book.pages")
+                    .labelStyle(.titleOnly)
+                    .font(.title3)
             }
+            .listRowSeparator(.hidden)
         }
         .inspectorColumnWidth(min: 300, ideal: 400)
         .task(id: viewModel.httpStatus) { viewModel.sync() }

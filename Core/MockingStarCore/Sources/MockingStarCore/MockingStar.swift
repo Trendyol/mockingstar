@@ -130,6 +130,7 @@ public final class MockingStarCore {
 
     private func saveFileIfNeeded(request: URLRequest, flags: MockServerFlags, status: Int, body: Data, headers: [String: String], decider: MockDeciderInterface) {
         logger.debug("Checking mock should save")
+        var request = request
 
         var shouldSave = decider.mockFilters.contains(where: { filter in
             let filterableItems: [String] = switch filter.selectedLocation {
@@ -174,21 +175,25 @@ public final class MockingStarCore {
             return
         }
 
-        guard (try? JSONSerialization.jsonObject(with: body)) != nil else {
+        guard body == "".data(using: .utf8) || (try? JSONSerialization.jsonObject(with: body)) != nil else {
             logger.warning("Mock won't save due to response body is not json, path: \(request.url?.path() ?? "-")")
             return
         }
 
-        if let requestBody = request.httpBody,
-           (try? JSONSerialization.jsonObject(with: requestBody)) == nil {
-            logger.warning("Mock won't save due to request body is not json, path: \(request.url?.path() ?? "-")")
-            return
+        if let requestBody = request.httpBody {
+            if requestBody == "".data(using: .utf8) {
+                request.httpBody = nil
+            } else if (try? JSONSerialization.jsonObject(with: requestBody)) == nil {
+                logger.warning("Mock won't save due to request body is not json, path: \(request.url?.path() ?? "-")")
+                return
+            }
         }
 
+        let saveRequest = request
         Task {
             do {
                 logger.debug("Saving file")
-                try await saveFile(request: request, flags: flags, status: status, body: body, headers: headers)
+                try await saveFile(request: saveRequest, flags: flags, status: status, body: body, headers: headers)
             } catch {
                 logger.critical("File saving failed. Error: \(error)")
             }
