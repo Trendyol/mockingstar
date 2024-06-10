@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 1.1.4</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed</h2><ul><li>Fix/UI&amp;logic improvements by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/26</li></ul><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/1.1.3-9...1.1.4-10</p>
+                ]]>
+            </description>
+            <pubDate>Pzt, 3 Haz 2024 14:54:18 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/1.1.4-10/MockingStar-App.zip"
+            sparkle:version="10" sparkle:shortVersionString="1.1.4"
+            sparkle:edSignature="MkYJYujIbxJO6b5dpxcS/RascoxNN9Qaj50QqJkN3dOq7tecD1zx3q0yrgDTiucodQ41Z4t/etgGgXo5sxkSCw==" length="4437444"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 1.1.3</title>
             <description>
                 <![CDATA[
