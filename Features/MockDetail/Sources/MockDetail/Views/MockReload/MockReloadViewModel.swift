@@ -91,10 +91,11 @@ final class MockReloadViewModel {
     func reloadMock() async {
         isMockReloadingProgress = true
 
+        let request = (showUpdatedRequest ? updatedRequest() : mockModel.asURLRequest).recalculateContentLength()
         let result: (Data, URLResponse)
 
         do {
-            result = try await urlSession.data(for: showUpdatedRequest ? updatedRequest() : mockModel.asURLRequest)
+            result = try await urlSession.data(for: request)
         } catch {
             print("Error: \(error)")
             isMockReloadingProgress = false

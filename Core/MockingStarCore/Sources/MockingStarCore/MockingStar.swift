@@ -89,9 +89,9 @@ public final class MockingStarCore {
         let liveRequest: URLRequest
 
         if let mockDomain {
-            liveRequest = try await updateProxyRequestWithPlugin(request: request, mockDomain: mockDomain)
+            liveRequest = try await updateProxyRequestWithPlugin(request: request, mockDomain: mockDomain).recalculateContentLength()
         } else {
-            liveRequest = request
+            liveRequest = request.recalculateContentLength()
         }
 
         let (data, response) = try await URLSession.shared.data(for: liveRequest)
