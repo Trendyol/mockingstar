@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 1.1.5</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed</h2><ul><li>fix/RecalculateContent-LengthHeader by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/29</li></ul><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/1.1.4-10...1.1.5-11</p>
+                ]]>
+            </description>
+            <pubDate>Per, 11 Tem 2024 18:34:50 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/1.1.5-11/MockingStar-App.zip"
+            sparkle:version="11" sparkle:shortVersionString="1.1.5"
+            sparkle:edSignature="utyBgMKGBd1OygyvkvCDYsUTKwddkvCoPPR4popgtRMH/eLVX4YjWCnOw4nUV2iBKntrniKy8wUVxdqgZvW9DA==" length="4437935"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 1.1.4</title>
             <description>
                 <![CDATA[
