@@ -10,8 +10,8 @@ import Foundation
 import FoundationNetworking
 #endif
 
-extension URLRequest {
-    public func cURL(pretty: Bool = false) -> String {
+public extension URLRequest {
+    func cURL(pretty: Bool = false) -> String {
         let newLine = pretty ? "\\\n" : ""
         let method = (pretty ? "--request " : "-X ") + "\(self.httpMethod ?? "GET") \(newLine)"
         let url: String = (pretty ? "--url " : "") + "\'\(self.url?.absoluteString ?? "")\' \(newLine)"
@@ -33,5 +33,15 @@ extension URLRequest {
         cURL += method + url + header + data
 
         return cURL
+    }
+
+    func recalculateContentLength() -> URLRequest {
+        var request = self
+
+        if !request.value(forHTTPHeaderField: "Content-Length").isNilOrEmpty {
+            request.setValue(request.httpBody?.count.description, forHTTPHeaderField: "Content-Length")
+        }
+
+        return request
     }
 }
