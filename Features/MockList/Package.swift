@@ -33,6 +33,7 @@ let package = Package(
                 "MockList",
                 .product(name: "MockingStarCoreTestSupport", package: "MockingStarCore"),
                 .product(name: "CommonKitTestSupport", package: "CommonKit"),
+                .product(name: "CommonViewsKitTestSupport", package: "CommonViewsKit"),
             ]),
     ]
 )
