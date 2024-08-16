@@ -7,6 +7,6 @@
 
 import Foundation
 
-enum ShareStyle: String, CaseIterable {
+public enum ShareStyle: String, CaseIterable {
     case curl = "cURL"
 }

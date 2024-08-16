@@ -8,6 +8,7 @@
 @testable import MockList
 import CommonKit
 import CommonKitTestSupport
+import CommonViewsKitTestSupport
 import MockingStarCore
 import MockingStarCoreTestSupport
 import XCTest
@@ -19,6 +20,8 @@ final class MockListViewModelTests: XCTestCase {
     private let exp = XCTestExpectation(description: "MockListViewModelTests")
     private var mockDiscoverResult: AsyncStream<MockDiscoverResult>!
     private var mockDiscoverResultContinuation: AsyncStream<MockDiscoverResult>.Continuation!
+    private var notificationManager: MockNotificationManager!
+    private var pasteBoard: MockNSPasteboard!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -26,10 +29,14 @@ final class MockListViewModelTests: XCTestCase {
 
         fileManager = .init()
         mockDiscover = .init()
+        notificationManager = .init()
+        pasteBoard = .init()
         mockDiscover.stubbedMockDiscoverResult = mockDiscoverResult
 
         viewModel = .init(fileManager: fileManager,
-                          mockDiscover: mockDiscover)
+                          mockDiscover: mockDiscover,
+                          notificationManager: notificationManager,
+                          pasteBoard: pasteBoard)
 
         mockDiscoverResultContinuation.yield(.result(mockModels))
     }
@@ -258,6 +265,27 @@ Error Domain=Failed Code=-1 "(null)"
 
         XCTAssertTrue(mockDiscover.invokedUpdateMockDomain)
         XCTAssertEqual(mockDiscover.invokedUpdateMockDomainParametersList.map(\.mockDomain), ["New Domain"])
+    }
+
+    func test_shareButtonTapped_copyCurl() {
+        viewModel.selected = ["9271C0BE-9326-443F-97B8-1ECA29571FC3"]
+
+        pasteBoard.stubbedClearContentsResult = 0
+        pasteBoard.stubbedSetStringResult = true
+
+        XCTAssertFalse(pasteBoard.invokedClearContents)
+        XCTAssertFalse(pasteBoard.invokedSetString)
+        XCTAssertFalse(notificationManager.invokedShow)
+
+        viewModel.shareButtonTapped(shareStyle: .curl)
+
+        XCTAssertTrue(pasteBoard.invokedClearContents)
+        XCTAssertTrue(pasteBoard.invokedSetString)
+        XCTAssertTrue(notificationManager.invokedShow)
+        XCTAssertEqual(pasteBoard.invokedSetStringParametersList.map(\.string), ["curl --request GET \\\n--url \'https://www.trendyol.com/aboutus\' \\\n"])
+        XCTAssertEqual(pasteBoard.invokedSetStringParametersList.map(\.dataType), [.string])
+        XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.title), ["Request copied to clipboard"])
+        XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.color), [.green])
     }
 }
 

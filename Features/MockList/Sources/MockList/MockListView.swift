@@ -107,6 +107,12 @@ public struct MockListView: View {
                 Button("Remove Selected", role: .destructive) {
                     viewModel.shouldShowDeleteConfirmation = true
                 }
+
+                Menu("Share", systemImage: "square.and.arrow.up") {
+                    ForEach(ShareStyle.allCases, id: \.self) { shareStyle in
+                        Button(shareStyle.rawValue) { viewModel.shareButtonTapped(shareStyle: shareStyle)}
+                    }
+                }
             }) { selections in
                 if let id = selections.first,
                    let mock = viewModel.mock(id: id) {

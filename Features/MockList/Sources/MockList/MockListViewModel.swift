@@ -6,14 +6,17 @@
 //
 
 import CommonKit
-import SwiftUI
+import CommonViewsKit
 import MockingStarCore
+import SwiftUI
 
 @Observable
 public final class MockListViewModel {
     private let logger = Logger(category: "MockListViewModel")
     private let fileManager: FileManagerInterface
     private let mockDiscover: MockDiscoverInterface
+    private let notificationManager: NotificationManagerInterface
+    private let pasteBoard: NSPasteboardInterface
 
     private var listSortTask: Task<(), Never>? = nil
     private var reloadMocksTask: Task<(), Never>? = nil
@@ -38,9 +41,13 @@ public final class MockListViewModel {
     private(set) var mockListUIModel: [MockModel] = []
 
     public init(fileManager: FileManagerInterface = FileManager.default,
-                mockDiscover: MockDiscoverInterface = MockDiscover()) {
+                mockDiscover: MockDiscoverInterface = MockDiscover(),
+                notificationManager: NotificationManagerInterface = NotificationManager.shared,
+                pasteBoard: NSPasteboardInterface = NSPasteboard.general) {
         self.fileManager = fileManager
         self.mockDiscover = mockDiscover
+        self.notificationManager = notificationManager
+        self.pasteBoard = pasteBoard
         listenMockDiscover()
     }
 
@@ -149,5 +156,17 @@ public final class MockListViewModel {
                 logger.error("Mocks Reload Error: \(error)")
             }
         }
+    }
+
+    func shareButtonTapped(shareStyle: ShareStyle) {
+        let mocks: [MockModel] =  selected.compactMap { mock(id: $0) }
+
+        switch shareStyle {
+        case .curl:
+            let curlList = mocks.map(\.asURLRequest).map { $0.cURL(pretty: true) }
+            pasteBoard.clearContents()
+            pasteBoard.setString(curlList.joined(separator: "\n\n"), forType: .string)
+        }
+        notificationManager.show(title: "Request copied to clipboard", color: .green)
     }
 }
