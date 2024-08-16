@@ -109,7 +109,9 @@ public struct MockListView: View {
                 }
 
                 Menu("Share", systemImage: "square.and.arrow.up") {
-                    Button("cURL") { viewModel.shareButtonTapped(shareStyle: .curl)}
+                    ForEach(ShareStyle.allCases, id: \.self) { shareStyle in
+                        Button(shareStyle.rawValue) { viewModel.shareButtonTapped(shareStyle: shareStyle)}
+                    }
                 }
             }) { selections in
                 if let id = selections.first,
