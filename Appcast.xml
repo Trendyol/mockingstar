@@ -6,6 +6,21 @@
             <title>Version 1.1.5</title>
             <description>
                 <![CDATA[
+
+                ]]>
+            </description>
+            <pubDate>Mon, 9 Sep 2024 13:38:28 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/1.1.5-12/MockingStar-App.zip"
+            sparkle:version="12" sparkle:shortVersionString="1.1.5"
+            sparkle:edSignature="HhPVQKKuhnEcxEtRHavuANp5DqBMgZnFGa3FcQhnp0PjNh3jSMaVAMCtTauAywBvODYxv4GDpHrHNqlVWEnvCA==" length="4444992"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
+            <title>Version 1.1.5</title>
+            <description>
+                <![CDATA[
 <h2>What's Changed</h2><ul><li>fix/RecalculateContent-LengthHeader by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/29</li></ul><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/1.1.4-10...1.1.5-11</p>
                 ]]>
             </description>
