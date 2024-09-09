@@ -39,7 +39,7 @@ jobs:
             security unlock-keychain -p ${{ secrets.PASS }} $KEYCHAIN_PATH
             security set-keychain-settings -u -t 3600 $KEYCHAIN_PATH
             
-            security import ./certs/MockingStarCert.p12 -k $KEYCHAIN_PATH -P ${{ secrets.PASS }} -A
+            security import ./certs/MockingStarCert.p12 -k $KEYCHAIN_PATH -P ${{ secrets.CERT_PASS }} -A
             security set-key-partition-list -S apple-tool:,apple: -k ${{ secrets.PASS }} $KEYCHAIN_PATH >/dev/null || true
             cp ./certs/Direct_com.trendyol.MockingStar.provisionprofile ~/Library/MobileDevice/Provisioning\ Profiles/7a785103-ddb5-42f4-99b5-d7cdb5b6cae9.provisionprofile
 
