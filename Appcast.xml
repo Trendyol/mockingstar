@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 1.1.6</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed * Feature/mock list share button support by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/31</h2><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/1.1.5-11...1.1.6-12</p>
+                ]]>
+            </description>
+            <pubDate>Mon, 9 Sep 2024 13:12:32 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/1.1.6-12/MockingStar-App.zip"
+            sparkle:version="12" sparkle:shortVersionString="1.1.6"
+            sparkle:edSignature="VQK/eJNdfU6N6zla4Jmug57wgV6nzcIG7m8sE3Es6n1WUfMV1JaVMiBfnmFOfDGEJ0hoGpky9lChD1fzM0UFCw==" length="4444960"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 1.1.5</title>
             <description>
                 <![CDATA[
