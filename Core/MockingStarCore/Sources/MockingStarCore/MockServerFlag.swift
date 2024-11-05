@@ -23,9 +23,9 @@ struct MockServerFlags {
         case `default`
 
         init(from rawFlags: [String:String]) {
-            if rawFlags["disableLiveEnvironment", default: "false"] == "true" {
+            if rawFlags.caseInsensitiveSearch(for: "disableLiveEnvironment") == "true" {
                 self = .onlyMock
-            } else if rawFlags["disableMockResponse", default: "false"] == "true" {
+            } else if rawFlags.caseInsensitiveSearch(for: "disableMockResponse") == "true" {
                 self = .onlyLive
             } else {
                 self = .default

@@ -267,18 +267,18 @@ extension MockingStarCore: ServerMockHandlerInterface {
         request.httpBody = body
 
         let scenario: String
-        let mockDomain = rawFlags["mockDomain"].isNilOrEmpty ? "Dev" : rawFlags["mockDomain", default: "Dev"]
-        let deviceId = rawFlags["deviceId", default: ""]
+        let mockDomain = rawFlags.caseInsensitiveSearch(for: "mockDomain") ?? "Dev"
+        let deviceId = rawFlags.caseInsensitiveSearch(for: "deviceId").orEmpty
 
-        if rawFlags["scenario"].isNilOrEmpty {
+        if rawFlags.caseInsensitiveSearch(for: "scenario").isNilOrEmpty {
             scenario = await scenariosActor.decider(for: mockDomain).decideScenario(request: request, deviceId: deviceId).orEmpty
         } else {
-            scenario = rawFlags["scenario", default: ""]
+            scenario = rawFlags.caseInsensitiveSearch(for: "scenario").orEmpty
         }
 
         let flags = MockServerFlags(mockSource: .init(from: rawFlags),
                                     scenario: scenario,
-                                    shouldNotMock: rawFlags["shouldNotMock", default: "false"] == "true",
+                                    shouldNotMock: rawFlags.caseInsensitiveSearch(for: "shouldNotMock").orEmpty == "true",
                                     domain: mockDomain,
                                     deviceId: deviceId)
 
@@ -301,12 +301,12 @@ extension MockingStarCore: ServerMockSearchHandlerInterface {
     ///   - `body`: The response body as `Data`.
     ///   - `headers`: The response headers as `[String : String]`.
     public func search(path: String, method: String, scenario: String?, rawFlags: [String : String]) async throws -> (status: Int, body: Data, headers: [String : String]) {
-        let mockDomain = rawFlags["mockDomain"].isNilOrEmpty ? "Dev" : rawFlags["mockDomain", default: "Dev"]
-        let deviceId = rawFlags["deviceId", default: ""]
+        let mockDomain = rawFlags.caseInsensitiveSearch(for: "mockDomain") ?? "Dev"
+        let deviceId = rawFlags.caseInsensitiveSearch(for: "deviceId").orEmpty
 
         let flags = MockServerFlags(mockSource: .init(from: rawFlags),
                                     scenario: scenario,
-                                    shouldNotMock: rawFlags["shouldNotMock", default: "false"] == "true",
+                                    shouldNotMock: rawFlags.caseInsensitiveSearch(for: "shouldNotMock").orEmpty == "true",
                                     domain: mockDomain,
                                     deviceId: deviceId)
 
