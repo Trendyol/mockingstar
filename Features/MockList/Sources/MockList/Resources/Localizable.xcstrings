@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "\n\n" : {
+
+    },
     "Are you sure?" : {
 
     },
@@ -8,6 +11,9 @@
 
     },
     "Delete" : {
+
+    },
+    "Deleting selected mocks will also delete all associated mock responses. Are you sure you want to do this?" : {
 
     },
     "Error" : {
@@ -63,6 +69,16 @@
     },
     "Unselect All Mocks" : {
 
+    },
+    "You will delete ^[%lld %@](inflect: true)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "You will delete ^[%1$lld %2$@](inflect: true)."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

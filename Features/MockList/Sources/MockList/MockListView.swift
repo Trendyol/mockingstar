@@ -206,6 +206,10 @@ public struct MockListView: View {
             Button("Delete", role: .destructive) {
                 viewModel.deleteSelectedMocks()
             }
+        } message: {
+            Text("Deleting selected mocks will also delete all associated mock responses. Are you sure you want to do this?") +
+            Text("\n\n") +
+            Text("You will delete ^[\(viewModel.selected.count) \("mock")](inflect: true).")
         }
         .alert("Error", isPresented: $viewModel.shouldShowErrorMessage, actions: {
             Button("Ok", role: .cancel, action: { })
