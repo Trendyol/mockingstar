@@ -33,4 +33,14 @@ public final class NavigationStore {
             path = path.dropLast()
         }
     }
+
+    public func popToRoot(animated: Bool = true) {
+        if animated {
+            withAnimation {
+                path.removeAll()
+            }
+        } else {
+            path.removeAll()
+        }
+    }
 }
