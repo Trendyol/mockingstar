@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 1.1.7</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed</h2><ul><li>Pop to root when domain changes by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/38 * Fix Unintended mock deletion by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/36</li></ul><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/1.1.6-12...1.1.7-13</p>
+                ]]>
+            </description>
+            <pubDate>Pzt, 25 Kas 2024 09:41:15 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/1.1.7-13/MockingStar-App.zip"
+            sparkle:version="13" sparkle:shortVersionString="1.1.7"
+            sparkle:edSignature="Y+80duLfzewJ1kJ4d9vDrF7wstmmh+cFYtcNSHPcToqJwxM/PxhuRG88iIorqMLEZd8u5YJvcSNMDD8fuZhXDQ==" length="4456881"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 1.1.6</title>
             <description>
                 <![CDATA[
