@@ -14,6 +14,7 @@ import TipKit
 struct SidebarView: View {
     @Environment(MockDomainDiscover.self) private var domainDiscover: MockDomainDiscover
     @SceneStorage("mockDomain") private var mockDomain: String = ""
+    private let navigationStore = NavigationStore.shared
     private let logger = Logger(category: "SidebarView")
 
     var body: some View {
@@ -63,6 +64,10 @@ struct SidebarView: View {
         .task { try? await reloadMockDomains() }
         .onReceive(NotificationCenter.default.publisher(for: .reloadMockDomains)) { _ in
             Task { try await reloadMockDomains() }
+        }
+        .task(id: mockDomain) {
+            try? await Task.sleep(for: .milliseconds(100))
+            navigationStore.popToRoot()
         }
     }
 
