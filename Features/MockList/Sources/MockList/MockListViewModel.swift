@@ -108,6 +108,13 @@ public final class MockListViewModel {
 
             try Task.checkCancellation()
 
+            /// Find selected mocks, remove them if they are not included in the new UI list.
+            selected
+                .filter { id in !filteredMocks.contains(where: { $0.id == id }) }
+                .forEach { selected.remove($0) }
+
+            try Task.checkCancellation()
+
             try await MainActor.run {
                 try Task.checkCancellation()
                 mockListUIModel = filteredMocks.sorted(using: sortOrder)
