@@ -1,3 +1,5 @@
+
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Trendyol/mockingstar/badge)](https://scorecard.dev/viewer/?uri=github.com/Trendyol/mockingstar)
 # Mocking Star
 
 [![Unit Tests](https://github.com/Trendyol/mockingstar/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/Trendyol/mockingstar/actions/workflows/unit-tests.yml) 
