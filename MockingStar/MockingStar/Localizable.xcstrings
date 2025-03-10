@@ -43,6 +43,9 @@
     "Mock Domains" : {
 
     },
+    "Mocking Star encountered a problem while starting. You can try resetting the app to fix the problem." : {
+
+    },
     "Mocking Star Playground" : {
 
     },
@@ -62,6 +65,9 @@
 
     },
     "Reload All Plugins" : {
+
+    },
+    "Reset Mocking Star" : {
 
     },
     "Reset Tips" : {

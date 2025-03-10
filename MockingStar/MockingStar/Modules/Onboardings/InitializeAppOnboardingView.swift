@@ -13,6 +13,7 @@ struct InitializeAppOnboardingView: View {
     private let onboardingDone: () -> Void
     private let fileStructureHelper: FileStructureHelperInterface = FileStructureHelper()
     @State private var onboardingMessage: String = "loading"
+    @State private var onboardingFailed: Bool = false
     @AppStorage("isOnboardingDone") private var isOnboardingDone: Bool = false
     @UserDefaultStorage("mockFolderFileBookMark") var mockFolderFileBookMark: Data? = nil
     @SceneStorage("mockDomain") private var mockDomain: String = ""
@@ -24,10 +25,35 @@ struct InitializeAppOnboardingView: View {
     var body: some View {
         VStack {
             Spacer()
-            ProgressView().progressViewStyle(.circular)
+
+            if onboardingFailed {
+                Button {
+                    isOnboardingDone = false
+                } label: {
+                    Text("Reset Mocking Star")
+                        .foregroundColor(.white)
+                        .font(.headline)
+                        .padding()
+                        .padding(.horizontal, 40)
+                        .background(Color.accentColor)
+                        .clipShape(.rect(cornerRadius: 15))
+                        .padding(.bottom)
+                }
+                .padding(.horizontal)
+                .buttonStyle(.plain)
+
+                Text("Mocking Star encountered a problem while starting. You can try resetting the app to fix the problem.")
+                    .font(.callout)
+                    .foregroundStyle(.red)
+            } else {
+                ProgressView().progressViewStyle(.circular)
+            }
+
             Spacer()
+
             Text(onboardingMessage)
                 .padding()
+                .textSelection(.enabled)
         }
         .task(priority: .userInitiated) { await initiate() }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -47,12 +73,13 @@ struct InitializeAppOnboardingView: View {
         do {
             guard let fileBookMark = mockFolderFileBookMark else {
                 await updateMessage(text: "File Access Failed, file bookmark not found")
-                isOnboardingDone = false
+                onboardingFailed = true
                 return
             }
 
             try FilePermissionHelper(fileBookMark: fileBookMark).startAccessingSecurityScopedResource()
         } catch {
+            onboardingFailed = true
             return await updateMessage(text: "File Access ERROR: \(error)")
         }
 
@@ -67,7 +94,7 @@ struct InitializeAppOnboardingView: View {
             } catch {
                 await updateMessage(text: "File Structure Repair ERROR: \(error)")
                 try? await Task.sleep(for: .seconds(0.2))
-                isOnboardingDone = false
+                onboardingFailed = true
                 return
             }
         }
@@ -80,7 +107,7 @@ struct InitializeAppOnboardingView: View {
             } catch {
                 await updateMessage(text: "File Structure Repair ERROR: \(error)")
                 try? await Task.sleep(for: .seconds(0.2))
-                isOnboardingDone = false
+                onboardingFailed = true
                 return
             }
         }
