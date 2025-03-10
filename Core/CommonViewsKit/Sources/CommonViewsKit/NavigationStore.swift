@@ -17,6 +17,7 @@ public enum Route: Hashable, Equatable {
     case pluginConfiguration(plugin: String)
     case appSettings
     case logs
+    case fileIntegrityCheck
 }
 
 @Observable
