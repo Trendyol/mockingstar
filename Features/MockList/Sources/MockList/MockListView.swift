@@ -17,6 +17,7 @@ public struct MockListView: View {
     @AppStorage("MockListColumnCustomization") private var columnCustomization: TableColumnCustomization<MockModel>
     @AppStorage("isFirstOpen") private var isFirstOpen: Bool = true
     @State private var isSearchActive: Bool = false
+    @State private var shouldShowMockImportView: Bool = false
 
     public init(viewModel: MockListViewModel) {
         self.viewModel = viewModel
@@ -135,6 +136,10 @@ public struct MockListView: View {
                     .keyboardShortcut("r")
                     .hidden()
 
+                ToolBarButton(title: "Import", icon: "square.and.arrow.down", backgroundColor: .gray) {
+                    shouldShowMockImportView = true
+                }
+
                 ActionSelectableButton(title: "Delete", icon: "trash", backgroundColor: .red) {
                     viewModel.shouldShowDeleteConfirmation = true
                 } menuContent: {
@@ -216,6 +221,10 @@ public struct MockListView: View {
         }, message: {
             Text(viewModel.errorMessage)
         })
+        .sheet(isPresented: $shouldShowMockImportView) {
+            MockImportView()
+                .frame(minHeight: 200)
+        }
         .task(id: viewModel.sortOrder) { await viewModel.searchData() }
         .task(id: viewModel.mockModelList) { await viewModel.searchData() }
         .task(id: viewModel.searchTerm) { await viewModel.searchData() }

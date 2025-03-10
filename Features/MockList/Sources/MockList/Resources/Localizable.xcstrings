@@ -7,6 +7,9 @@
     "Are you sure?" : {
 
     },
+    "Cancel" : {
+
+    },
     "Created" : {
 
     },
@@ -16,10 +19,16 @@
     "Deleting selected mocks will also delete all associated mock responses. Are you sure you want to do this?" : {
 
     },
+    "Do you want to import different way?" : {
+
+    },
     "Error" : {
 
     },
     "HTTP Status" : {
+
+    },
+    "Import" : {
 
     },
     "Last Updated" : {
@@ -28,13 +37,25 @@
     "Method" : {
 
     },
+    "Mock Import" : {
+
+    },
+    "Mocking Star is open source. You can contribute or create an issue." : {
+
+    },
     "Mocks" : {
+
+    },
+    "Now you can import mocks using cURL or URL. Mock'll import current selected mock domain." : {
 
     },
     "Ok" : {
 
     },
     "Open Mock Detail" : {
+
+    },
+    "Paste cURL, URL..." : {
 
     },
     "Reload Mocks" : {

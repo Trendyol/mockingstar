@@ -46,12 +46,14 @@ public final class MockingStarCore {
             logger.info("Mock not found, trying to request live server: \(request.url?.path() ?? .init())")
 
             let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
-            saveFileIfNeeded(request: request,
-                             flags: flags,
-                             status: liveResult.status,
-                             body: liveResult.body,
-                             headers: liveResult.headers,
-                             decider: decider)
+            Task {
+                try await saveFileIfNeeded(request: request,
+                                           flags: flags,
+                                           status: liveResult.status,
+                                           body: liveResult.body,
+                                           headers: liveResult.headers,
+                                           decider: decider)
+            }
             return liveResult
         case .mockNotFound:
             logger.warning("Mock not found and disable live environment: \(request.url?.path() ?? .init())")
@@ -61,12 +63,14 @@ public final class MockingStarCore {
             logger.info("Scenario not found, trying to request live server")
 
             let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
-            saveFileIfNeeded(request: request,
-                             flags: flags,
-                             status: liveResult.status,
-                             body: liveResult.body,
-                             headers: liveResult.headers,
-                             decider: decider)
+            Task {
+                try await saveFileIfNeeded(request: request,
+                                           flags: flags,
+                                           status: liveResult.status,
+                                           body: liveResult.body,
+                                           headers: liveResult.headers,
+                                           decider: decider)
+            }
             return liveResult
         case .scenarioNotFound:
             logger.warning("Scenario not found and disable live environment")
@@ -128,7 +132,7 @@ public final class MockingStarCore {
         return liveRequest
     }
 
-    private func saveFileIfNeeded(request: URLRequest, flags: MockServerFlags, status: Int, body: Data, headers: [String: String], decider: MockDeciderInterface) {
+    private func saveFileIfNeeded(request: URLRequest, flags: MockServerFlags, status: Int, body: Data, headers: [String: String], decider: MockDeciderInterface) async throws {
         logger.debug("Checking mock should save")
         var request = request
 
@@ -167,17 +171,17 @@ public final class MockingStarCore {
 
         if let pathComponents = request.url?.pathComponents, pathComponents.count >= 10 {
             logger.error("Request path components count more than limit.")
-            shouldSave = false
+            throw MockSaveResult.pathComponentLimitExceeded
         }
 
         guard shouldSave else {
-            logger.info("Mock won't save due to filters(\(decider.mockFilters.count), path: \(request.url?.path() ?? "-")")
-            return
+            logger.info("Mock won't save due to filters (\(decider.mockFilters.count)), path: \(request.url?.path() ?? "-")")
+            throw MockSaveResult.preventedByFilters
         }
 
         guard body == "".data(using: .utf8) || (try? JSONSerialization.jsonObject(with: body)) != nil else {
             logger.warning("Mock won't save due to response body is not json, path: \(request.url?.path() ?? "-")")
-            return
+            throw MockSaveResult.responseBodyFormatError
         }
 
         if let requestBody = request.httpBody {
@@ -185,25 +189,23 @@ public final class MockingStarCore {
                 request.httpBody = nil
             } else if (try? JSONSerialization.jsonObject(with: requestBody)) == nil {
                 logger.warning("Mock won't save due to request body is not json, path: \(request.url?.path() ?? "-")")
-                return
+                throw MockSaveResult.requestBodyFormatError
             }
         }
 
-        let saveRequest = request
-        Task {
-            do {
-                logger.debug("Saving file")
-                try await saveFile(request: saveRequest, flags: flags, status: status, body: body, headers: headers)
-            } catch {
-                logger.critical("File saving failed. Error: \(error)")
-            }
+        do {
+            logger.debug("Saving file")
+            try await saveFile(request: request, flags: flags, status: status, body: body, headers: headers)
+        } catch {
+            logger.critical("File saving failed. Error: \(error)")
+            throw error
         }
     }
 
     private func saveFile(request: URLRequest, flags: MockServerFlags, status: Int, body: Data, headers: [String: String]) async throws {
         guard let url = request.url else {
             logger.fault("saving File has no url")
-            return
+            throw MockSaveResult.noUrlFound
         }
 
         let requestBody: String
@@ -342,5 +344,37 @@ extension MockingStarCore: ScenarioHandlerInterface {
     
     public func removeScenario(scenario: ScenarioModel) async throws {
         await scenariosActor.decider(for: scenario.mockDomain).removeScenarios(deviceId: scenario.deviceId)
+    }
+}
+
+// MARK: - Import
+extension MockingStarCore {
+    public func importMock(url: URL, method: String, headers: [String: String], body: Data?, flags: MockServerFlags) async throws -> MockImportResult {
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.allHTTPHeaderFields = headers
+        request.httpBody = body
+        let decider = try await deciderActor.decider(for: flags.domain)
+        let result = try await decider.decideMock(request: request, flags: flags)
+
+        switch result {
+        case .useMock:
+            return .alreadyMocked
+        case .mockNotFound:
+            logger.info("Mock not found, trying to request live server: \(request.url?.path() ?? .init())")
+
+            let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
+            try await saveFileIfNeeded(request: request,
+                                       flags: flags,
+                                       status: liveResult.status,
+                                       body: liveResult.body,
+                                       headers: liveResult.headers,
+                                       decider: decider)
+            return .mocked
+        case .ignoreDomain:
+            return .domainIgnoredByConfigs
+        default:
+            return .unhandled
+        }
     }
 }
