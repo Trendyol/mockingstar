@@ -50,6 +50,8 @@ struct AppNavigationSplitView: View {
                                     SettingsView()
                                 case .logs:
                                     LogsView()
+                                case .fileIntegrityCheck:
+                                    FileIntegrityCheckView()
                                 }
                             }
                     }
