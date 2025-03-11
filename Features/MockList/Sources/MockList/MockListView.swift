@@ -243,6 +243,9 @@ public struct MockListView: View {
         .onReceive(NotificationCenter.default.publisher(for: .removeMock)) { _ in
             viewModel.shouldShowDeleteConfirmation = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: .fileIntegrityCheck)) { _ in
+            navigationStore.path.append(.fileIntegrityCheck)
+        }
     }
 }
 

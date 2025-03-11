@@ -31,6 +31,12 @@ public struct MockListCommands: Commands {
             Button("Remove Mock(s)") {
                 NotificationCenter.default.post(.removeMock)
             }
+
+            Divider()
+
+            Button("File Integrity Check") {
+                NotificationCenter.default.post(.fileIntegrityCheck)
+            }
         }
     }
 }

@@ -20,9 +20,18 @@
 
     },
     "Do you want to import different way?" : {
+    
+    },
+    "Duplicated Id (%lld)" : {
 
     },
     "Error" : {
+
+    },
+    "File Integrity Check" : {
+
+    },
+    "Fix Violations" : {
 
     },
     "HTTP Status" : {
@@ -41,12 +50,18 @@
 
     },
     "Mocking Star is open source. You can contribute or create an issue." : {
+    
+    },
+    "Mocking Star can check your mock files integrity. File integrity is crucial for app performance." : {
 
     },
     "Mocks" : {
 
     },
     "Now you can import mocks using cURL or URL. Mock'll import current selected mock domain." : {
+    
+    },
+    "No Violation Found" : {
 
     },
     "Ok" : {
@@ -89,6 +104,9 @@
 
     },
     "Unselect All Mocks" : {
+
+    },
+    "Wrong Path (%lld)" : {
 
     },
     "You will delete ^[%lld %@](inflect: true)." : {
