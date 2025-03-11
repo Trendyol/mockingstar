@@ -16,7 +16,16 @@
     "Deleting selected mocks will also delete all associated mock responses. Are you sure you want to do this?" : {
 
     },
+    "Duplicated Id (%lld)" : {
+
+    },
     "Error" : {
+
+    },
+    "File Integrity Check" : {
+
+    },
+    "Fix Violations" : {
 
     },
     "HTTP Status" : {
@@ -28,7 +37,13 @@
     "Method" : {
 
     },
+    "Mocking Star can check your mock files integrity. File integrity is crucial for app performance." : {
+
+    },
     "Mocks" : {
+
+    },
+    "No Violation Found" : {
 
     },
     "Ok" : {
@@ -68,6 +83,9 @@
 
     },
     "Unselect All Mocks" : {
+
+    },
+    "Wrong Path (%lld)" : {
 
     },
     "You will delete ^[%lld %@](inflect: true)." : {
