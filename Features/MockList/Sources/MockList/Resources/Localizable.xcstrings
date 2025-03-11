@@ -7,6 +7,9 @@
     "Are you sure?" : {
 
     },
+    "Cancel" : {
+
+    },
     "Created" : {
 
     },
@@ -15,6 +18,9 @@
     },
     "Deleting selected mocks will also delete all associated mock responses. Are you sure you want to do this?" : {
 
+    },
+    "Do you want to import different way?" : {
+    
     },
     "Duplicated Id (%lld)" : {
 
@@ -31,17 +37,29 @@
     "HTTP Status" : {
 
     },
+    "Import" : {
+
+    },
     "Last Updated" : {
 
     },
     "Method" : {
 
     },
+    "Mock Import" : {
+
+    },
+    "Mocking Star is open source. You can contribute or create an issue." : {
+    
+    },
     "Mocking Star can check your mock files integrity. File integrity is crucial for app performance." : {
 
     },
     "Mocks" : {
 
+    },
+    "Now you can import mocks using cURL or URL. Mock'll import current selected mock domain." : {
+    
     },
     "No Violation Found" : {
 
@@ -50,6 +68,9 @@
 
     },
     "Open Mock Detail" : {
+
+    },
+    "Paste cURL, URL..." : {
 
     },
     "Reload Mocks" : {
