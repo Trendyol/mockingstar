@@ -23,6 +23,7 @@ private extension MenubarCommands {
 
 struct MenubarCommands: Commands {
     @Bindable private var navigationStore = NavigationStore.shared
+    @AppStorage("resetTipKitOnNextLaunch") private var resetTipKitOnNextLaunch = false
 
     var body: some Commands {
         if navigationStore.path.isEmpty {
@@ -64,7 +65,7 @@ struct MenubarCommands: Commands {
             Divider()
 
             Button("Reset Tips") {
-                try? Tips.resetDatastore()
+                resetTipKitOnNextLaunch = true
             }
         }
     }
