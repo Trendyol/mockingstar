@@ -9,11 +9,13 @@ import CommonKit
 import CommonViewsKit
 import Foundation
 import SwiftUI
+import MockingStarCore
 
 @Observable
 public final class MockDomainConfigsViewModel {
     private let logger = Logger(category: "MockDomainConfigsViewModel")
     private let notificationManager: NotificationManagerInterface
+    private let mockDiscover: MockDiscoverInterface
 
     // MARK: UI Models
     var appFilterConfigs = AppFilterConfigs()
@@ -21,6 +23,8 @@ public final class MockDomainConfigsViewModel {
     var pathConfigs: [MockPathConfigModel] = []
     var queryConfigs: [MockQueryConfigModel] = []
     var headerConfigs: [MockHeaderConfigModel] = []
+    
+    private(set) var allPaths: [String] = []
 
     private var configs: ConfigModel = ConfigModel()
     private let fileManager: FileManagerInterface
@@ -32,11 +36,15 @@ public final class MockDomainConfigsViewModel {
     public init(fileManager: FileManagerInterface = FileManager.default,
                 fileUrlBuilder: FileUrlBuilderInterface = FileUrlBuilder(),
                 fileStructureMonitor: FileStructureMonitorInterface = FileStructureMonitor(),
-                notificationManager: NotificationManagerInterface = NotificationManager.shared) {
+                notificationManager: NotificationManagerInterface = NotificationManager.shared,
+                mockDiscover: MockDiscoverInterface = MockDiscover()) {
         self.fileUrlBuilder = fileUrlBuilder
         self.fileManager = fileManager
         self.fileStructureMonitor = fileStructureMonitor
         self.notificationManager = notificationManager
+        self.mockDiscover = mockDiscover
+        
+        listenMockDiscover()
     }
 
     private func watchConfigs() {
@@ -76,6 +84,8 @@ public final class MockDomainConfigsViewModel {
         } catch {
             logger.error("Read configs error: \(error)")
         }
+
+        Task { try await mockDiscover.updateMockDomain(mockDomain) }
     }
 
     /// Saves the changes made to the configurations.
@@ -97,6 +107,22 @@ public final class MockDomainConfigsViewModel {
             logger.error("Save configs error: \(error)")
             notificationManager.show(title: "Save configs error: \(error)", color: .red)
         }
+    }
+
+    func queryExecuteStyle(for path: String) -> QueryExecuteStyle {
+        pathConfigs
+            .first(where: { fileUrlBuilder.isPathMatched(requestPath: path,
+                                                         configPath: $0.path,
+                                                         pathMatchingRatio: appFilterConfigs.pathMatchingRatio) })?
+            .queryExecuteStyle ?? appFilterConfigs.queryExecuteStyle
+    }
+
+    func headerExecuteStyle(for path: String) -> HeaderExecuteStyle {
+        pathConfigs
+            .first(where: { fileUrlBuilder.isPathMatched(requestPath: path,
+                                                         configPath: $0.path,
+                                                         pathMatchingRatio: appFilterConfigs.pathMatchingRatio) })?
+            .headerExecuteStyle ?? appFilterConfigs.headerExecuteStyle
     }
 
     /// Reads configurations from the file.
@@ -124,5 +150,19 @@ public final class MockDomainConfigsViewModel {
         pathConfigs = configs.pathConfigs.map { .init(pathConfig: $0) }
         queryConfigs = configs.queryConfigs.map { .init(queryConfig: $0) }
         headerConfigs = configs.headerConfigs.map { .init(headerConfig: $0) }
+    }
+
+    private func listenMockDiscover() {
+        Task {
+            for await result in mockDiscover.mockDiscoverResult {
+                switch result {
+                case .loading:
+                    break
+                case .result(let mocks):
+                    let allPaths = mocks.compactMap { $0.metaData.url.path() }
+                    self.allPaths = Array(Set(allPaths))
+                }
+            }
+        }
     }
 }

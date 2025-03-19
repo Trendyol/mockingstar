@@ -12,46 +12,46 @@ import SwiftUI
 @Observable
 final class AppFilterConfigs: Equatable, Identifiable, Hashable {
     var id: UUID
-    var queryFilterDefaultStyleIgnore: Bool
-    var headerFilterDefaultStyleIgnore: Bool
+    var queryExecuteStyle: QueryExecuteStyle
+    var headerExecuteStyle: HeaderExecuteStyle
     var domains: [AppFilterConfigDomain]
     var pathMatchingRatio: Double
 
-    init(queryFilterDefaultStyleIgnore: Bool = true,
-         headerFilterDefaultStyleIgnore: Bool = true,
+    init(queryExecuteStyle: QueryExecuteStyle = .ignoreAll,
+         headerExecuteStyle: HeaderExecuteStyle = .ignoreAll,
          domains: [AppFilterConfigDomain] = [],
          pathMatchingRatio: Double = 1) {
         id = .init()
-        self.queryFilterDefaultStyleIgnore = queryFilterDefaultStyleIgnore
-        self.headerFilterDefaultStyleIgnore = headerFilterDefaultStyleIgnore
+        self.queryExecuteStyle = queryExecuteStyle
+        self.headerExecuteStyle = headerExecuteStyle
         self.domains = domains
         self.pathMatchingRatio = pathMatchingRatio
     }
 
     convenience init(appFilterConfigs: AppConfigModel) {
-        self.init(queryFilterDefaultStyleIgnore: appFilterConfigs.queryFilterDefaultStyleIgnore,
-                  headerFilterDefaultStyleIgnore: appFilterConfigs.headerFilterDefaultStyleIgnore,
+        self.init(queryExecuteStyle: appFilterConfigs.queryExecuteStyle,
+                  headerExecuteStyle: appFilterConfigs.headerExecuteStyle,
                   domains: appFilterConfigs.domains.map { .init(domain: $0) },
                   pathMatchingRatio: appFilterConfigs.pathMatchingRatio)
     }
 
     func asAppConfigModel() -> AppConfigModel {
-        AppConfigModel(queryFilterDefaultStyleIgnore: queryFilterDefaultStyleIgnore,
-                       headerFilterDefaultStyleIgnore: headerFilterDefaultStyleIgnore,
-                       domains: domains.map(\.domain),
-                       pathMatchingRatio: pathMatchingRatio)
+        AppConfigModel(queryExecuteStyle: queryExecuteStyle,
+                       headerExecuteStyle: headerExecuteStyle,
+                       pathMatchingRatio: pathMatchingRatio,
+                       domains: domains.map(\.domain))
     }
 
     static func == (lhs: AppFilterConfigs, rhs: AppFilterConfigs) -> Bool {
-        lhs.queryFilterDefaultStyleIgnore == rhs.queryFilterDefaultStyleIgnore &&
-        lhs.headerFilterDefaultStyleIgnore == rhs.headerFilterDefaultStyleIgnore &&
+        lhs.queryExecuteStyle == rhs.queryExecuteStyle &&
+        lhs.headerExecuteStyle == rhs.headerExecuteStyle &&
         lhs.domains == rhs.domains &&
         lhs.pathMatchingRatio == rhs.pathMatchingRatio
     }
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine(queryFilterDefaultStyleIgnore)
-        hasher.combine(headerFilterDefaultStyleIgnore)
+        hasher.combine(queryExecuteStyle)
+        hasher.combine(headerExecuteStyle)
         hasher.combine(domains)
         hasher.combine(pathMatchingRatio)
     }
@@ -128,46 +128,46 @@ final class MockFilterConfigs: Equatable, Identifiable, Hashable {
 final class MockPathConfigModel: Codable, Equatable, Identifiable, Hashable {
     var id: UUID
     var path: String
-    var executeAllQueries: Bool
-    var executeAllHeaders: Bool
+    var queryExecuteStyle: QueryExecuteStyle
+    var headerExecuteStyle: HeaderExecuteStyle
 
-    init(path: String, executeAllQueries: Bool, executeAllHeaders: Bool) {
+    init(path: String, queryExecuteStyle: QueryExecuteStyle, headerExecuteStyle: HeaderExecuteStyle) {
         id = .init()
         self.path = path
-        self.executeAllQueries = executeAllQueries
-        self.executeAllHeaders = executeAllHeaders
+        self.queryExecuteStyle = queryExecuteStyle
+        self.headerExecuteStyle = headerExecuteStyle
     }
 
     convenience init(pathConfig: PathConfigModel) {
         self.init(path: pathConfig.path,
-                  executeAllQueries: pathConfig.executeAllQueries,
-                  executeAllHeaders: pathConfig.executeAllHeaders)
+                  queryExecuteStyle: pathConfig.queryExecuteStyle,
+                  headerExecuteStyle: pathConfig.headerExecuteStyle)
     }
 
     func asPathConfigModel() -> PathConfigModel {
         PathConfigModel(path: path,
-                        executeAllQueries: executeAllQueries,
-                        executeAllHeaders: executeAllHeaders)
+                        queryExecuteStyle: queryExecuteStyle,
+                        headerExecuteStyle: headerExecuteStyle)
     }
 
     static func == (lhs: MockPathConfigModel, rhs: MockPathConfigModel) -> Bool {
         lhs.id == rhs.id &&
         lhs.path == rhs.path &&
-        lhs.executeAllHeaders == rhs.executeAllHeaders &&
-        lhs.executeAllQueries == rhs.executeAllQueries
+        lhs.queryExecuteStyle == rhs.queryExecuteStyle &&
+        lhs.headerExecuteStyle == rhs.headerExecuteStyle
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(path)
-        hasher.combine(executeAllQueries)
-        hasher.combine(executeAllHeaders)
+        hasher.combine(queryExecuteStyle)
+        hasher.combine(headerExecuteStyle)
     }
 
     enum CodingKeys: String, CodingKey {
         case _id = "id"
         case _path = "path"
-        case _executeAllHeaders = "executeAllHeaders"
-        case _executeAllQueries = "executeAllQueries"
+        case _queryExecuteStyle = "queryExecuteStyle"
+        case _headerExecuteStyle = "headerExecuteStyle"
     }
 }
 

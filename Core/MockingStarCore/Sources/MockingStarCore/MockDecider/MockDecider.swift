@@ -100,134 +100,98 @@ final class MockDecider {
             return false
         }
 
-        let shouldIgnoreQueryConfigs = (pathConfigs.isEmpty || pathConfigs.contains(where: { $0.executeAllQueries })) && configs.configs.appFilterConfigs.queryFilterDefaultStyleIgnore
-        if !shouldIgnoreQueryConfigs {
-            var filteredMockQueryList: [URLQueryItem] = []
-            var filteredRequestQueryList: [URLQueryItem] = []
-
-            if configs.configs.appFilterConfigs.queryFilterDefaultStyleIgnore {
-                logger.debug("Query filter default style ignore")
-                filteredMockQueryList = mockComponents.queryItems ?? []
-                filteredRequestQueryList = requestComponents.queryItems ?? []
-            }
-
-            for queryConfig in queryConfigs {
-                if configs.configs.appFilterConfigs.queryFilterDefaultStyleIgnore {
-                    if let query = mockComponents.queryItems?.first(where: { $0.name == queryConfig.key }) {
-                        if !queryConfig.value.isNilOrEmpty {
-                            if queryConfig.value == query.value {
-                                filteredMockQueryList.removeAll(where: { $0 == query })
-                            }
-                        } else {
-                            filteredMockQueryList.removeAll(where: { $0 == query })
-                        }
-                    }
-
-                    if let query = requestComponents.queryItems?.first(where: { $0.name == queryConfig.key }) {
-                        if !queryConfig.value.isNilOrEmpty  {
-                            if queryConfig.value == query.value {
-                                filteredRequestQueryList.removeAll(where: { $0 == query })
-                            }
-                        } else {
-                            filteredRequestQueryList.removeAll(where: { $0 == query })
-                        }
-                    }
-
-                } else {
-                    if let query = mockComponents.queryItems?.first(where: { $0.name == queryConfig.key }) {
-                        if !queryConfig.value.isNilOrEmpty {
-                            if queryConfig.value == query.value {
-                                filteredMockQueryList.append(query)
-                            }
-                        } else {
-                            filteredMockQueryList.append(query)
-                        }
-                    }
-
-                    if let query = requestComponents.queryItems?.first(where: { $0.name == queryConfig.key }) {
-                        if !queryConfig.value.isNilOrEmpty  {
-                            if queryConfig.value == query.value {
-                                filteredRequestQueryList.append(query)
-                            }
-                        } else {
-                            filteredRequestQueryList.append(query)
-                        }
-                    }
-                }
-            }
-
-            guard filteredMockQueryList == filteredRequestQueryList else {
-                logger.info("Filtered mock query list and request query list not matched")
-                return false
-            }
+        guard checkQueryItems(requestComponents: requestComponents, mockComponents: mockComponents, pathConfigs: pathConfigs, queryConfigs: queryConfigs) else {
+            logger.info("Filtered mock header list and request header list not matched")
+            return false
         }
 
-        let shouldIgnoreHeaderConfigs = (pathConfigs.isEmpty || pathConfigs.contains(where: { $0.executeAllHeaders })) && configs.configs.appFilterConfigs.headerFilterDefaultStyleIgnore
-        if !shouldIgnoreHeaderConfigs {
-            var filteredMockHeaderList: [String: String] = [:]
-            var filteredRequestHeaderList: [String: String] = [:]
-
-            if configs.configs.appFilterConfigs.headerFilterDefaultStyleIgnore {
-                logger.debug("Header filter default style ignore")
-
-                filteredMockHeaderList = try mock.requestHeader.asDictionary()
-                filteredRequestHeaderList = request.allHTTPHeaderFields ?? [:]
-            }
-
-            for headerConfig in headerConfigs {
-                if configs.configs.appFilterConfigs.headerFilterDefaultStyleIgnore {
-                    if let header = try mock.requestHeader.asDictionary().first(where: { $0.key == headerConfig.key }) {
-                        if !headerConfig.value.isNilOrEmpty {
-                            if headerConfig.value == header.value {
-                                filteredMockHeaderList.removeValue(forKey: header.key)
-                            }
-                        } else {
-                            filteredMockHeaderList.removeValue(forKey: header.key)
-                        }
-                    }
-
-                    if let header = request.allHTTPHeaderFields?.first(where: { $0.key == headerConfig.key }) {
-                        if !headerConfig.value.isNilOrEmpty {
-                            if headerConfig.value == header.value {
-                                filteredRequestHeaderList.removeValue(forKey: header.key)
-                            }
-                        } else {
-                            filteredRequestHeaderList.removeValue(forKey: header.key)
-                        }
-                    }
-                } else {
-                    if let header = try mock.requestHeader.asDictionary().first(where: { $0.key == headerConfig.key }) {
-                        if !headerConfig.value.isNilOrEmpty {
-                            if headerConfig.value == header.value {
-                                filteredMockHeaderList[header.key] = header.value
-                            }
-                        } else {
-                            filteredMockHeaderList[header.key] = ""
-                        }
-                    }
-
-                    if let header = request.allHTTPHeaderFields?.first(where: { $0.key == headerConfig.key }) {
-                        if !headerConfig.value.isNilOrEmpty {
-                            if headerConfig.value == header.value {
-                                filteredRequestHeaderList[header.key] = header.value
-                            }
-                        } else {
-                            filteredRequestHeaderList[header.key] = ""
-                        }
-                    }
-                }
-            }
-
-            guard filteredMockHeaderList == filteredRequestHeaderList else {
-                logger.info("Filtered mock header list and request header list not matched")
-                return false
-            }
+        guard checkHeaderItems(requestComponents: request.allHTTPHeaderFields ?? [:], mockComponents: try mock.requestHeader.asDictionary(), pathConfigs: pathConfigs, headerConfigs: headerConfigs) else {
+            logger.info("Filtered mock header list and request header list not matched")
+            return false
         }
 
         logger.info("Mock Found: \(mock.id)")
         return true
     }
-    
+
+    private func checkQueryItems(requestComponents: URLComponents, mockComponents: URLComponents, pathConfigs: [PathConfigModel], queryConfigs: [QueryConfigModel]) -> Bool {
+        let mockQueryList: [URLQueryItem]
+        let requestQueryList: [URLQueryItem]
+
+        let queryExecuteStyle = pathConfigs.first?.queryExecuteStyle ?? configs.configs.appFilterConfigs.queryExecuteStyle
+        logger.info("Query execute style is \(queryExecuteStyle)")
+
+        switch queryExecuteStyle {
+        /// Ignore all queries, only select config query list
+        case .ignoreAll:
+            mockQueryList = mockComponents.queryItems?.filter { query in
+                queryConfigs.contains(where: { $0.key == query.name && $0.value.isNilOrEmpty ? true : $0.value.orEmpty == query.value })
+            } ?? []
+            requestQueryList = requestComponents.queryItems?.filter { query in
+                queryConfigs.contains(where: { $0.key == query.name && $0.value.isNilOrEmpty ? true : $0.value.orEmpty == query.value })
+            } ?? []
+
+        /// Match all queries, only ignore config query list
+        case .matchAll:
+            var allMockQueryItems = mockComponents.queryItems ?? []
+            allMockQueryItems.removeAll { query in
+                queryConfigs.contains(where: { $0.key == query.name && $0.value.isNilOrEmpty ? true : $0.value.orEmpty == query.value })
+            }
+
+            var allRequestQueryItems = requestComponents.queryItems ?? []
+            allRequestQueryItems.removeAll { query in
+                queryConfigs.contains(where: { $0.key == query.name && $0.value.isNilOrEmpty ? true : $0.value.orEmpty == query.value })
+            }
+
+            mockQueryList = allMockQueryItems
+            requestQueryList = allRequestQueryItems
+        }
+
+        logger.info("All queries filtered and mock: \(mockQueryList.count) - request: \(requestQueryList.count)")
+        return mockQueryList == requestQueryList
+    }
+
+    private func checkHeaderItems(requestComponents: [String:String], mockComponents: [String:String], pathConfigs: [PathConfigModel], headerConfigs: [HeaderConfigModel]) -> Bool {
+        let mockHeaders: [String:String]
+        let requestHeaders: [String:String]
+
+        let headerExecuteStyle = pathConfigs.first?.headerExecuteStyle ?? configs.configs.appFilterConfigs.headerExecuteStyle
+        logger.info("Header execute style is: \(headerExecuteStyle)")
+
+        switch headerExecuteStyle {
+        /// Ignore all queries, only select config query list
+        case .ignoreAll:
+            mockHeaders = mockComponents.filter { header in
+                headerConfigs.contains(where: { $0.key == header.key && $0.value.isNilOrEmpty ? true : $0.value.orEmpty == header.value })
+            }
+
+            requestHeaders = requestComponents.filter { header in
+                headerConfigs.contains(where: { $0.key == header.key && $0.value.isNilOrEmpty ? true : $0.value.orEmpty == header.value })
+            }
+        /// Match all queries, only ignore config query list
+        case .matchAll:
+            var allMockHeaderItems = mockComponents
+            allMockHeaderItems.forEach { header in
+                if headerConfigs.contains(where: { $0.key == header.key && $0.value.isNilOrEmpty ? true : $0.value.orEmpty == header.value }) {
+                    allMockHeaderItems.removeValue(forKey: header.key)
+                }
+            }
+
+            var allRequestHeaderItems = requestComponents
+            allRequestHeaderItems.forEach { header in
+                if headerConfigs.contains(where: { $0.key == header.key && $0.value.isNilOrEmpty ? true : $0.value.orEmpty == header.value }) {
+                    allRequestHeaderItems.removeValue(forKey: header.key)
+                }
+            }
+
+            mockHeaders = allMockHeaderItems
+            requestHeaders = allRequestHeaderItems
+        }
+
+        logger.info("All headers filtered and mock: \(mockHeaders.count) - request: \(requestHeaders.count)")
+        return mockHeaders == requestHeaders
+    }
+
     /// Determines should search mock for this domain. Based on configuration.
     /// If configuration is empty, default behaviours is search.
     /// When checking subdomains, the root domain variation should also be checked
@@ -279,11 +243,11 @@ extension MockDecider: MockDeciderInterface {
                                                                pathMatchingRatio: configs.configs.appFilterConfigs.pathMatchingRatio)
         let queryConfigs = configsBuilder.findProperQueryConfigs(mockUrl: url,
                                                                  queryConfigs: configs.configs.queryConfigs,
-                                                                 pathMatchingRatio: configs.configs.appFilterConfigs.pathMatchingRatio)
+                                                                 appFilterConfigs: configs.configs.appFilterConfigs)
         let headerConfigs = configsBuilder.findProperHeaderConfigs(mockUrl: url,
                                                                    headers: request.allHTTPHeaderFields ?? [:],
                                                                    headerConfigs: configs.configs.headerConfigs,
-                                                                   pathMatchingRatio: configs.configs.appFilterConfigs.pathMatchingRatio)
+                                                                   appFilterConfigs: configs.configs.appFilterConfigs)
 
         var folderContents: [URL] = []
 

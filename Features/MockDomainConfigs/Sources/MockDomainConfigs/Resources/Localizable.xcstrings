@@ -1,13 +1,76 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
+    " device=android" : {
+
+    },
+    " device=ios" : {
+
+    },
+    " Header: device=android" : {
+
+    },
+    " Header: device=desktop" : {
+
+    },
+    " Header: device=ios" : {
+
+    },
+    " Header: userId=1" : {
+
+    },
+    " Header: userId=2" : {
+
+    },
+    " Header: userId=3" : {
+
+    },
     "/about-us" : {
+
+    },
+    "/about-us?" : {
+
+    },
+    "&device=android" : {
+
+    },
+    "&device=ios" : {
+
+    },
+    "%@ normally " : {
 
     },
     "123" : {
 
     },
-    "Delete" : {
+    "Config key: `device`" : {
+
+    },
+    "Config key: `device` value: `ios`" : {
+
+    },
+    "Config key: `userId`" : {
+
+    },
+    "Config key: `userId` value: `1`" : {
+
+    },
+    "Default behavior for all paths is `%@`." : {
+
+    },
+    "device=android" : {
+
+    },
+    "device=desktop" : {
+
+    },
+    "device=ios" : {
+
+    },
+    "Different mock" : {
 
     },
     "Domains" : {
@@ -28,7 +91,7 @@
     "Header Configurations" : {
 
     },
-    "Header Filter Default Style Ignore" : {
+    "Header Execution" : {
 
     },
     "Hide Inspector" : {
@@ -37,22 +100,46 @@
     "id" : {
 
     },
+    "Ignore All Headers" : {
+
+    },
+    "Ignore All Headers and Header Config" : {
+
+    },
+    "Ignore All Queries" : {
+
+    },
+    "Ignore All Queries and Query Config" : {
+
+    },
     "In the app-wide configurations, instead of writing the entire path, you can enable the usage of configurations based on a minimum path matching ratio starting from the end. This means that if there is a minimum match ratio of paths from the end, the configuration will be used." : {
 
     },
+    "Is Header Matters to Mock?" : {
+
+    },
+    "Is Query Matters to Mock?" : {
+
+    },
     "Key" : {
+
+    },
+    "Match All Headers" : {
+
+    },
+    "Match All Headers and Header Configs" : {
+
+    },
+    "Match All Queries" : {
+
+    },
+    "Match All Queries and Query Configs" : {
 
     },
     "Mock Configurations" : {
 
     },
     "Mock Filter" : {
-
-    },
-    "Mocking Star ignores all headers normally. If there is a important keys only given request, you can change this rule." : {
-
-    },
-    "Mocking Star ignores all queries normally. If there is a important keys only given request, you can change this rule." : {
 
     },
     "Mocking Star uses exact matching of request paths to determine mocks. \nHowever, there are cases where path components can be ignored. Path Configurations allow you to modify the path matching style." : {
@@ -82,7 +169,16 @@
     "Query Configurations" : {
 
     },
-    "Query Filter Default Style Ignore" : {
+    "Query Execution" : {
+
+    },
+    "Quick Examples" : {
+
+    },
+    "Remove" : {
+
+    },
+    "Same mock" : {
 
     },
     "Save" : {
@@ -94,10 +190,37 @@
     "trendyol.com" : {
 
     },
+    "userId=1" : {
+
+    },
+    "userId=2" : {
+
+    },
+    "userId=3" : {
+
+    },
     "Value" : {
 
     },
     "When saving a new mock, filter check is performed to determine whether mock should be saved. This filter check allows you to configure whether a mock should be saved or not. If there are multiple filters, having at least one filter that matches is sufficient for to be saved." : {
+
+    },
+    "You can find more information about header configurations in the Docs." : {
+
+    },
+    "You can find more information about query configurations in the Docs." : {
+
+    },
+    "You can use mocks by ignoring all header parameters in a request. Conversely, you can use your mocks by matching all header parameters.\n\nFor example, if you want to mock all headers for /api/v1/users, you can set this option to `Match All Header Items`. With this setting `Authorization: Bearer 123` and `Authorization: Bearer 456` are different mock. If you set this option to `Ignore All Header Items`, both of them are same mock." : {
+
+    },
+    "You can use mocks by ignoring all header parameters in a request. Conversely, you can use your mocks by matching all header parameters. This setting is default behavior for all paths, you can change this behavior for particular path using `Path Configs`.\n\nFor example, if you want to mock all headers for /api/v1/users, you can set this option to `Match All Header Items`. With this setting `Authorization: Bearer 123` and `Authorization: Bearer 456` are different mock. If you set this option to `Ignore All Header Items`, both of them are same mock." : {
+
+    },
+    "You can use mocks by ignoring all query parameters in a request. Conversely, you can use your mocks by matching all query parameters.\n\nFor example, if you want to mock all queries for /api/v1/users, you can set this option to `Match All Query Items`. With this setting `/api/v1/users?id=1` and `/api/v1/users?id=2` are different mock. If you set this option to `Ignore All Query Items`, both of them are same mock." : {
+
+    },
+    "You can use mocks by ignoring all query parameters in a request. Conversely, you can use your mocks by matching all query parameters. This setting is default behavior for all paths, you can change this behavior for particular path using `Path Configs`.\n\nFor example, if you want to mock all queries for /api/v1/users, you can set this option to `Match All Query Items`. With this setting `/api/v1/users?id=1` and `/api/v1/users?id=2` are different mock. If you set this option to `Ignore All Query Items`, both of them are same mock." : {
 
     }
   },
