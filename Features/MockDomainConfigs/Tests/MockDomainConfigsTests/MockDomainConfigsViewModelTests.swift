@@ -10,6 +10,8 @@ import XCTest
 import CommonKitTestSupport
 import CommonViewsKitTestSupport
 import CommonKit
+import MockingStarCore
+import MockingStarCoreTestSupport
 
 final class MockDomainConfigsViewModelTests: XCTestCase {
     private var viewModel: MockDomainConfigsViewModel!
@@ -17,6 +19,7 @@ final class MockDomainConfigsViewModelTests: XCTestCase {
     private var fileUrlBuilder: MockFileUrlBuilder!
     private var fileStructureMonitor: MockFileStructureMonitor!
     private var notificationManager: MockNotificationManager!
+    private var mockDiscover: MockMockDiscover!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -24,11 +27,15 @@ final class MockDomainConfigsViewModelTests: XCTestCase {
         fileUrlBuilder = .init()
         fileStructureMonitor = .init()
         notificationManager = .init()
+        mockDiscover = .init()
+
+        mockDiscover.stubbedMockDiscoverResult = AsyncStream { _ in }
 
         viewModel = .init(fileManager: fileManager,
                           fileUrlBuilder: fileUrlBuilder,
                           fileStructureMonitor: fileStructureMonitor,
-                          notificationManager: notificationManager)
+                          notificationManager: notificationManager,
+                          mockDiscover: mockDiscover)
     }
 
     func test_mockDomainUpdated_InvokesNecessaryMethods() {

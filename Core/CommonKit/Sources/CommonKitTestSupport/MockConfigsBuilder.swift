@@ -13,12 +13,12 @@ public final class MockConfigsBuilder: ConfigsBuilderInterface {
 
     public var invokedFindProperPathConfigs = false
     public var invokedFindProperPathConfigsCount = 0
-    public var invokedFindProperPathConfigsParameters: (mockUrl: URL, pathConfigs: [CommonKit.PathConfigModel], pathMatchingRatio: Double, Void)?
-    public var invokedFindProperPathConfigsParametersList: [(mockUrl: URL, pathConfigs: [CommonKit.PathConfigModel], pathMatchingRatio: Double, Void)] = []
-    public var stubbedFindProperPathConfigsResult: [CommonKit.PathConfigModel]!
+    public var invokedFindProperPathConfigsParameters: (mockUrl: URL, pathConfigs: [PathConfigModel], pathMatchingRatio: Double, Void)?
+    public var invokedFindProperPathConfigsParametersList: [(mockUrl: URL, pathConfigs: [PathConfigModel], pathMatchingRatio: Double, Void)] = []
+    public var stubbedFindProperPathConfigsResult: [PathConfigModel]!
     public func findProperPathConfigs(
-        mockUrl: URL, pathConfigs: [CommonKit.PathConfigModel], pathMatchingRatio: Double
-    ) -> [CommonKit.PathConfigModel] {
+        mockUrl: URL, pathConfigs: [PathConfigModel], pathMatchingRatio: Double
+    ) -> [PathConfigModel] {
         invokedFindProperPathConfigs = true
         invokedFindProperPathConfigsCount += 1
         invokedFindProperPathConfigsParameters = (mockUrl, pathConfigs, pathMatchingRatio, ())
@@ -29,31 +29,31 @@ public final class MockConfigsBuilder: ConfigsBuilderInterface {
 
     public var invokedFindProperQueryConfigs = false
     public var invokedFindProperQueryConfigsCount = 0
-    public var invokedFindProperQueryConfigsParameters: (mockUrl: URL, queryConfigs: [CommonKit.QueryConfigModel], pathMatchingRatio: Double, Void)?
-    public var invokedFindProperQueryConfigsParametersList: [(mockUrl: URL, queryConfigs: [CommonKit.QueryConfigModel], pathMatchingRatio: Double, Void)] = []
-    public var stubbedFindProperQueryConfigsResult: [CommonKit.QueryConfigModel]!
-    public func findProperQueryConfigs(mockUrl: URL, queryConfigs: [CommonKit.QueryConfigModel], pathMatchingRatio: Double) -> [CommonKit.QueryConfigModel] {
+    public var invokedFindProperQueryConfigsParameters: (mockUrl: URL, queryConfigs: [QueryConfigModel], appFilterConfigs: AppConfigModel, Void)?
+    public var invokedFindProperQueryConfigsParametersList: [(mockUrl: URL, queryConfigs: [QueryConfigModel], appFilterConfigs: AppConfigModel, Void)] = []
+    public var stubbedFindProperQueryConfigsResult: [QueryConfigModel]!
+    public func findProperQueryConfigs(mockUrl: URL, queryConfigs: [QueryConfigModel], appFilterConfigs: AppConfigModel) -> [QueryConfigModel] {
         invokedFindProperQueryConfigs = true
         invokedFindProperQueryConfigsCount += 1
-        invokedFindProperQueryConfigsParameters = (mockUrl, queryConfigs, pathMatchingRatio, ())
+        invokedFindProperQueryConfigsParameters = (mockUrl, queryConfigs, appFilterConfigs, ())
         invokedFindProperQueryConfigsParametersList.append(
-            (mockUrl, queryConfigs, pathMatchingRatio, ()))
+            (mockUrl, queryConfigs, appFilterConfigs, ()))
         return stubbedFindProperQueryConfigsResult
     }
 
     public var invokedFindProperHeaderConfigs = false
     public var invokedFindProperHeaderConfigsCount = 0
-    public var invokedFindProperHeaderConfigsParameters: (mockUrl: URL, headers: [String: String], headerConfigs: [CommonKit.HeaderConfigModel], pathMatchingRatio: Double, Void)?
-    public var invokedFindProperHeaderConfigsParametersList: [( mockUrl: URL, headers: [String: String], headerConfigs: [CommonKit.HeaderConfigModel], pathMatchingRatio: Double, Void)] = []
-    public var stubbedFindProperHeaderConfigsResult: [CommonKit.HeaderConfigModel]!
-    public func findProperHeaderConfigs(mockUrl: URL, headers: [String: String], headerConfigs: [CommonKit.HeaderConfigModel], pathMatchingRatio: Double) -> [CommonKit.HeaderConfigModel] {
+    public var invokedFindProperHeaderConfigsParameters: (mockUrl: URL, headers: [String: String], headerConfigs: [HeaderConfigModel], appFilterConfigs: AppConfigModel, Void)?
+    public var invokedFindProperHeaderConfigsParametersList: [( mockUrl: URL, headers: [String: String], headerConfigs: [HeaderConfigModel], appFilterConfigs: AppConfigModel, Void)] = []
+    public var stubbedFindProperHeaderConfigsResult: [HeaderConfigModel]!
+    public func findProperHeaderConfigs(mockUrl: URL, headers: [String: String], headerConfigs: [HeaderConfigModel], appFilterConfigs: AppConfigModel) -> [HeaderConfigModel] {
         invokedFindProperHeaderConfigs = true
         invokedFindProperHeaderConfigsCount += 1
         invokedFindProperHeaderConfigsParameters = (
-            mockUrl, headers, headerConfigs, pathMatchingRatio, ()
+            mockUrl, headers, headerConfigs, appFilterConfigs, ()
         )
         invokedFindProperHeaderConfigsParametersList.append(
-            (mockUrl, headers, headerConfigs, pathMatchingRatio, ()))
+            (mockUrl, headers, headerConfigs, appFilterConfigs, ()))
         return stubbedFindProperHeaderConfigsResult
     }
 }
