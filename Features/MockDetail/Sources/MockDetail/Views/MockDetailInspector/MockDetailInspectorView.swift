@@ -17,7 +17,16 @@ struct MockDetailInspectorView: View {
         List {
             GroupBox {
                 VStack {
-                    LabeledContent("URL", value: viewModel.mockModel.metaData.url.absoluteString)
+                    LabeledContent("URL") {
+                        VStack(alignment: .leading, spacing: .zero) {
+                            TextField("URL", text: $viewModel.url, axis: .vertical)
+                                .lineLimit(1...10)
+                                .multilineTextAlignment(.leading)
+                            Rectangle()
+                                .frame(height: 1)
+                                .foregroundStyle(viewModel.isUrlValid ? .clear : .red)
+                        }
+                    }
                     Divider()
                     LabeledContent("Path", value: viewModel.mockModel.metaData.url.path())
                     Divider()
@@ -104,6 +113,7 @@ struct MockDetailInspectorView: View {
         .task(id: viewModel.httpStatus) { viewModel.sync() }
         .task(id: viewModel.scenario) { viewModel.sync() }
         .task(id: viewModel.responseTime) { viewModel.sync() }
+        .task(id: viewModel.url) { viewModel.sync() }
         .task { await viewModel.loadPluginMessage() }
     }
 }

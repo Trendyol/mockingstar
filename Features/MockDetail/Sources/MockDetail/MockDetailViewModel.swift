@@ -148,7 +148,7 @@ public final class MockDetailViewModel {
     /// is moved to the appropriate folder. After the save operation, a success message is displayed.
     func saveChanges() {
         guard originalMockModel != mockModel else { return }
-        let shouldMoveFile = originalMockModel.metaData.scenario != mockModel.metaData.scenario
+        let shouldMoveFile = originalMockModel.metaData.scenario != mockModel.metaData.scenario || originalMockModel.metaData.url != mockModel.metaData.url
 
         let (isResponseBodyValid, responseBodyMessage) = jsonValidator(jsonText: mockModel.responseBody)
         let (isRequestBodyValid, requestBodyMessage) = jsonValidator(jsonText: mockModel.requestBody)
