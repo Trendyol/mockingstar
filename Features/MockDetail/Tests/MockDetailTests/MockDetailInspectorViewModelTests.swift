@@ -84,4 +84,21 @@ final class MockDetailInspectorViewModelTests: XCTestCase {
         XCTAssertEqual(pluginCore.invokedPluginCoreParametersList.map(\.mockDomain), ["Test"])
         XCTAssertEqual(viewModel.pluginMessages, ["Test Sync", "Test Async"])
     }
+
+    func test_isUrlValid_ValidUrl() {
+        viewModel.url = "https://trendyol.com/aboutus"
+
+        XCTAssertTrue(viewModel.isUrlValid)
+    }
+
+    func test_isUrlValid_NotValidUrl() {
+        viewModel.url = "https ://trendyol.com/aboutus"
+        XCTAssertFalse(viewModel.isUrlValid)
+
+        viewModel.url = "https://trendyol.com/aboutus`"
+        XCTAssertFalse(viewModel.isUrlValid)
+
+        viewModel.url = "https://trendyol.com\\aboutus"
+        XCTAssertFalse(viewModel.isUrlValid)
+    }
 }
