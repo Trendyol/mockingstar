@@ -21,20 +21,20 @@ final class MockPathBuilderTests: XCTestCase {
     func test_findProperPathConfigs_Ratio1_ReturnsProperConfigs() {
         let pathConfigs: [PathConfigModel] = [
             .init(path: "/aboutus/foo/bar/test",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
             .init(path: "/aboutus/foo/bar/*",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
             .init(path: "/foo/bar/test",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
             .init(path: "/aboutus/foo/bar",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
             .init(path: "/aboutus/foo/*",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
         ]
         let configs = builder.findProperPathConfigs(mockUrl: mockUrl,
                                                     pathConfigs: pathConfigs,
@@ -42,14 +42,14 @@ final class MockPathBuilderTests: XCTestCase {
 
         let expected: [PathConfigModel] = [
             .init(path: "/aboutus/foo/bar/test",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
             .init(path: "/aboutus/foo/bar/*",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
             .init(path: "/foo/bar/test",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
         ]
         XCTAssertEqual(configs, expected)
     }
@@ -57,20 +57,20 @@ final class MockPathBuilderTests: XCTestCase {
     func test_findProperPathConfigs_Ratio05_ReturnsProperConfigs() {
         let pathConfigs: [PathConfigModel] = [
             .init(path: "/aboutus/foo/bar/test",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
             .init(path: "/aboutus/foo/bar/*",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
             .init(path: "/foo/bar/test",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
             .init(path: "/aboutus/foo/bar",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
             .init(path: "/aboutus/foo/*",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
         ]
         let configs = builder.findProperPathConfigs(mockUrl: mockUrl,
                                                     pathConfigs: pathConfigs,
@@ -78,14 +78,14 @@ final class MockPathBuilderTests: XCTestCase {
 
         let expected: [PathConfigModel] = [
             .init(path: "/aboutus/foo/bar/test",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
             .init(path: "/aboutus/foo/bar/*",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
             .init(path: "/foo/bar/test",
-                  executeAllQueries: false,
-                  executeAllHeaders: false),
+                  queryExecuteStyle: .ignoreAll,
+                  headerExecuteStyle: .ignoreAll),
         ]
         XCTAssertEqual(configs, expected)
     }
@@ -124,7 +124,7 @@ final class MockPathBuilderTests: XCTestCase {
 
         let configs = builder.findProperQueryConfigs(mockUrl: mockUrl,
                                                      queryConfigs: queryConfigs,
-                                                     pathMatchingRatio: 1)
+                                                     appFilterConfigs: .init(pathMatchingRatio: 1))
 
         let expected: [QueryConfigModel] = [
             .init(path: [],
@@ -170,7 +170,7 @@ final class MockPathBuilderTests: XCTestCase {
 
         let configs = builder.findProperQueryConfigs(mockUrl: mockUrl,
                                                      queryConfigs: queryConfigs,
-                                                     pathMatchingRatio: 0.5)
+                                                     appFilterConfigs: .init(pathMatchingRatio: 0.5))
 
         let expected: [QueryConfigModel] = [
             .init(path: [],
@@ -197,7 +197,7 @@ final class MockPathBuilderTests: XCTestCase {
 
         let configs = builder.findProperQueryConfigs(mockUrl: mockUrl,
                                                      queryConfigs: queryConfigs,
-                                                     pathMatchingRatio: 1)
+                                                     appFilterConfigs: .init(pathMatchingRatio: 1))
 
         let expected: [QueryConfigModel] = []
         XCTAssertEqual(configs, expected)
@@ -234,7 +234,7 @@ final class MockPathBuilderTests: XCTestCase {
         let configs = builder.findProperHeaderConfigs(mockUrl: mockUrl,
                                                       headers: headers,
                                                       headerConfigs: queryConfigs,
-                                                      pathMatchingRatio: 1)
+                                                      appFilterConfigs: .init(pathMatchingRatio: 1))
 
         let expected: [HeaderConfigModel] = [
             .init(path: [],
@@ -281,7 +281,7 @@ final class MockPathBuilderTests: XCTestCase {
         let configs = builder.findProperHeaderConfigs(mockUrl: mockUrl,
                                                       headers: headers,
                                                       headerConfigs: queryConfigs,
-                                                      pathMatchingRatio: 0.5)
+                                                      appFilterConfigs: .init(pathMatchingRatio: 0.5))
 
         let expected: [HeaderConfigModel] = [
             .init(path: [],
@@ -304,7 +304,7 @@ final class MockPathBuilderTests: XCTestCase {
         let configs = builder.findProperHeaderConfigs(mockUrl: mockUrl,
                                                       headers: headers,
                                                       headerConfigs: queryConfigs,
-                                                      pathMatchingRatio: 0.5)
+                                                      appFilterConfigs: .init(pathMatchingRatio: 0.5))
 
         let expected: [HeaderConfigModel] = []
         XCTAssertEqual(configs, expected)

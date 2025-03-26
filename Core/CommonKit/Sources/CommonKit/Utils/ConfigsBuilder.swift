@@ -21,19 +21,19 @@ public protocol ConfigsBuilderInterface {
     /// - Parameters:
     ///   - mockUrl: Current request url
     ///   - queryConfigs: Loaded configs from file
-    ///   - pathMatchingRatio: A 0 to 1 value, it determents suitable ratio eg: 1 is all path component must equal config and mock, 0.5 is only half of suffix components must equal
+    ///   - appFilterConfigs: App filter for default value and pathMatchingRatio
     /// - Returns: Usable Query components for this mock
 
-    func findProperQueryConfigs(mockUrl: URL, queryConfigs: [QueryConfigModel], pathMatchingRatio: Double) -> [QueryConfigModel]
+    func findProperQueryConfigs(mockUrl: URL, queryConfigs: [QueryConfigModel], appFilterConfigs: AppConfigModel) -> [QueryConfigModel]
 
     /// Find all suitable header configs for given mock url
     /// - Parameters:
     ///   - mockUrl: Loaded from file mock
     ///   - headers: Current request headers
     ///   - headerConfigs: Loaded configs from file
-    ///   - pathMatchingRatio: A 0 to 1 value, it determents suitable ratio eg: 1 is all path component must equal config and mock, 0.5 is only half of suffix components must equal
+    ///   - appFilterConfigs: App filter for default value and pathMatchingRatio
     /// - Returns: Usable Header components for this mock
-    func findProperHeaderConfigs(mockUrl: URL, headers: [String: String], headerConfigs: [HeaderConfigModel], pathMatchingRatio: Double) -> [HeaderConfigModel]
+    func findProperHeaderConfigs(mockUrl: URL, headers: [String: String], headerConfigs: [HeaderConfigModel], appFilterConfigs: AppConfigModel) -> [HeaderConfigModel]
 }
 
 public final class ConfigsBuilder: ConfigsBuilderInterface {
@@ -49,7 +49,7 @@ public final class ConfigsBuilder: ConfigsBuilderInterface {
         }
     }
 
-    public func findProperQueryConfigs(mockUrl: URL, queryConfigs: [QueryConfigModel], pathMatchingRatio: Double) -> [QueryConfigModel] {
+    public func findProperQueryConfigs(mockUrl: URL, queryConfigs: [QueryConfigModel], appFilterConfigs: AppConfigModel) -> [QueryConfigModel] {
         guard let queryItems = URLComponents(url: mockUrl, resolvingAgainstBaseURL: true)?.queryItems, !queryItems.isEmpty else { return [] }
 
         return queryConfigs.filter { queryConfig in
@@ -57,13 +57,14 @@ public final class ConfigsBuilder: ConfigsBuilderInterface {
             guard !matchedQueries.isEmpty else { return false }
 
             if let value = queryConfig.value,
+               !value.isEmpty,
                !matchedQueries.contains(where: { $0.value == value }) {
                 return false
             }
 
             if !queryConfig.path.isEmpty {
-                let pathConfigs: [PathConfigModel] = queryConfig.path.map { .init(path: $0, executeAllQueries: false, executeAllHeaders: false) }
-                let suitablePathConfigs = findProperPathConfigs(mockUrl: mockUrl, pathConfigs: pathConfigs, pathMatchingRatio: pathMatchingRatio)
+                let pathConfigs: [PathConfigModel] = queryConfig.path.map { .init(path: $0, queryExecuteStyle: appFilterConfigs.queryExecuteStyle, headerExecuteStyle: appFilterConfigs.headerExecuteStyle) }
+                let suitablePathConfigs = findProperPathConfigs(mockUrl: mockUrl, pathConfigs: pathConfigs, pathMatchingRatio: appFilterConfigs.pathMatchingRatio)
                 return !suitablePathConfigs.isEmpty
             }
 
@@ -71,19 +72,20 @@ public final class ConfigsBuilder: ConfigsBuilderInterface {
         }
     }
 
-    public func findProperHeaderConfigs(mockUrl: URL, headers: [String: String], headerConfigs: [HeaderConfigModel], pathMatchingRatio: Double) -> [HeaderConfigModel] {
+    public func findProperHeaderConfigs(mockUrl: URL, headers: [String: String], headerConfigs: [HeaderConfigModel], appFilterConfigs: AppConfigModel) -> [HeaderConfigModel] {
         headerConfigs.filter { headerConfig in
             let matchedHeaders = headers.filter { $0.key == headerConfig.key }
             guard !matchedHeaders.isEmpty else { return false }
 
             if let value = headerConfig.value,
+               !value.isEmpty,
                !matchedHeaders.contains(where: { $0.value == value }) {
                 return false
             }
 
             if !headerConfig.path.isEmpty {
-                let pathConfigs: [PathConfigModel] = headerConfig.path.map { .init(path: $0, executeAllQueries: false, executeAllHeaders: false) }
-                let suitablePathConfigs = findProperPathConfigs(mockUrl: mockUrl, pathConfigs: pathConfigs, pathMatchingRatio: pathMatchingRatio)
+                let pathConfigs: [PathConfigModel] = headerConfig.path.map { .init(path: $0, queryExecuteStyle: appFilterConfigs.queryExecuteStyle, headerExecuteStyle: appFilterConfigs.headerExecuteStyle) }
+                let suitablePathConfigs = findProperPathConfigs(mockUrl: mockUrl, pathConfigs: pathConfigs, pathMatchingRatio: appFilterConfigs.pathMatchingRatio)
                 return !suitablePathConfigs.isEmpty
             }
 

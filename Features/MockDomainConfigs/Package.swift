@@ -17,6 +17,7 @@ let package = Package(
     dependencies: [
         .package(path: "../../Core/CommonKit"),
         .package(path: "../../Core/CommonViewsKit"),
+        .package(path: "../../Core/MockingStarCore"),
     ],
     targets: [
         .target(
@@ -24,6 +25,7 @@ let package = Package(
         dependencies: [
             "CommonKit",
             "CommonViewsKit",
+            "MockingStarCore",
         ]),
         .testTarget(
             name: "MockDomainConfigsTests",
@@ -31,6 +33,7 @@ let package = Package(
                 "MockDomainConfigs",
                 .product(name: "CommonViewsKitTestSupport", package: "CommonViewsKit"),
                 .product(name: "CommonKitTestSupport", package: "CommonKit"),
+                .product(name: "MockingStarCoreTestSupport", package: "MockingStarCore"),
             ]),
     ]
 )

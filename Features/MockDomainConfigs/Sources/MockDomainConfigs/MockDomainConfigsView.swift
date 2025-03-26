@@ -38,15 +38,23 @@ public struct MockDomainConfigsView: View {
                     }
                 }
 
-                LabeledContent("Query Filter Default Style Ignore") {
-                    Toggle(isOn: $viewModel.appFilterConfigs.queryFilterDefaultStyleIgnore, label: EmptyView.init)
-                        .toggleStyle(.switch)
+                Picker(selection: $viewModel.appFilterConfigs.queryExecuteStyle) {
+                    ForEach(QueryExecuteStyle.allCases, id: \.self) { Text($0.title).tag($0) }
+                } label: {
+                    Text("Query Execution")
+                    HelpButton { QueryExecutionTip.isTipPresented.toggle() }
                 }
+                TipView(QueryExecutionTip())
+                    .padding(.bottom)
 
-                LabeledContent("Header Filter Default Style Ignore") {
-                    Toggle(isOn: $viewModel.appFilterConfigs.headerFilterDefaultStyleIgnore, label: EmptyView.init)
-                        .toggleStyle(.switch)
+                Picker(selection: $viewModel.appFilterConfigs.headerExecuteStyle) {
+                    ForEach(HeaderExecuteStyle.allCases, id: \.self) { Text($0.title).tag($0) }
+                } label: {
+                    Text("Header Execution")
+                    HelpButton { HeaderExecutionTip.isTipPresented.toggle() }
                 }
+                TipView(HeaderExecutionTip())
+                    .padding(.bottom)
 
                 LabeledContent("Domains") {
                     VStack {
@@ -222,5 +230,53 @@ struct PathMatchingRatioTip: Tip {
 
     var image: Image? {
         Image(systemName: "slider.horizontal.below.square.filled.and.square")
+    }
+}
+
+struct QueryExecutionTip: Tip {
+    @Parameter
+    static var isTipPresented: Bool = false
+    var rules: [Rule] {
+        [
+            #Rule(Self.$isTipPresented) {
+                $0 == true
+            }
+        ]
+    }
+
+    var title: Text {
+        Text("Is Query Matters to Mock?")
+    }
+
+    var message: Text? {
+        Text("You can use mocks by ignoring all query parameters in a request. Conversely, you can use your mocks by matching all query parameters. This setting is default behavior for all paths, you can change this behavior for particular path using `Path Configs`.\n\nFor example, if you want to mock all queries for /api/v1/users, you can set this option to `Match All Query Items`. With this setting `/api/v1/users?id=1` and `/api/v1/users?id=2` are different mock. If you set this option to `Ignore All Query Items`, both of them are same mock.")
+    }
+
+    var image: Image? {
+        Image(systemName: "questionmark")
+    }
+}
+
+struct HeaderExecutionTip: Tip {
+    @Parameter
+    static var isTipPresented: Bool = false
+    var rules: [Rule] {
+        [
+            #Rule(Self.$isTipPresented) {
+                $0 == true
+            }
+        ]
+    }
+
+    var title: Text {
+        Text("Is Header Matters to Mock?")
+    }
+
+    var message: Text? {
+        Text("You can use mocks by ignoring all header parameters in a request. Conversely, you can use your mocks by matching all header parameters. This setting is default behavior for all paths, you can change this behavior for particular path using `Path Configs`.\n\nFor example, if you want to mock all headers for /api/v1/users, you can set this option to `Match All Header Items`. With this setting `Authorization: Bearer 123` and `Authorization: Bearer 456` are different mock. If you set this option to `Ignore All Header Items`, both of them are same mock.")
+    }
+
+    var image: Image? {
+        Image(systemName: "questionmark")
     }
 }
