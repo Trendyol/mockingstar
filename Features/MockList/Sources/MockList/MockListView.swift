@@ -68,7 +68,7 @@ public struct MockListView: View {
                         .font(.callout)
                         .help(mock.metaData.scenario)
                 }
-                .width(min: (geometryProxy.size.width - 300)/3, ideal: (geometryProxy.size.width - 200)/3, max: (geometryProxy.size.width - 100)/3)
+                .width(min: (geometryProxy.size.width - 300)/3, ideal: (geometryProxy.size.width - 200)/3)
                 .customizationID("Scenario")
 
                 TableColumn("Response Time", value: \.metaData.responseTime) { mock in
