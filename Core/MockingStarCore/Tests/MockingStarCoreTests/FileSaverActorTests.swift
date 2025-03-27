@@ -18,8 +18,8 @@ final class FileSaverActorTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        @UserDefaultStorage("mockFolderFilePath", userDefaults: defaults) var mockFolderFilePath: String = ""
-        mockFolderFilePath = "/MockServer/"
+        @UserDefaultStorage("workspaces", userDefaults: defaults) var workspaces: [Workspace] = []
+        workspaces = [Workspace(name: "Workspace", path: "/MockServer/", bookmark: Data())]
 
         fileManager = .init()
         actor = .init(fileManager: fileManager)
