@@ -13,9 +13,6 @@
     "Bug Report" : {
 
     },
-    "Change Path" : {
-
-    },
     "Check" : {
 
     },
@@ -50,9 +47,6 @@
 
     },
     "MockingStar" : {
-
-    },
-    "Mocks Folder" : {
 
     },
     "Plugins" : {
@@ -98,6 +92,9 @@
     "Servers" : {
 
     },
+    "Settings" : {
+
+    },
     "Source Code" : {
 
     },
@@ -120,6 +117,15 @@
 
     },
     "Working" : {
+
+    },
+    "workspace" : {
+
+    },
+    "Workspace Name" : {
+
+    },
+    "Workspaces" : {
 
     }
   },

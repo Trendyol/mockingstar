@@ -10,14 +10,12 @@ import Foundation
 public struct MockServerFlags {
     let mockSource: MockSource
     let scenario: String?
-    let shouldNotMock: Bool
     let domain: String
     let deviceId: String
 
-    public init(mockSource: MockSource, scenario: String?, shouldNotMock: Bool, domain: String, deviceId: String) {
+    public init(mockSource: MockSource, scenario: String?, domain: String, deviceId: String) {
         self.mockSource = mockSource
         self.scenario = scenario
-        self.shouldNotMock = shouldNotMock
         self.domain = domain
         self.deviceId = deviceId
     }

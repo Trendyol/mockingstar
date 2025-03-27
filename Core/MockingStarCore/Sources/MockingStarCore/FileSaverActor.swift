@@ -16,8 +16,9 @@ public actor FileSaverActor: FileSaverActorInterface {
     private let logger = Logger(category: "FileSaverActor")
     private let fileManager: FileManagerInterface
     public static let shared = FileSaverActor()
-    @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
+    @UserDefaultStorage("workspaces") private var workspaces: [Workspace] = []
     private var folderPath: String {
+        let mockFolderFilePath = workspaces.current?.path ?? "/MockServer"
         if mockFolderFilePath.hasSuffix("/") { return mockFolderFilePath }
         return mockFolderFilePath + "/"
     }

@@ -66,7 +66,9 @@ public final class UserDefaultStorage<T: Codable>: NSObject {
         super.init()
 
         if let data = try? encoder.encode(defaultValue) {
-            userDefaults.register(defaults: [key: data])
+            DispatchQueue.main.async {
+                userDefaults.register(defaults: [key: data])
+            }
         }
 #if os(macOS)
         // This fulfills requirement 4. Some implementations use NSUserDefaultsDidChangeNotification

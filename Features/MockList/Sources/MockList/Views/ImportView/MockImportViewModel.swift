@@ -84,7 +84,6 @@ final class MockImportViewModel {
 
         let importResult = try await mockingStarCore.importMock(url: url, method: method, headers: headers, body: nil, flags: MockServerFlags(mockSource: .default,
                                                                                                                                               scenario: nil,
-                                                                                                                                              shouldNotMock: false,
                                                                                                                                               domain: mockDomain,
                                                                                                                                               deviceId: ""))
 

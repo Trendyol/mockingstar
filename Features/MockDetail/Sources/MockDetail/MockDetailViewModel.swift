@@ -22,7 +22,10 @@ public final class MockDetailViewModel {
     private let fileSaver: FileSaverActorInterface
     private let pasteBoard: NSPasteboardInterface
     private let nsWorkspace: NSWorkspaceInterface
-    @ObservationIgnored @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
+    private let mockFolderFilePath = {
+        @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
+        return workspaces.current?.path ?? "/MockServer"
+    }()
 
     // MARK: Data Models
     private var originalMockModel: MockModel

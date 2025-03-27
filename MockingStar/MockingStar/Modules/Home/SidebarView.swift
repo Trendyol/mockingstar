@@ -21,6 +21,7 @@ struct SidebarView: View {
         List {
             Section("Servers") {
                 SideBarServerView()
+                SideBarWorkspaceView()
             }
 
             Section("App") {

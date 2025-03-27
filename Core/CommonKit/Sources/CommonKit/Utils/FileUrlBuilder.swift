@@ -95,7 +95,9 @@ public enum FileUrlBuilderError: LocalizedError {
 }
 
 public final class FileUrlBuilder: FileUrlBuilderInterface {
-    @UserDefaultStorage("mockFolderFilePath") var mocksFolderPath: String = "/MockServer"
+    @UserDefaultStorage("workspaces") private var workspaces: [Workspace] = []
+    var mocksFolderPath: String { workspaces.current?.path ?? "/MockServer" }
+
     private var folderPath: String {
         if mocksFolderPath.hasSuffix("/") { return mocksFolderPath }
         return mocksFolderPath + "/"

@@ -10,16 +10,15 @@ import CommonKit
 
 struct InitializeAppOnboardingView: View {
     private let logger = Logger(category: "InitializeAppOnboardingView")
-    private let onboardingDone: () -> Void
     private let fileStructureHelper: FileStructureHelperInterface = FileStructureHelper()
     @State private var onboardingMessage: String = "loading"
     @State private var onboardingFailed: Bool = false
     @AppStorage("isOnboardingDone") private var isOnboardingDone: Bool = false
-    @UserDefaultStorage("mockFolderFileBookMark") var mockFolderFileBookMark: Data? = nil
     @SceneStorage("mockDomain") private var mockDomain: String = ""
+    @UserDefaultStorage("workspaces") private var workspaces: [Workspace] = []
 
-    init(onboardingDone: @escaping () -> Void) {
-        self.onboardingDone = onboardingDone
+    init() {
+        migrateWorkspaces()
     }
 
     var body: some View {
@@ -29,6 +28,7 @@ struct InitializeAppOnboardingView: View {
             if onboardingFailed {
                 Button {
                     isOnboardingDone = false
+                    workspaces.removeAll(where: { $0 == workspaces.current })
                 } label: {
                     Text("Reset Mocking Star")
                         .foregroundColor(.white)
@@ -71,13 +71,13 @@ struct InitializeAppOnboardingView: View {
         await updateMessage(text: "Initialize File Accessing...")
         try? await Task.sleep(for: .seconds(0.2))
         do {
-            guard let fileBookMark = mockFolderFileBookMark else {
+            guard let workspace = workspaces.current else {
                 await updateMessage(text: "File Access Failed, file bookmark not found")
                 onboardingFailed = true
                 return
             }
 
-            try FilePermissionHelper(fileBookMark: fileBookMark).startAccessingSecurityScopedResource()
+            try FilePermissionHelper(fileBookMark: workspace.bookmark).startAccessingSecurityScopedResource()
         } catch {
             onboardingFailed = true
             return await updateMessage(text: "File Access ERROR: \(error)")
@@ -115,10 +115,24 @@ struct InitializeAppOnboardingView: View {
         await updateMessage(text: "Ready")
         try? await Task.sleep(for: .seconds(0.2))
 
-        onboardingDone()
+        OnboardingCompleted.shared.completed = true
+    }
+
+    
+    /// Migrate previous single selectable folder to workspace model
+    /// version: 1.1.7-13
+    private func migrateWorkspaces() {
+        @UserDefaultStorage("mockFolderFileBookMark") var mockFolderFileBookMark: Data? = nil
+        @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
+
+        guard let mockFolderFileBookMarkData = mockFolderFileBookMark else { return }
+        workspaces = [
+            Workspace(name: "Workspace 1", path: mockFolderFilePath, bookmark: mockFolderFileBookMarkData)
+        ]
+        mockFolderFileBookMark = nil
     }
 }
 
 #Preview {
-    InitializeAppOnboardingView { }
+    InitializeAppOnboardingView()
 }
