@@ -13,10 +13,15 @@ import SwiftUI
 @Observable
 final class MockImportViewModel {
     private let logger = Logger(category: "MockImportViewModel")
+    private let fileSaver: FileSaverActorInterface
     var mockImportStyle: MockImportStyle = .cURL
     var importInput: String = ""
     var importFailedMessage: String = ""
     var shouldShowImportDone: Bool = false
+
+    init(fileSaver: FileSaverActorInterface = FileSaverActor.shared) {
+        self.fileSaver = fileSaver
+    }
 
     func importMock(for mockDomain: String) {
         importFailedMessage = ""
@@ -25,6 +30,11 @@ final class MockImportViewModel {
                 switch mockImportStyle {
                 case .cURL:
                     try await curlImport(mockDomain: mockDomain)
+                case .file:
+                    let mockModel = try JSONDecoder.shared.decode(MockModel.self, from: importInput.data(using: .utf8) ?? Data())
+                    mockModel.metaData.id = UUID().uuidString
+                    try await fileSaver.saveFile(mock: mockModel, mockDomain: mockDomain)
+                    shouldShowImportDone = true
                 }
             } catch {
                 logger.error("Import failed: \(error)")
@@ -112,4 +122,19 @@ enum MockImportError: LocalizedError {
 
 enum MockImportStyle: String, CaseIterable {
     case cURL
+    case file
+
+    var title: String {
+        switch self {
+        case .cURL: "cURL"
+        case .file: "File"
+        }
+    }
+
+    var placeholder: String {
+        switch self {
+        case .cURL: "curl -X POST https://api.example.com/some-endpoint -H 'Content-Type: application/json''"
+        case .file: "Mocking Star exported file content"
+        }
+    }
 }

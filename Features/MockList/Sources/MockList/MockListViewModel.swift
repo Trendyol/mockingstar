@@ -176,6 +176,18 @@ public final class MockListViewModel {
             let curlList = mocks.map(\.asURLRequest).map { $0.cURL(pretty: true) }
             pasteBoard.clearContents()
             pasteBoard.setString(curlList.joined(separator: "\n\n"), forType: .string)
+        case .file:
+            guard let mockModel = mocks.first else { return notificationManager.show(title: "File share only available for one mock", color: .red) }
+            do {
+                let data = try JSONEncoder.shared.encode(mockModel)
+                guard let content = String(data: data, encoding: .utf8) else {
+                    return notificationManager.show(title: "Failed to encode mock", color: .red)
+                }
+                pasteBoard.clearContents()
+                pasteBoard.setString(content, forType: .string)
+            } catch {
+                notificationManager.show(title: "Failed to encode mock", color: .red)
+            }
         }
         notificationManager.show(title: "Request copied to clipboard", color: .green)
     }

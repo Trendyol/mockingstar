@@ -22,17 +22,20 @@ struct MockImportView: View {
         VStack {
             Picker(selection: $viewModel.mockImportStyle, content: {
                 ForEach(MockImportStyle.allCases, id: \.self) {
-                    Text($0.rawValue).tag($0)
+                    Text($0.title).tag($0)
                 }
             }, label: EmptyView.init)
             .pickerStyle(.segmented)
             .padding(.horizontal)
             .padding(.top)
 
-            TextField(text: $viewModel.importInput, prompt: Text("Paste cURL, URL..."), axis: .vertical, label: EmptyView.init)
-                .textFieldStyle(.plain)
-                .focused($isInputFocused)
-                .padding()
+            ScrollView {
+                TextField(text: $viewModel.importInput, prompt: Text(viewModel.mockImportStyle.placeholder), axis: .vertical, label: EmptyView.init)
+                    .textFieldStyle(.plain)
+                    .focused($isInputFocused)
+                    .padding()
+            }
+            .frame(maxHeight: 350)
 
             if !viewModel.importFailedMessage.isEmpty {
                 Text(viewModel.importFailedMessage)

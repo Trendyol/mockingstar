@@ -20,7 +20,7 @@
 
     },
     "Do you want to import different way?" : {
-    
+
     },
     "Duplicated Id (%lld)" : {
 
@@ -49,28 +49,25 @@
     "Mock Import" : {
 
     },
-    "Mocking Star is open source. You can contribute or create an issue." : {
-    
-    },
     "Mocking Star can check your mock files integrity. File integrity is crucial for app performance." : {
+
+    },
+    "Mocking Star is open source. You can contribute or create an issue." : {
 
     },
     "Mocks" : {
 
     },
-    "Now you can import mocks using cURL or URL. Mock'll import current selected mock domain." : {
-    
-    },
     "No Violation Found" : {
+
+    },
+    "Now you can import mocks using cURL or URL. Mock'll import current selected mock domain." : {
 
     },
     "Ok" : {
 
     },
     "Open Mock Detail" : {
-
-    },
-    "Paste cURL, URL..." : {
 
     },
     "Reload Mocks" : {

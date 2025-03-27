@@ -9,4 +9,5 @@ import Foundation
 
 public enum ShareStyle: String, CaseIterable {
     case curl = "cURL"
+    case file = "File"
 }
