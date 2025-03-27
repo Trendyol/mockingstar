@@ -10,6 +10,7 @@ import CommonKit
 
 struct SideBarWorkspaceView: View {
     @State private var workspaces: [Workspace] = []
+    @SceneStorage("mockDomain") private var mockDomain: String = ""
 
     var body: some View {
         Menu {
@@ -25,6 +26,7 @@ struct SideBarWorkspaceView: View {
                     }
                     @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
                     workspaces = newWorkspaces
+                    mockDomain = ""
                     OnboardingCompleted.shared.completed = false
                 }
             }
