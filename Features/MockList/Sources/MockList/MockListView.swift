@@ -18,6 +18,7 @@ public struct MockListView: View {
     @AppStorage("isFirstOpen") private var isFirstOpen: Bool = true
     @State private var isSearchActive: Bool = false
     @State private var shouldShowMockImportView: Bool = false
+    private let deeplinkStore = DeeplinkStore.shared
 
     public init(viewModel: MockListViewModel) {
         self.viewModel = viewModel
@@ -55,6 +56,7 @@ public struct MockListView: View {
                     }
                     .padding(.vertical, 8)
                 }
+                .width(min: (geometryProxy.size.width - 300)/3, ideal: (geometryProxy.size.width - 200)/3)
 
                 TableColumn("HTTP Status", value: \.metaData.httpStatus) { mock in
                     Text(mock.metaData.httpStatus, format: .number)
@@ -121,6 +123,9 @@ public struct MockListView: View {
                         navigationStore.path.append(.mock(mock))
                     }
                 }
+            }
+            .onChange(of: deeplinkStore.deeplinks) {
+                viewModel.executeDeeplink()
             }
         }
         .overlay {

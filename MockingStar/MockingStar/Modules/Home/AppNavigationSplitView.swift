@@ -21,6 +21,7 @@ struct AppNavigationSplitView: View {
     @AppStorage("isOnboardingDone") private var isOnboardingDone: Bool = false
     private let mockListViewModel = MockListViewModel()
     private let onboardingCompleted = OnboardingCompleted.shared
+    private let deeplinkStore = DeeplinkStore.shared
 
     var body: some View {
         Group {
@@ -62,6 +63,13 @@ struct AppNavigationSplitView: View {
             }
         }
         .overlay { NotificationView() }
+        .onChange(of: deeplinkStore.deeplinks) {
+            switch deeplinkStore.deeplinks.last {
+            case .openMock(_, let mockDomain) where self.mockDomain != mockDomain:
+                self.mockDomain = mockDomain
+            default: break
+            }
+        }
     }
 }
 

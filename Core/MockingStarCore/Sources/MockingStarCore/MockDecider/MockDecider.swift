@@ -81,45 +81,61 @@ final class MockDecider {
                            queryConfigs: [QueryConfigModel],
                            headerConfigs: [HeaderConfigModel]) throws -> Bool {
         guard let url = request.url else {
-            logger.fault("Handled request has no url")
+            logger.fault("Handled request has no url", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             return false
         }
 
         guard let requestComponents = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
-            logger.error("Handled request url components failed: \(url)")
+            logger.error("Handled request url components failed: \(url)", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             return false
         }
 
         guard let mockComponents = URLComponents(url: mock.metaData.url, resolvingAgainstBaseURL: false) else {
-            logger.error("Mock url components failed: \(mock.metaData.url)")
+            logger.error("Mock url components failed: \(mock.metaData.url)", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             return false
         }
 
         guard mock.metaData.scenario == flags.scenario.orEmpty else {
-            logger.info("Requested scenario and mock scenario not matched")
+            logger.info("Requested scenario and mock scenario not matched", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             return false
         }
 
-        guard checkQueryItems(requestComponents: requestComponents, mockComponents: mockComponents, pathConfigs: pathConfigs, queryConfigs: queryConfigs) else {
-            logger.info("Filtered mock header list and request header list not matched")
+        guard checkQueryItems(url: url.absoluteString, requestComponents: requestComponents, mockComponents: mockComponents, pathConfigs: pathConfigs, queryConfigs: queryConfigs) else {
+            logger.info("Filtered mock header list and request header list not matched", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             return false
         }
 
-        guard checkHeaderItems(requestComponents: request.allHTTPHeaderFields ?? [:], mockComponents: try mock.requestHeader.asDictionary(), pathConfigs: pathConfigs, headerConfigs: headerConfigs) else {
-            logger.info("Filtered mock header list and request header list not matched")
+        guard checkHeaderItems(url: url.absoluteString, requestComponents: request.allHTTPHeaderFields ?? [:], mockComponents: try mock.requestHeader.asDictionary(), pathConfigs: pathConfigs, headerConfigs: headerConfigs) else {
+            logger.info("Filtered mock header list and request header list not matched", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             return false
         }
 
-        logger.info("Mock Found: \(mock.id)")
+        logger.info("Mock Found: \(mock.id)", metadata: [
+            "traceUrl": .string(request.url?.absoluteString ?? "")
+        ])
         return true
     }
 
-    private func checkQueryItems(requestComponents: URLComponents, mockComponents: URLComponents, pathConfigs: [PathConfigModel], queryConfigs: [QueryConfigModel]) -> Bool {
+    private func checkQueryItems(url: String, requestComponents: URLComponents, mockComponents: URLComponents, pathConfigs: [PathConfigModel], queryConfigs: [QueryConfigModel]) -> Bool {
         let mockQueryList: [URLQueryItem]
         let requestQueryList: [URLQueryItem]
 
         let queryExecuteStyle = pathConfigs.first?.queryExecuteStyle ?? configs.configs.appFilterConfigs.queryExecuteStyle
-        logger.info("Query execute style is \(queryExecuteStyle)")
+        logger.info("Query execute style is \(queryExecuteStyle)", metadata: [
+            "traceUrl": .string(url)
+        ])
 
         switch queryExecuteStyle {
         /// Ignore all queries, only select config query list
@@ -147,16 +163,20 @@ final class MockDecider {
             requestQueryList = allRequestQueryItems
         }
 
-        logger.info("All queries filtered and mock: \(mockQueryList.count) - request: \(requestQueryList.count)")
+        logger.info("All queries filtered and mock: \(mockQueryList.count) - request: \(requestQueryList.count)", metadata: [
+            "traceUrl": .string(url)
+        ])
         return mockQueryList == requestQueryList
     }
 
-    private func checkHeaderItems(requestComponents: [String:String], mockComponents: [String:String], pathConfigs: [PathConfigModel], headerConfigs: [HeaderConfigModel]) -> Bool {
+    private func checkHeaderItems(url: String, requestComponents: [String:String], mockComponents: [String:String], pathConfigs: [PathConfigModel], headerConfigs: [HeaderConfigModel]) -> Bool {
         let mockHeaders: [String:String]
         let requestHeaders: [String:String]
 
         let headerExecuteStyle = pathConfigs.first?.headerExecuteStyle ?? configs.configs.appFilterConfigs.headerExecuteStyle
-        logger.info("Header execute style is: \(headerExecuteStyle)")
+        logger.info("Header execute style is: \(headerExecuteStyle)", metadata: [
+            "traceUrl": .string(url)
+        ])
 
         switch headerExecuteStyle {
         /// Ignore all queries, only select config query list
@@ -188,7 +208,9 @@ final class MockDecider {
             requestHeaders = allRequestHeaderItems
         }
 
-        logger.info("All headers filtered and mock: \(mockHeaders.count) - request: \(requestHeaders.count)")
+        logger.info("All headers filtered and mock: \(mockHeaders.count) - request: \(requestHeaders.count)", metadata: [
+            "traceUrl": .string(url)
+        ])
         return mockHeaders == requestHeaders
     }
 
@@ -254,7 +276,9 @@ extension MockDecider: MockDeciderInterface {
         do {
             folderContents = try fileManager.folderContent(at: fileUrlBuilder.mockListFolderUrl(mocksFolderURL: urlForSearch, requestPath: url.path().encodedUrlPathValue, method: request.httpMethod.orEmpty.uppercased()))
         } catch {
-            logger.error("Folder contents error: \(error)")
+            logger.error("Folder contents error: \(error)", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
         }
 
         pathConfigs.forEach { config in
@@ -266,15 +290,21 @@ extension MockDecider: MockDeciderInterface {
                 let contents = try fileManager.folderContent(at: folderPath)
                 folderContents.append(contentsOf: contents)
             } catch {
-                logger.error("Folder contents error: \(error)")
+                logger.error("Folder contents error: \(error)", metadata: [
+                    "traceUrl": .string(request.url?.absoluteString ?? "")
+                ])
             }
         }
 
-        logger.info("Decidable mock count: \(folderContents.count) for \(request.url?.absoluteString ?? "")")
+        logger.info("Decidable mock count: \(folderContents.count)", metadata: [
+            "traceUrl": .string(request.url?.absoluteString ?? "")
+        ])
 
         if let scenario = flags.scenario, !scenario.isEmpty {
             guard folderContents.contains(where: { $0.absoluteString.contains(scenario) }) else {
-                logger.warning("Scenario not found \(scenario) for: \(request.url?.path() ?? .init())")
+                logger.warning("Scenario not found \(scenario) for: \(request.url?.path() ?? .init())", metadata: [
+                    "traceUrl": .string(request.url?.absoluteString ?? "")
+                ])
                 return .scenarioNotFound
             }
 
@@ -289,7 +319,9 @@ extension MockDecider: MockDeciderInterface {
             do {
                 mock = try fileManager.readJSONFile(at: url)
             } catch {
-                logger.critical("Mock can not read, will continue next mock. Error: \(error)")
+                logger.critical("Mock can not read, will continue next mock. Error: \(error)", metadata: [
+                    "traceUrl": .string(request.url?.absoluteString ?? "")
+                ])
                 continue
             }
 
@@ -303,7 +335,9 @@ extension MockDecider: MockDeciderInterface {
             }
         }
 
-        logger.warning("Mock not found for: \(request.url?.path() ?? .init())")
+        logger.warning("Mock not found for: \(request.url?.path() ?? .init())", metadata: [
+            "traceUrl": .string(request.url?.absoluteString ?? "")
+        ])
         return .mockNotFound
     }
     
@@ -326,14 +360,20 @@ extension MockDecider: MockDeciderInterface {
         do {
             folderContents = try fileManager.folderContent(at: fileUrlBuilder.mockListFolderUrl(mocksFolderURL: urlForSearch, requestPath: path.encodedUrlPathValue, method: method.uppercased()))
         } catch {
-            logger.error("Folder contents error: \(error)")
+            logger.error("Folder contents error: \(error)", metadata: [
+                "traceUrl": .string(path)
+            ])
         }
 
-        logger.info("Search decidable mock count: \(folderContents.count) for \(path)")
+        logger.info("Search decidable mock count: \(folderContents.count) for \(path)", metadata: [
+            "traceUrl": .string(path)
+        ])
 
         if let scenario = flags.scenario, !scenario.isEmpty {
             guard folderContents.contains(where: { $0.absoluteString.contains(scenario) }) else {
-                logger.warning("Scenario not found \(scenario) for: \(path)")
+                logger.warning("Scenario not found \(scenario) for: \(path)", metadata: [
+                    "traceUrl": .string(path)
+                ])
                 return .scenarioNotFound
             }
 
@@ -348,19 +388,25 @@ extension MockDecider: MockDeciderInterface {
             do {
                 mock = try fileManager.readJSONFile(at: url)
             } catch {
-                logger.critical("Mock can not read, will continue next mock. Error: \(error)")
+                logger.critical("Mock can not read, will continue next mock. Error: \(error)", metadata: [
+                    "traceUrl": .string(path)
+                ])
                 continue
             }
 
             guard mock.metaData.scenario == flags.scenario.orEmpty else {
-                logger.info("Requested scenario and mock scenario not matched")
+                logger.info("Requested scenario and mock scenario not matched", metadata: [
+                    "traceUrl": .string(path)
+                ])
                 continue
             }
 
             return .useMock(mock: mock)
         }
 
-        logger.warning("Mock not found for: \(path)")
+        logger.warning("Mock not found for: \(path)", metadata: [
+            "traceUrl": .string(path)
+        ])
         return .mockNotFound
     }
 }

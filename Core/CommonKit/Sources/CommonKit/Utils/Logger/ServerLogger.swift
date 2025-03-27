@@ -15,6 +15,7 @@ extension Logger: Logging, @unchecked Sendable {
     }
     
     public func logInfo(_ info: String) {
+        guard !info.contains("close connection") && !info.contains("open connection") else { return }
         self.info(info)
     }
     

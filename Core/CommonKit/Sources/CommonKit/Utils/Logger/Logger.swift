@@ -37,13 +37,15 @@ public struct LogModel: Hashable, Identifiable, Codable {
     public let message: String
     public let date: Date
     public let category: String
+    public let metadata: [String:String]
 
-    public init(id: UUID = UUID(), severity: LogSeverity, message: String, category: String, date: Date = .init()) {
+    public init(id: UUID = UUID(), severity: LogSeverity, message: String, category: String, metadata: [String:String] = [:], date: Date = .init()) {
         self.id = id
         self.severity = severity
         self.message = message
         self.date = date
         self.category = category
+        self.metadata = metadata
     }
 }
 
@@ -76,31 +78,31 @@ public final class Logger {
         logger[metadataKey: "subsystem"] = .init(stringLiteral: Logger.Constant.subsystem)
     }
 
-    public func debug(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
-        logger.debug("\(message)", metadata: ["category": .init(stringLiteral: category)], file: file, function: function, line: line)
+    public func debug(_ message: String, metadata: Logging.Logger.Metadata? = nil, file: String = #fileID, function: String = #function, line: UInt = #line) {
+        logger.debug("\(message)", metadata: ["category": .init(stringLiteral: category)].merging(metadata ?? [:], uniquingKeysWith: {_, new in new }), file: file, function: function, line: line)
     }
 
-    public  func info(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
-        logger.info("\(message)", metadata: ["category": .init(stringLiteral: category)], file: file, function: function, line: line)
+    public  func info(_ message: String, metadata: Logging.Logger.Metadata? = nil, file: String = #fileID, function: String = #function, line: UInt = #line) {
+        logger.info("\(message)", metadata: ["category": .init(stringLiteral: category)].merging(metadata ?? [:], uniquingKeysWith: {_, new in new }), file: file, function: function, line: line)
     }
 
-    public func notice(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
-        logger.notice("\(message)", metadata: ["category": .init(stringLiteral: category)], file: file, function: function, line: line)
+    public func notice(_ message: String, metadata: Logging.Logger.Metadata? = nil, file: String = #fileID, function: String = #function, line: UInt = #line) {
+        logger.notice("\(message)", metadata: ["category": .init(stringLiteral: category)].merging(metadata ?? [:], uniquingKeysWith: {_, new in new }), file: file, function: function, line: line)
     }
 
-    public func warning(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
-        logger.warning("\(message)", metadata: ["category": .init(stringLiteral: category)], file: file, function: function, line: line)
+    public func warning(_ message: String, metadata: Logging.Logger.Metadata? = nil, file: String = #fileID, function: String = #function, line: UInt = #line) {
+        logger.warning("\(message)", metadata: ["category": .init(stringLiteral: category)].merging(metadata ?? [:], uniquingKeysWith: {_, new in new }), file: file, function: function, line: line)
     }
 
-    public func error(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
-        logger.error("\(message)", metadata: ["category": .init(stringLiteral: category)], file: file, function: function, line: line)
+    public func error(_ message: String, metadata: Logging.Logger.Metadata? = nil, file: String = #fileID, function: String = #function, line: UInt = #line) {
+        logger.error("\(message)", metadata: ["category": .init(stringLiteral: category)].merging(metadata ?? [:], uniquingKeysWith: {_, new in new }), file: file, function: function, line: line)
     }
 
-    public func critical(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
-        logger.critical("\(message)", metadata: ["category": .init(stringLiteral: category)], file: file, function: function, line: line)
+    public func critical(_ message: String, metadata: Logging.Logger.Metadata? = nil, file: String = #fileID, function: String = #function, line: UInt = #line) {
+        logger.critical("\(message)", metadata: ["category": .init(stringLiteral: category)].merging(metadata ?? [:], uniquingKeysWith: {_, new in new }), file: file, function: function, line: line)
     }
 
-    public func fault(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
-        logger.critical("\(message)", metadata: ["category": .init(stringLiteral: category)], file: file, function: function, line: line)
+    public func fault(_ message: String, metadata: Logging.Logger.Metadata? = nil, file: String = #fileID, function: String = #function, line: UInt = #line) {
+        logger.critical("\(message)", metadata: ["category": .init(stringLiteral: category)].merging(metadata ?? [:], uniquingKeysWith: {_, new in new }), file: file, function: function, line: line)
     }
 }
