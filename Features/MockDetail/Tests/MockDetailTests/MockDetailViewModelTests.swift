@@ -63,16 +63,16 @@ final class MockDetailViewModelTests: XCTestCase {
     func test_saveChanges_InvokesNecessaryMethods() {
         viewModel.mockModel.metaData.responseTime = 0.1
 
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
         XCTAssertFalse(fileManager.invokedUpdateFileContent)
         XCTAssertFalse(fileManager.invokedMoveFile)
         XCTAssertFalse(notificationManager.invokedShow)
 
         viewModel.saveChanges()
 
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
         XCTAssertTrue(fileManager.invokedUpdateFileContent)
         XCTAssertFalse(fileManager.invokedMoveFile)
         XCTAssertTrue(notificationManager.invokedShow)
@@ -84,16 +84,16 @@ final class MockDetailViewModelTests: XCTestCase {
     func test_saveChanges_MoveRequired_InvokesNecessaryMethods() {
         viewModel.mockModel.metaData.scenario = "Test"
 
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
         XCTAssertFalse(fileManager.invokedUpdateFileContent)
         XCTAssertFalse(fileManager.invokedMoveFile)
         XCTAssertFalse(notificationManager.invokedShow)
 
         viewModel.saveChanges()
 
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
         XCTAssertTrue(fileManager.invokedUpdateFileContent)
         XCTAssertTrue(fileManager.invokedMoveFile)
         XCTAssertTrue(notificationManager.invokedShow)
@@ -103,16 +103,16 @@ final class MockDetailViewModelTests: XCTestCase {
     }
 
     func test_saveChanges_NotChange_InvokesNecessaryMethods() {
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
         XCTAssertFalse(fileManager.invokedUpdateFileContent)
         XCTAssertFalse(fileManager.invokedMoveFile)
         XCTAssertFalse(notificationManager.invokedShow)
 
         viewModel.saveChanges()
 
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
         XCTAssertFalse(fileManager.invokedUpdateFileContent)
         XCTAssertFalse(fileManager.invokedMoveFile)
         XCTAssertFalse(notificationManager.invokedShow)
@@ -122,19 +122,19 @@ final class MockDetailViewModelTests: XCTestCase {
         viewModel.mockModel.metaData.responseTime = 0.1
         fileManager.stubbedUpdateFileContentError = MockError.error
 
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
         XCTAssertFalse(fileManager.invokedUpdateFileContent)
         XCTAssertFalse(fileManager.invokedMoveFile)
         XCTAssertFalse(notificationManager.invokedShow)
 
         viewModel.saveChanges()
 
-        XCTAssertEqual(viewModel.saveErrorMessage, """
+        XCTAssertEqual(viewModel.alertMessage, """
         Mock couldn't saved
         something went wrong
         """)
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, true)
+        XCTAssertEqual(viewModel.shouldShowAlert, true)
         XCTAssertTrue(fileManager.invokedUpdateFileContent)
         XCTAssertFalse(fileManager.invokedMoveFile)
         XCTAssertFalse(notificationManager.invokedShow)
@@ -145,14 +145,14 @@ final class MockDetailViewModelTests: XCTestCase {
 
     func test_removeMock_InvokesNecessaryMethods() {
         XCTAssertFalse(fileManager.invokedRemoveFile)
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
 
         viewModel.removeMock()
 
         XCTAssertTrue(fileManager.invokedRemoveFile)
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
         XCTAssertEqual(fileManager.invokedRemoveFileParametersList.map(\.path), ["/foo/bar/file/path/mock.json"])
     }
 
@@ -160,17 +160,17 @@ final class MockDetailViewModelTests: XCTestCase {
         fileManager.stubbedRemoveFileError = MockError.error
 
         XCTAssertFalse(fileManager.invokedRemoveFile)
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
 
         viewModel.removeMock()
 
         XCTAssertTrue(fileManager.invokedRemoveFile)
-        XCTAssertEqual(viewModel.saveErrorMessage, """
+        XCTAssertEqual(viewModel.alertMessage, """
         Mock couldn't delete
         something went wrong
         """)
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, true)
+        XCTAssertEqual(viewModel.shouldShowAlert, true)
         XCTAssertEqual(fileManager.invokedRemoveFileParametersList.map(\.path), ["/foo/bar/file/path/mock.json"])
     }
 
@@ -196,32 +196,32 @@ final class MockDetailViewModelTests: XCTestCase {
 
     func test_fixFilePath_InvokesNecessaryMethods() {
         XCTAssertFalse(fileManager.invokedMoveFile)
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
 
         viewModel.fixFilePath()
 
         XCTAssertTrue(fileManager.invokedMoveFile)
         XCTAssertEqual(fileManager.invokedMoveFileParametersList.map(\.newPath), ["/MockServerDomains/TEST/Mocks/aboutus/GET/aboutus_EmptyCase_9271C0BE-9326-443F-97B8-1ECA29571FC3.json"])
         XCTAssertEqual(fileManager.invokedMoveFileParametersList.map(\.path), ["/foo/bar/file/path/mock.json"])
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
     }
 
     func test_fixFilePath_Failed_InvokesNecessaryMethods() {
         fileManager.stubbedMoveFileError = MockError.error
 
         XCTAssertFalse(fileManager.invokedMoveFile)
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
 
         viewModel.fixFilePath()
 
         XCTAssertTrue(fileManager.invokedMoveFile)
         XCTAssertEqual(fileManager.invokedMoveFileParametersList.map(\.newPath), ["/MockServerDomains/TEST/Mocks/aboutus/GET/aboutus_EmptyCase_9271C0BE-9326-443F-97B8-1ECA29571FC3.json"])
         XCTAssertEqual(fileManager.invokedMoveFileParametersList.map(\.path), ["/foo/bar/file/path/mock.json"])
-        XCTAssertEqual(viewModel.saveErrorMessage, "something went wrong")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, true)
+        XCTAssertEqual(viewModel.alertMessage, "something went wrong")
+        XCTAssertEqual(viewModel.shouldShowAlert, true)
     }
 
     func test_discardChanges_ResetMockModel() {
@@ -272,18 +272,17 @@ final class MockDetailViewModelTests: XCTestCase {
     func test_duplicateMock_InvokesNecessaryMethods() async {
         XCTAssertFalse(fileSaver.invokedSaveFile)
         XCTAssertFalse(notificationManager.invokedShow)
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
 
-        await viewModel.duplicateMock()
+        await viewModel.newMock(mockDomain: "TEST", shouldMove: false)
 
         XCTAssertTrue(fileSaver.invokedSaveFile)
-        XCTAssertTrue(notificationManager.invokedShow)
         XCTAssertNotEqual(viewModel.mockModel.id, fileSaver.invokedSaveFileParameters?.mock.id)
         XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mockDomain), ["TEST"])
         XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mock.metaData.url.absoluteString), ["https://www.trendyol.com/aboutus"])
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "Mock Copied Successfully")
+        XCTAssertEqual(viewModel.shouldShowAlert, true)
     }
 
     func test_duplicateMock_Failed_InvokesNecessaryMethods() async {
@@ -291,38 +290,37 @@ final class MockDetailViewModelTests: XCTestCase {
 
         XCTAssertFalse(fileSaver.invokedSaveFile)
         XCTAssertFalse(notificationManager.invokedShow)
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
 
-        await viewModel.duplicateMock()
+        await viewModel.newMock(mockDomain: "TEST", shouldMove: false)
 
         XCTAssertTrue(fileSaver.invokedSaveFile)
         XCTAssertFalse(notificationManager.invokedShow)
         XCTAssertNotEqual(viewModel.mockModel.id, fileSaver.invokedSaveFileParameters?.mock.id)
         XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mockDomain), ["TEST"])
         XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mock.metaData.url.absoluteString), ["https://www.trendyol.com/aboutus"])
-        XCTAssertEqual(viewModel.saveErrorMessage, """
-                       Mock couldn't duplicated
+        XCTAssertEqual(viewModel.alertMessage, """
+                       Mock couldn't copied
                        something went wrong
                        """)
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, true)
+        XCTAssertEqual(viewModel.shouldShowAlert, true)
     }
 
     func test_copyMock_InvokesNecessaryMethods() async {
         XCTAssertFalse(fileSaver.invokedSaveFile)
         XCTAssertFalse(notificationManager.invokedShow)
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
 
-        await viewModel.copyMock(to: "TEMP")
+        await viewModel.newMock(mockDomain: "TEMP", shouldMove: false)
 
         XCTAssertTrue(fileSaver.invokedSaveFile)
-        XCTAssertTrue(notificationManager.invokedShow)
         XCTAssertNotEqual(viewModel.mockModel.id, fileSaver.invokedSaveFileParameters?.mock.id)
         XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mockDomain), ["TEMP"])
         XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mock.metaData.url.absoluteString), ["https://www.trendyol.com/aboutus"])
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "Mock Copied Successfully")
+        XCTAssertEqual(viewModel.shouldShowAlert, true)
     }
 
     func test_copyMock_Failed_InvokesNecessaryMethods() async {
@@ -330,40 +328,39 @@ final class MockDetailViewModelTests: XCTestCase {
 
         XCTAssertFalse(fileSaver.invokedSaveFile)
         XCTAssertFalse(notificationManager.invokedShow)
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
 
-        await viewModel.copyMock(to: "TEMP")
+        await viewModel.newMock(mockDomain: "TEMP", shouldMove: false)
 
         XCTAssertTrue(fileSaver.invokedSaveFile)
         XCTAssertFalse(notificationManager.invokedShow)
         XCTAssertNotEqual(viewModel.mockModel.id, fileSaver.invokedSaveFileParameters?.mock.id)
         XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mockDomain), ["TEMP"])
         XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mock.metaData.url.absoluteString), ["https://www.trendyol.com/aboutus"])
-        XCTAssertEqual(viewModel.saveErrorMessage, """
+        XCTAssertEqual(viewModel.alertMessage, """
                        Mock couldn't copied
                        something went wrong
                        """)
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, true)
+        XCTAssertEqual(viewModel.shouldShowAlert, true)
     }
 
     func test_moveMock_InvokesNecessaryMethods() async {
         XCTAssertFalse(fileSaver.invokedSaveFile)
         XCTAssertFalse(notificationManager.invokedShow)
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
         XCTAssertFalse(fileManager.invokedRemoveFile)
 
-        await viewModel.moveMock(to: "TEMP")
+        await viewModel.newMock(mockDomain: "TEMP", shouldMove: true)
 
         XCTAssertTrue(fileSaver.invokedSaveFile)
         XCTAssertTrue(fileManager.invokedRemoveFile)
-        XCTAssertTrue(notificationManager.invokedShow)
         XCTAssertNotEqual(viewModel.mockModel.id, fileSaver.invokedSaveFileParameters?.mock.id)
         XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mockDomain), ["TEMP"])
         XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mock.metaData.url.absoluteString), ["https://www.trendyol.com/aboutus"])
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "Mock Moved Successfully")
+        XCTAssertEqual(viewModel.shouldShowAlert, true)
         XCTAssertEqual(fileManager.invokedRemoveFileParametersList.map(\.path), ["/foo/bar/file/path/mock.json"])
     }
 
@@ -372,11 +369,11 @@ final class MockDetailViewModelTests: XCTestCase {
 
         XCTAssertFalse(fileSaver.invokedSaveFile)
         XCTAssertFalse(notificationManager.invokedShow)
-        XCTAssertEqual(viewModel.saveErrorMessage, "")
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, false)
+        XCTAssertEqual(viewModel.alertMessage, "")
+        XCTAssertEqual(viewModel.shouldShowAlert, false)
         XCTAssertFalse(fileManager.invokedRemoveFile)
 
-        await viewModel.moveMock(to: "TEMP")
+        await viewModel.newMock(mockDomain: "TEMP", shouldMove: true)
 
         XCTAssertTrue(fileSaver.invokedSaveFile)
         XCTAssertFalse(notificationManager.invokedShow)
@@ -384,11 +381,11 @@ final class MockDetailViewModelTests: XCTestCase {
         XCTAssertNotEqual(viewModel.mockModel.id, fileSaver.invokedSaveFileParameters?.mock.id)
         XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mockDomain), ["TEMP"])
         XCTAssertEqual(fileSaver.invokedSaveFileParametersList.map(\.mock.metaData.url.absoluteString), ["https://www.trendyol.com/aboutus"])
-        XCTAssertEqual(viewModel.saveErrorMessage, """
-                       Mock couldn't moved
+        XCTAssertEqual(viewModel.alertMessage, """
+                       Mock couldn't copied
                        something went wrong
                        """)
-        XCTAssertEqual(viewModel.shouldShowSaveErrorAlert, true)
+        XCTAssertEqual(viewModel.shouldShowAlert, true)
     }
 }
 

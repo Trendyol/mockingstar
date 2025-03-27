@@ -36,8 +36,10 @@ public final class MockDetailViewModel {
     // MARK: Alerts & Navigations
     private(set) var shouldDismissView: Bool = false
     private(set) var jsonValidationMessage: String? = nil
-    var shouldShowSaveErrorAlert = false
-    private(set) var saveErrorMessage = ""
+    var shouldShowAlert = false
+    private(set) var alertMessage = ""
+    private(set) var alertActionTitle = ""
+    private(set) var alertAction: (() -> Void)? = nil
     var shouldShowDeleteConfirmationAlert: Bool = false
     var shouldShowFilePathErrorAlert = false
     var shouldShowUnsavedIndicator: Bool = false
@@ -133,9 +135,11 @@ public final class MockDetailViewModel {
         }
     }
 
-    private func showErrorMessage(_ message: String) {
-        saveErrorMessage = message
-        shouldShowSaveErrorAlert = true
+    private func showAlert(_ message: String, alertActionTitle: String = "", alertAction: (() -> Void)? = nil) {
+        alertMessage = message
+        self.alertActionTitle = alertActionTitle
+        self.alertAction = alertAction
+        shouldShowAlert = true
     }
 
     /// Saves the changes made to the current mock model.
@@ -155,10 +159,18 @@ public final class MockDetailViewModel {
         let (isResponseHeaderValid, responseHeaderMessage) = jsonValidator(jsonText: mockModel.responseHeader)
         let (isRequestHeaderValid, requestHeaderMessage) = jsonValidator(jsonText: mockModel.requestHeader)
 
-        guard isResponseBodyValid else { return showErrorMessage("Response Body not valid\n\(responseBodyMessage.orEmpty)") }
-        guard isRequestBodyValid else { return showErrorMessage("Request Body not valid\n\(requestBodyMessage.orEmpty)") }
-        guard isResponseHeaderValid else { return showErrorMessage("Response Headers not valid\n\(responseHeaderMessage.orEmpty)") }
-        guard isRequestHeaderValid else { return showErrorMessage("Request Headers not valid\n\(requestHeaderMessage.orEmpty)") }
+        let alertMessage: String?
+        if !isResponseBodyValid { alertMessage = "Response Body not valid\n\(responseBodyMessage.orEmpty)" }
+        else if !isRequestBodyValid { alertMessage = "Request Body not valid\n\(requestBodyMessage.orEmpty)" }
+        else if !isResponseHeaderValid { alertMessage = "Response Headers not valid\n\(responseHeaderMessage.orEmpty)" }
+        else if !isRequestHeaderValid { alertMessage = "Request Headers not valid\n\(requestHeaderMessage.orEmpty)" }
+        else { alertMessage = nil }
+
+        if let alertMessage {
+            showAlert(alertMessage, alertActionTitle: "Discard Changes") { [weak self] in
+                self?.discardChanges()
+            }
+        }
 
         mockModel.metaData.updateTime = .init()
         let copy = mockModel.copy() as! MockModel
@@ -182,7 +194,7 @@ public final class MockDetailViewModel {
             }
             notificationManager.show(title: "All changes saved", color: .green)
         } catch {
-            showErrorMessage("Mock couldn't saved\n\(error.localizedDescription)")
+            showAlert("Mock couldn't saved\n\(error.localizedDescription)")
         }
         checkUnsavedChanges()
     }
@@ -197,7 +209,7 @@ public final class MockDetailViewModel {
             try fileManager.removeFile(at: filePath)
             shouldDismissView = true
         } catch {
-            showErrorMessage("Mock couldn't delete\n\(error.localizedDescription)")
+            showAlert("Mock couldn't delete\n\(error.localizedDescription)")
         }
     }
 
@@ -226,7 +238,7 @@ public final class MockDetailViewModel {
             mockModel.fileURL = URL(filePath: newPath)
             originalMockModel.fileURL = URL(filePath: newPath)
         } catch {
-            showErrorMessage(error.localizedDescription)
+            showAlert(error.localizedDescription)
         }
     }
 
@@ -250,39 +262,30 @@ public final class MockDetailViewModel {
         shouldShowUnsavedIndicator = mockModel != originalMockModel
     }
 
-    func duplicateMock() async {
+    func newMock(mockDomain: String, shouldMove: Bool) async {
         do {
-            try await createCopyMock(mockDomain: mockDomain)
-            notificationManager.show(title: "Mock duplicated", color: .green)
+            let copied = try await createCopyMock(mockDomain: mockDomain)
+            showAlert("Mock " + (shouldMove ? "Moved" : "Copied") + " Successfully", alertActionTitle: "Open New Mock") {
+                DeeplinkStore.shared.deeplinks.append(.openMock(id: copied.id, domain: mockDomain))
+                NavigationStore.shared.pop()
+            }
+            if shouldMove {
+                removeMock()
+            }
         } catch {
-            showErrorMessage("Mock couldn't duplicated\n\(error.localizedDescription)")
+            showAlert("Mock couldn't copied\n\(error.localizedDescription)")
         }
     }
 
-    func copyMock(to mockDomain: String) async {
-        do {
-            try await createCopyMock(mockDomain: mockDomain)
-            notificationManager.show(title: "Mock copied to \(mockDomain)", color: .green)
-        } catch {
-            showErrorMessage("Mock couldn't copied\n\(error.localizedDescription)")
-        }
-    }
-
-    func moveMock(to mockDomain: String) async {
-        do {
-            try await createCopyMock(mockDomain: mockDomain)
-            removeMock()
-            notificationManager.show(title: "Mock moved to \(mockDomain)", color: .green)
-        } catch {
-            showErrorMessage("Mock couldn't moved\n\(error.localizedDescription)")
-        }
-    }
-
-    private func createCopyMock(mockDomain: String) async throws {
+    @discardableResult
+    private func createCopyMock(mockDomain: String) async throws -> MockModel {
         let mock = originalMockModel.copy() as! MockModel
         mock.metaData.scenario = .init()
         mock.metaData.id = UUID().uuidString
+        let filePath = mockFolderFilePath + "Domains/" + mockDomain + "/Mocks/" + mock.filePath
+        mock.fileURL = URL(filePath: filePath)
 
         try await fileSaver.saveFile(mock: mock, mockDomain: mockDomain)
+        return mock
     }
 }

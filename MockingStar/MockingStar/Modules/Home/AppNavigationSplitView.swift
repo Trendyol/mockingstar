@@ -22,6 +22,7 @@ struct AppNavigationSplitView: View {
     @AppStorage("isOnboardingDone") private var isOnboardingDone: Bool = false
     @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
     private let mockListViewModel = MockListViewModel()
+    private let deeplinkStore = DeeplinkStore.shared
 
     var body: some View {
         Group {
@@ -68,6 +69,13 @@ struct AppNavigationSplitView: View {
         .onAppear {
             _mockFolderFilePath.onChange { path in
                 initializeAppOnboardingDone = false
+            }
+        }
+        .onChange(of: deeplinkStore.deeplinks) {
+            switch deeplinkStore.deeplinks.last {
+            case .openMock(_, let mockDomain) where self.mockDomain != mockDomain:
+                self.mockDomain = mockDomain
+            default: break
             }
         }
     }

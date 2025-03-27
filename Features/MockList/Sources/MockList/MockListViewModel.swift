@@ -20,6 +20,7 @@ public final class MockListViewModel {
 
     private var listSortTask: Task<(), Never>? = nil
     private var reloadMocksTask: Task<(), Never>? = nil
+    private var mockDomain: String = ""
     var sortOrder = [KeyPathComparator(\MockModel.metaData.updateTime, order: .forward)]
     var filterType: FilterType = .all
     var filterStyle: FilterStyle = .contains
@@ -61,6 +62,7 @@ public final class MockListViewModel {
                 case .result(let mocks):
                     isLoading = false
                     mockModelList = mocks
+                    executeDeeplink()
                 }
             }
         }
@@ -144,9 +146,10 @@ public final class MockListViewModel {
     }
     
     @MainActor
-    func mockDomainChanged(_ domain: String) async {
+    func mockDomainChanged(_ mockDomain: String) async {
         do {
-            try await mockDiscover.updateMockDomain(domain)
+            self.mockDomain = mockDomain
+            try await mockDiscover.updateMockDomain(mockDomain)
         } catch {
             guard !(error is CancellationError) else { return }
             logger.error("Mock Domain Changed Error: \(error)")
@@ -175,5 +178,22 @@ public final class MockListViewModel {
             pasteBoard.setString(curlList.joined(separator: "\n\n"), forType: .string)
         }
         notificationManager.show(title: "Request copied to clipboard", color: .green)
+    }
+
+    func executeDeeplink() {
+        guard let deeplink = DeeplinkStore.shared.deeplinks.last else { return }
+
+        switch deeplink {
+        case .openMock(let id, let mockDomain) where self.mockDomain == mockDomain:
+            if let mock = mockModelList.first(where: { $0.id == id }) {
+                selected = [mock.id]
+                DeeplinkStore.shared.deeplinks.removeLast()
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    NavigationStore.shared.open(.mock(mock))
+                }
+            }
+        default: break
+        }
     }
 }
