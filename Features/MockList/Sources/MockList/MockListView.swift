@@ -18,6 +18,7 @@ public struct MockListView: View {
     @AppStorage("isFirstOpen") private var isFirstOpen: Bool = true
     @State private var isSearchActive: Bool = false
     @State private var shouldShowMockImportView: Bool = false
+    private let deeplinkStore = DeeplinkStore.shared
 
     public init(viewModel: MockListViewModel) {
         self.viewModel = viewModel
@@ -122,6 +123,9 @@ public struct MockListView: View {
                         navigationStore.path.append(.mock(mock))
                     }
                 }
+            }
+            .onChange(of: deeplinkStore.deeplinks) {
+                viewModel.executeDeeplink()
             }
         }
         .overlay {
