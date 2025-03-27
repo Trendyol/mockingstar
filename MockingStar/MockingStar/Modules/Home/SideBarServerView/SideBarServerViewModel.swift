@@ -11,17 +11,20 @@ import Server
 import SwiftUI
 
 @Observable
-final class SideBarServerViewModel {
-    static let shared = SideBarServerViewModel()
+final class SideBarServerViewModel: ObservableObject {
     private(set) var serversUIModel: [ServerUIModel] = []
     private let defaultServers: [ServerInterface]
 
-    private init() {
+    init() {
         @UserDefaultStorage("httpServerPort") var httpServerPort: UInt16 = 8008
         defaultServers = [
             Server(port: httpServerPort)
         ]
         prepareDefaultHTTPServer()
+    }
+
+    deinit {
+        serversUIModel.forEach(stopServer(serverUIModel:))
     }
 
     func prepareDefaultHTTPServer() {

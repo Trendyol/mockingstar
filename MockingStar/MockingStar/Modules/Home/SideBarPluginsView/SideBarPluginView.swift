@@ -10,8 +10,12 @@ import CommonViewsKit
 import SwiftUI
 
 struct SideBarPluginView: View {
-    private let viewModel = SideBarPluginViewModel.shared
+    private let viewModel: SideBarPluginViewModel
     @SceneStorage("mockDomain") private var mockDomain: String = ""
+
+    init(viewModel: SideBarPluginViewModel) {
+        self.viewModel = viewModel
+    }
 
     var body: some View {
         Section("Plugins") {
@@ -30,7 +34,7 @@ struct SideBarPluginView: View {
 }
 
 #Preview {
-    SideBarPluginView()
+    SideBarPluginView(viewModel: SideBarPluginViewModel())
 }
 
 struct SideBarPluginItemView: View {

@@ -15,12 +15,14 @@ struct SidebarView: View {
     @Environment(MockDomainDiscover.self) private var domainDiscover: MockDomainDiscover
     @SceneStorage("mockDomain") private var mockDomain: String = ""
     private let navigationStore = NavigationStore.shared
+    @StateObject private var serverViewModel = SideBarServerViewModel()
+    @StateObject private var pluginViewModel = SideBarPluginViewModel()
     private let logger = Logger(category: "SidebarView")
 
     var body: some View {
         List {
             Section("Servers") {
-                SideBarServerView()
+                SideBarServerView(viewModel: serverViewModel)
                 SideBarWorkspaceView()
             }
 
@@ -56,7 +58,7 @@ struct SidebarView: View {
                 }
             }
 
-            SideBarPluginView()
+            SideBarPluginView(viewModel: pluginViewModel)
             TipView(QuickDemoTip())
             Spacer()
             TipView(MenubarItemsTip())

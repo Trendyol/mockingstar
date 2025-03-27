@@ -10,11 +10,10 @@ import SwiftUI
 import PluginCore
 
 @Observable
-final class SideBarPluginViewModel {
-    static let shared = SideBarPluginViewModel()
+final class SideBarPluginViewModel: ObservableObject {
     var plugins: [ConfigurablePluginModel] = []
 
-    private init() {}
+    init() {}
 
     @MainActor
     func loadPlugins(for mockDomain: String) async {
