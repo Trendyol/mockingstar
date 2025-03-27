@@ -33,9 +33,11 @@ final class HandleScenario: HTTPHandler {
             let status: HTTPStatusCode
 
             if request.method == .PUT {
+                logger.info("Adding new scenario, scenario: \(scenario). Path: \(scenario.path)")
                 try await handler.addScenario(scenario: scenario)
                 status = .accepted
             } else if request.method == .DELETE {
+                logger.info("Removing scenarios")
                 try await handler.removeScenario(scenario: scenario)
                 status = .accepted
             } else {

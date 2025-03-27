@@ -7,12 +7,16 @@
 
 import Foundation
 
-public struct MockServerFlags {
+public struct MockServerFlags: CustomStringConvertible {
     let mockSource: MockSource
     let scenario: String?
     let shouldNotMock: Bool
     let domain: String
     let deviceId: String
+
+    public var description: String {
+        "Flags: source: \(mockSource), scenario: \(scenario ?? "nil"), domain: \(domain), deviceId: \(deviceId)"
+    }
 
     public init(mockSource: MockSource, scenario: String?, shouldNotMock: Bool, domain: String, deviceId: String) {
         self.mockSource = mockSource

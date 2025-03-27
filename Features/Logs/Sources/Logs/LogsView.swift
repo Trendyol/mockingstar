@@ -22,7 +22,19 @@ public struct LogsView: View {
             List(viewModel.filteredLogs, id: \.self) { log in
                 VStack(alignment: .leading) {
                     Text(log.message)
-                        .textSelection(.enabled)
+
+                    if let description = log.metadata["description"] {
+                        Text(description)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    if let traceUrl = log.metadata["traceUrl"] {
+                        Text("trace url: " + traceUrl)
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+
                     HStack {
                         Text(log.severity.rawValue.uppercased())
                         Text(log.date.formatted())
@@ -30,10 +42,10 @@ public struct LogsView: View {
 
                         Spacer()
                     }
-                    .textSelection(.enabled)
                     .font(.caption)
                     .foregroundStyle(log.severity.color)
                 }
+                .textSelection(.enabled)
                 .id(log.id)
                 .padding(.vertical, 6)
                 .onAppear {

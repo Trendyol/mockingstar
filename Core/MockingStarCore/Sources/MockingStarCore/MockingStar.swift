@@ -34,7 +34,9 @@ public final class MockingStarCore {
 
         switch result {
         case .useMock(mock: let mock):
-            logger.info("Mock found, waiting response time")
+            logger.info("Mock found, waiting response time", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
 
             try await Task.sleep(for: .seconds(mock.metaData.responseTime))
 
@@ -43,7 +45,9 @@ public final class MockingStarCore {
                     body: bodyData,
                     headers: try mock.responseHeader.asDictionary())
         case .mockNotFound where flags.mockSource == .default:
-            logger.info("Mock not found, trying to request live server: \(request.url?.path() ?? .init())")
+            logger.info("Mock not found, trying to request live server: \(request.url?.path() ?? .init())", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
 
             let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
             Task {
@@ -56,11 +60,15 @@ public final class MockingStarCore {
             }
             return liveResult
         case .mockNotFound:
-            logger.warning("Mock not found and disable live environment: \(request.url?.path() ?? .init())")
+            logger.warning("Mock not found and disable live environment: \(request.url?.path() ?? .init())", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             let pluginMessage = try await pluginActor.pluginCore(for: flags.domain).mockErrorPlugin(message: "Mock not found and disable live environment: \(request.url?.path() ?? .init())")
             return (404, pluginMessage.data(using: .utf8) ?? .init(), [:])
         case .scenarioNotFound where flags.mockSource == .default:
-            logger.info("Scenario not found, trying to request live server")
+            logger.info("Scenario not found, trying to request live server", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
 
             let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
             Task {
@@ -73,11 +81,15 @@ public final class MockingStarCore {
             }
             return liveResult
         case .scenarioNotFound:
-            logger.warning("Scenario not found and disable live environment")
+            logger.warning("Scenario not found and disable live environment", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             let pluginMessage = try await pluginActor.pluginCore(for: flags.domain).mockErrorPlugin(message: "Scenario not found and disable live environment")
             return (404, pluginMessage.data(using: .utf8) ?? .init(), [:])
         case .ignoreDomain:
-            logger.info("Ignoring domain: \(request.url?.host() ?? "_")")
+            logger.info("Ignoring domain: \(request.url?.host() ?? "_")", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             return try await proxyRequest(request: request)
         }
     }
@@ -101,7 +113,9 @@ public final class MockingStarCore {
         let (data, response) = try await URLSession.shared.data(for: liveRequest)
 
         guard let httpResponse = response as? HTTPURLResponse else {
-            logger.error("Live Request load error")
+            logger.error("Live Request load error", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             return (status: .zero, body: data, headers: [:])
         }
 
@@ -133,7 +147,9 @@ public final class MockingStarCore {
     }
 
     private func saveFileIfNeeded(request: URLRequest, flags: MockServerFlags, status: Int, body: Data, headers: [String: String], decider: MockDeciderInterface) async throws {
-        logger.debug("Checking mock should save")
+        logger.debug("Checking mock should save", metadata: [
+            "traceUrl": .string(request.url?.absoluteString ?? "")
+        ])
         var request = request
 
         var shouldSave = decider.mockFilters.contains(where: { filter in
@@ -170,17 +186,23 @@ public final class MockingStarCore {
         }
 
         if let pathComponents = request.url?.pathComponents, pathComponents.count >= 10 {
-            logger.error("Request path components count more than limit.")
+            logger.error("Request path components count more than limit.", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             throw MockSaveResult.pathComponentLimitExceeded
         }
 
         guard shouldSave else {
-            logger.info("Mock won't save due to filters (\(decider.mockFilters.count)), path: \(request.url?.path() ?? "-")")
+            logger.info("Mock won't save due to filters (\(decider.mockFilters.count)), path: \(request.url?.path() ?? "-")", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             throw MockSaveResult.preventedByFilters
         }
 
         guard body == "".data(using: .utf8) || (try? JSONSerialization.jsonObject(with: body)) != nil else {
-            logger.warning("Mock won't save due to response body is not json, path: \(request.url?.path() ?? "-")")
+            logger.warning("Mock won't save due to response body is not json, path: \(request.url?.path() ?? "-")", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             throw MockSaveResult.responseBodyFormatError
         }
 
@@ -188,23 +210,31 @@ public final class MockingStarCore {
             if requestBody == "".data(using: .utf8) {
                 request.httpBody = nil
             } else if (try? JSONSerialization.jsonObject(with: requestBody)) == nil {
-                logger.warning("Mock won't save due to request body is not json, path: \(request.url?.path() ?? "-")")
+                logger.warning("Mock won't save due to request body is not json, path: \(request.url?.path() ?? "-")", metadata: [
+                    "traceUrl": .string(request.url?.absoluteString ?? "")
+                ])
                 throw MockSaveResult.requestBodyFormatError
             }
         }
 
         do {
-            logger.debug("Saving file")
+            logger.debug("Saving file", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             try await saveFile(request: request, flags: flags, status: status, body: body, headers: headers)
         } catch {
-            logger.critical("File saving failed. Error: \(error)")
+            logger.critical("File saving failed. Error: \(error)", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             throw error
         }
     }
 
     private func saveFile(request: URLRequest, flags: MockServerFlags, status: Int, body: Data, headers: [String: String]) async throws {
         guard let url = request.url else {
-            logger.fault("saving File has no url")
+            logger.fault("saving File has no url", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
             throw MockSaveResult.noUrlFound
         }
 
@@ -284,7 +314,9 @@ extension MockingStarCore: ServerMockHandlerInterface {
                                     domain: mockDomain,
                                     deviceId: deviceId)
 
-        logger.debug("Handle new request with \(flags)")
+        logger.debug("Handle new request with \(flags)", metadata: [
+            "traceUrl": .string(url.absoluteString)
+        ])
 
         return try await handle(request: request, flags: flags)
     }
