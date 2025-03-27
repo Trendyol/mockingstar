@@ -56,6 +56,7 @@ public struct MockListView: View {
                     }
                     .padding(.vertical, 8)
                 }
+                .width(min: (geometryProxy.size.width - 300)/3, ideal: (geometryProxy.size.width - 200)/3)
 
                 TableColumn("HTTP Status", value: \.metaData.httpStatus) { mock in
                     Text(mock.metaData.httpStatus, format: .number)
