@@ -10,24 +10,25 @@ import Foundation
 import FlyingSocks
 
 extension Logger: Logging, @unchecked Sendable {
-    public func logDebug(_ debug: String) {
-        self.debug(debug)
+    public func logDebug(_ debug: @autoclosure () -> String) {
+        self.debug(debug())
     }
     
-    public func logInfo(_ info: String) {
+    public func logInfo(_ info: @autoclosure () -> String) {
+        let info = info()
         guard !info.contains("close connection") && !info.contains("open connection") else { return }
         self.info(info)
     }
     
-    public func logWarning(_ warning: String) {
-        self.warning(warning)
+    public func logWarning(_ warning: @autoclosure () -> String) {
+        self.warning(warning())
     }
     
-    public func logError(_ error: String) {
-        self.error(error)
+    public func logError(_ error: @autoclosure () -> String) {
+        self.error(error())
     }
     
-    public func logCritical(_ critical: String) {
-        self.critical(critical)
+    public func logCritical(_ critical: @autoclosure () -> String) {
+        self.critical(critical())
     }
 }

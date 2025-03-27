@@ -14,7 +14,7 @@ let package = Package(
             targets: ["Server"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/swhitty/FlyingFox.git", .upToNextMajor(from: "0.13.0")),
+        .package(url: "https://github.com/swhitty/FlyingFox.git", .upToNextMajor(from: "0.21.0")),
         .package(path: "../CommonKit"),
     ],
     targets: [
