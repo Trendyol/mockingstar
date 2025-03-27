@@ -13,8 +13,7 @@ struct InitialSettingsView: View {
     @State private var folderSelectionDone = false
     @State private var isFileImporting: Bool = false
     @State private var messageText: String = ""
-    @UserDefaultStorage("mockFolderFileBookMark") var mockFolderFileBookMark: Data? = nil
-    @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
+    @UserDefaultStorage("workspaces") private var workspaces: [Workspace] = []
     private let logger = Logger(category: "InitialSettingsView")
     private let fileManager: FileManagerInterface = FileManager.default
 
@@ -69,8 +68,11 @@ struct InitialSettingsView: View {
                     Button("Use Default Folder") {
                         do {
                             let url = URL.documentsDirectory
-                            mockFolderFileBookMark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
-                            mockFolderFilePath = url.path(percentEncoded: false)
+                            let mockFolderFileBookMark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+                            let mockFolderFilePath = url.path(percentEncoded: false)
+                            workspaces.append(Workspace(name: "Workspace 1",
+                                                        path: mockFolderFilePath,
+                                                        bookmark: mockFolderFileBookMark))
                             continueButtonTapped()
                         } catch {
                             logger.error("Update mocks folder path failed. Error: \(error)")
@@ -93,8 +95,11 @@ struct InitialSettingsView: View {
                     guard url.startAccessingSecurityScopedResource() else {
                         throw FilePermissionHelperError.fileBookMarkAccessingFailed
                     }
-                    mockFolderFileBookMark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
-                    mockFolderFilePath = url.path(percentEncoded: false)
+                    let mockFolderFileBookMark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+                    let mockFolderFilePath = url.path(percentEncoded: false)
+                    workspaces.append(Workspace(name: "Workspace 1",
+                                                path: mockFolderFilePath,
+                                                bookmark: mockFolderFileBookMark))
                     url.stopAccessingSecurityScopedResource()
 
                     withAnimation {

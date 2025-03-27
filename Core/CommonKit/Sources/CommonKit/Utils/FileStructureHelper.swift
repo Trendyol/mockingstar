@@ -51,7 +51,10 @@ public protocol FileStructureHelperInterface {
 }
 
 public final class FileStructureHelper {
-    @UserDefaultStorage("mockFolderFilePath") var mocksFolderPath: String = "/MockServer"
+    private let mockFolderFilePath = {
+        @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
+        return workspaces.current?.path ?? "/MockServer"
+    }()
     private let folderPaths: [String] = [
         "Domains",
         "Plugins",
@@ -74,7 +77,7 @@ public final class FileStructureHelper {
 extension FileStructureHelper: FileStructureHelperInterface {
     public func fileStructureCheck() -> Bool {
         for folderPath in folderPaths {
-            let (isFileExists, isDirectory) = fileManager.fileOrDirectoryExists(atPath: mocksFolderPath + folderPath)
+            let (isFileExists, isDirectory) = fileManager.fileOrDirectoryExists(atPath: mockFolderFilePath + folderPath)
 
             guard isFileExists && isDirectory else { return false }
         }
@@ -84,7 +87,7 @@ extension FileStructureHelper: FileStructureHelperInterface {
 
     public func domainFileStructureCheck(mockDomain: String) -> Bool {
         for folderPath in domainFolderPaths {
-            let (isFileExists, isDirectory) = fileManager.fileOrDirectoryExists(atPath: mocksFolderPath + String(format: folderPath, arguments: [mockDomain]))
+            let (isFileExists, isDirectory) = fileManager.fileOrDirectoryExists(atPath: mockFolderFilePath + String(format: folderPath, arguments: [mockDomain]))
 
             guard isFileExists && isDirectory else { return false }
         }
@@ -94,11 +97,11 @@ extension FileStructureHelper: FileStructureHelperInterface {
 
     public func createFileStructure() throws {
         for folderPath in folderPaths {
-            let (isFileExists, isDirectory) = fileManager.fileOrDirectoryExists(atPath: mocksFolderPath + folderPath)
+            let (isFileExists, isDirectory) = fileManager.fileOrDirectoryExists(atPath: mockFolderFilePath + folderPath)
 
             guard !isFileExists || !isDirectory else { continue }
 
-            let url = URL(filePath: mocksFolderPath + folderPath)
+            let url = URL(filePath: mockFolderFilePath + folderPath)
             try fileManager.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
         }
     }
@@ -107,11 +110,11 @@ extension FileStructureHelper: FileStructureHelperInterface {
         guard !mockDomain.isEmpty else { return }
         
         for folderPath in domainFolderPaths {
-            let (isFileExists, isDirectory) = fileManager.fileOrDirectoryExists(atPath: mocksFolderPath + String(format: folderPath, arguments: [mockDomain]))
+            let (isFileExists, isDirectory) = fileManager.fileOrDirectoryExists(atPath: mockFolderFilePath + String(format: folderPath, arguments: [mockDomain]))
 
             guard !isFileExists || !isDirectory else { continue }
 
-            let url = URL(filePath: mocksFolderPath + String(format: folderPath, arguments: [mockDomain]))
+            let url = URL(filePath: mockFolderFilePath + String(format: folderPath, arguments: [mockDomain]))
             try fileManager.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
         }
     }

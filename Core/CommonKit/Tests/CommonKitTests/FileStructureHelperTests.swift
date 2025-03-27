@@ -17,8 +17,8 @@ final class FileStructureHelperTests: XCTestCase {
     override func setUp() {
         fileManager = .init()
 
-        @UserDefaultStorage("mockFolderFilePath", userDefaults: defaults) var mockFolderFilePath: String = ""
-        mockFolderFilePath = "/MockServer/"
+        @UserDefaultStorage("workspaces", userDefaults: defaults) var workspaces: [Workspace] = []
+        workspaces = [Workspace(name: "Workspace", path: "/MockServer/", bookmark: Data())]
 
         fileStructureHelper = .init(fileManager: fileManager)
     }

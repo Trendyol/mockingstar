@@ -44,6 +44,7 @@
 		55D1755D2ABC2C3C00DD3C8F /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1755C2ABC2C3C00DD3C8F /* SidebarView.swift */; };
 		55D1755F2ABC2C7C00DD3C8F /* AppNavigationSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1755E2ABC2C7C00DD3C8F /* AppNavigationSplitView.swift */; };
 		55D175632ABC2D6600DD3C8F /* InitializeAppOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D175622ABC2D6600DD3C8F /* InitializeAppOnboardingView.swift */; };
+		55F9FD9B2D949F9F0056B557 /* SideBarWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F9FD9A2D949F9F0056B557 /* SideBarWorkspaceView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -98,6 +99,7 @@
 		55D1755E2ABC2C7C00DD3C8F /* AppNavigationSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNavigationSplitView.swift; sourceTree = "<group>"; };
 		55D175622ABC2D6600DD3C8F /* InitializeAppOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitializeAppOnboardingView.swift; sourceTree = "<group>"; };
 		55F477BE2A7131AD004A76E4 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		55F9FD9A2D949F9F0056B557 /* SideBarWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideBarWorkspaceView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -295,6 +297,7 @@
 		55D175592ABC2C0500DD3C8F /* Home */ = {
 			isa = PBXGroup;
 			children = (
+				55F9FD972D949F810056B557 /* SideBarWorkspaceView */,
 				551918F02AF393A900B93430 /* SideBarPluginsView */,
 				55907DE92AC5907E00857AD1 /* SideBarServerView */,
 				55D1755C2ABC2C3C00DD3C8F /* SidebarView.swift */,
@@ -326,6 +329,14 @@
 				55A4103C2ADD58C700996105 /* Settings */,
 			);
 			path = Modules;
+			sourceTree = "<group>";
+		};
+		55F9FD972D949F810056B557 /* SideBarWorkspaceView */ = {
+			isa = PBXGroup;
+			children = (
+				55F9FD9A2D949F9F0056B557 /* SideBarWorkspaceView.swift */,
+			);
+			path = SideBarWorkspaceView;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -484,6 +495,7 @@
 				55B4382D2A6FE25A00E2A9DD /* MockingStarApp.swift in Sources */,
 				55A4104C2ADDBA4200996105 /* WelcomeView.swift in Sources */,
 				55D1755D2ABC2C3C00DD3C8F /* SidebarView.swift in Sources */,
+				55F9FD9B2D949F9F0056B557 /* SideBarWorkspaceView.swift in Sources */,
 				551918F22AF393C200B93430 /* SideBarPluginView.swift in Sources */,
 				55907DEB2AC5909200857AD1 /* SideBarServerView.swift in Sources */,
 				5514564E2B45ACA5009C5E7E /* PrivacyAlertView.swift in Sources */,

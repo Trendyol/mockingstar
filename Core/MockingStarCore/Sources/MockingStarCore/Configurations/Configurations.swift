@@ -14,8 +14,6 @@ public protocol ConfigurationsInterface {
 
 public final class Configurations: ConfigurationsInterface {
     private let logger = Logger(category: "Configurations")
-    @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
-
     private(set) public var configs: ConfigModel
     private var mockDomain: String
     private let fileManager: FileManagerInterface
@@ -32,15 +30,6 @@ public final class Configurations: ConfigurationsInterface {
         self.fileManager = fileManager
         self.fileStructureMonitor = fileStructureMonitor
         self.fileUrlBuilder = fileUrlBuilder
-
-        _mockFolderFilePath.onChange {  [weak self] _ in
-            guard let self else { return }
-            do {
-                try readConfigs()
-            } catch {
-                logger.error("Read configs error: \(error)")
-            }
-        }
 
         do {
             try readConfigs()

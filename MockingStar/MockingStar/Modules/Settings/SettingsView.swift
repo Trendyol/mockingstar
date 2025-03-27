@@ -13,34 +13,77 @@ struct SettingsView: View {
     @State private var isFileImporting: Bool = false
 
     var body: some View {
-        Form {
-            LabeledContent("Mocks Folder") {
-                HStack {
-                    Text(viewModel.mockFolderFilePath)
-                    Spacer()
-
-                    Button("Change Path") {
-                        isFileImporting = true
-                    }
+        TabView {
+            VStack(alignment: .leading) {
+                LabeledContent("Server Port") {
+                    TextField("Server Port", value: $viewModel.httpServerPort, format: .port(), prompt: Text("Server Port"))
                 }
+                Text("If you change server port, please restart application.")
+                    .foregroundStyle(.secondary)
+                    .font(.footnote)
+                Spacer()
+            }
+            .padding()
+            .tabItem {
+                Label("Settings", systemImage: "rectangle.on.rectangle.badge.gearshape")
             }
 
-            TextField("Server Port", value: $viewModel.httpServerPort, format: .port(), prompt: Text("Server Port"))
-            Text("If you change server port, please restart application.")
-                .foregroundStyle(.secondary)
-                .font(.footnote)
-
-            LabeledContent("Diagnostic") {
-                DiagnosticView()
+            workspaceSettings()
+            .tabItem {
+                Label("Workspaces", systemImage: "sparkles.rectangle.stack.fill")
             }
 
-            Spacer()
+            DiagnosticView()
+                .tabItem {
+                    Label("Diagnostic", systemImage: "gear.badge.checkmark")
+                }
         }
-        .padding()
+        .frame(minWidth: 700, minHeight: 500)
         .fileImporter(isPresented: $isFileImporting, allowedContentTypes: [.folder], allowsMultipleSelection: false) { result in
             viewModel.fileImported(result: result)
         }
         .background(.background)
+    }
+
+    @ViewBuilder
+    private func workspaceSettings() -> some View {
+        ScrollView {
+            VStack(alignment: .trailing) {
+                ForEach(viewModel.workspaces, id: \.path) { workspace in
+                    HStack {
+                        TextField("Workspace Name", text: .init(
+                            get: { workspace.name },
+                            set: { viewModel.workspaceRenamed(workspace: workspace, newName: $0) }
+                        ))
+                            .textFieldStyle(.roundedBorder)
+                            .labelsHidden()
+                        Text(workspace.path)
+                            .foregroundStyle(.secondary)
+                            .layoutPriority(0.8)
+                        Button {
+                            withAnimation {
+                                viewModel.removeWorkspace(workspace)
+                            }
+                        } label: {
+                            Image(systemName: "minus.circle")
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    }
+                }
+
+                Button {
+                    isFileImporting = true
+                } label: {
+                    Image(systemName: "plus.circle")
+                        .foregroundStyle(Color.accentColor)
+                }
+                .padding(.leading, 4)
+            }
+        }
+        .padding()
+        .onChange(of: viewModel.workspaces) {
+            NotificationCenter.default.post(name: .workspacesUpdated, object: nil)
+        }
     }
 }
 

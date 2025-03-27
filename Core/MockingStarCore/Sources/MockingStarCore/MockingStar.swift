@@ -310,7 +310,6 @@ extension MockingStarCore: ServerMockHandlerInterface {
 
         let flags = MockServerFlags(mockSource: .init(from: rawFlags),
                                     scenario: scenario,
-                                    shouldNotMock: rawFlags.caseInsensitiveSearch(for: "shouldNotMock").orEmpty == "true",
                                     domain: mockDomain,
                                     deviceId: deviceId)
 
@@ -340,7 +339,6 @@ extension MockingStarCore: ServerMockSearchHandlerInterface {
 
         let flags = MockServerFlags(mockSource: .init(from: rawFlags),
                                     scenario: scenario,
-                                    shouldNotMock: rawFlags.caseInsensitiveSearch(for: "shouldNotMock").orEmpty == "true",
                                     domain: mockDomain,
                                     deviceId: deviceId)
 

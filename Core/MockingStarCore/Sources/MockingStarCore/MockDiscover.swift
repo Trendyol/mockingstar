@@ -29,7 +29,6 @@ public final class MockDiscover: MockDiscoverInterface {
     private let fileUrlBuilder: FileUrlBuilderInterface
     private var mocks: Set<MockModel> = []
     private var fileStructureMonitor: FileStructureMonitorInterface
-    @UserDefaultStorage("mockFolderFilePath") var mocksFolderPath: String = "/MockServer"
 
     public init(fileManager: FileManagerInterface = FileManager.default,
                 fileUrlBuilder: FileUrlBuilderInterface = FileUrlBuilder(),
@@ -38,13 +37,6 @@ public final class MockDiscover: MockDiscoverInterface {
         self.fileUrlBuilder = fileUrlBuilder
         self.fileStructureMonitor = fileStructureMonitor
         (mockDiscoverResult, mockDiscoverResultContinuation) = AsyncStream<MockDiscoverResult>.makeStream()
-
-        _mocksFolderPath.onChange { [weak self] _ in
-            guard let self else { return }
-
-            mocks.removeAll()
-            mockDiscoverResultContinuation.yield(.loading)
-        }
     }
 
     /// Updates the mock domain and initiates the process of discovering and monitoring mock changes.

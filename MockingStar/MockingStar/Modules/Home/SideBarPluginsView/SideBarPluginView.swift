@@ -10,14 +10,11 @@ import CommonViewsKit
 import SwiftUI
 
 struct SideBarPluginView: View {
-    private let viewModel = SideBarPluginViewModel.shared
-    @State private var lastMockFolderFilePath: String = ""
+    private let viewModel: SideBarPluginViewModel
     @SceneStorage("mockDomain") private var mockDomain: String = ""
-    @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
 
-    init() {
-        lastMockFolderFilePath = mockFolderFilePath
-        listenMockFolderPathChanges()
+    init(viewModel: SideBarPluginViewModel) {
+        self.viewModel = viewModel
     }
 
     var body: some View {
@@ -30,18 +27,14 @@ struct SideBarPluginView: View {
             }
         }
         .task(id: mockDomain) { await viewModel.loadPlugins(for: mockDomain) }
-        .task(id: lastMockFolderFilePath) { await viewModel.loadPlugins(for: mockDomain) }
-    }
-
-    func listenMockFolderPathChanges() {
-        _mockFolderFilePath.onChange { path in
-           lastMockFolderFilePath = path
+        .onReceive(NotificationCenter.default.publisher(for: .workspacesUpdated)) { _ in
+            Task { await viewModel.loadPlugins(for: mockDomain) }
         }
     }
 }
 
 #Preview {
-    SideBarPluginView()
+    SideBarPluginView(viewModel: SideBarPluginViewModel())
 }
 
 struct SideBarPluginItemView: View {

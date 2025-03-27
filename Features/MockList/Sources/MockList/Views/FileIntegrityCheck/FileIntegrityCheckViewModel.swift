@@ -49,8 +49,6 @@ enum MockViolation: Hashable, Identifiable {
 
 @Observable
 final class FileIntegrityCheckViewModel {
-    @ObservationIgnored @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
-
     private let logger = Logger(category: "FileIntegrityCheckViewModel")
     private let mockDiscover: MockDiscoverInterface
     private let fileManager: FileManagerInterface
@@ -58,6 +56,10 @@ final class FileIntegrityCheckViewModel {
     private var mockDiscoverTask: Task<(), Never>? = nil
     private(set) var violatedMocks: [MockViolation] = []
     private(set) var isLoading: Bool = false
+    private let mockFolderFilePath = {
+        @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
+        return workspaces.current?.path ?? "/MockServer"
+    }()
 
     var wrongPathMocks: [MockViolation] { violatedMocks.filter(\.isWrongPath)}
     var duplicatedIdMocks: [MockViolation] { violatedMocks.filter(\.isDuplicatedId)}

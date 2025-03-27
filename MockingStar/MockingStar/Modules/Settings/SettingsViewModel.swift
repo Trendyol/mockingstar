@@ -12,9 +12,21 @@ import SwiftUI
 @Observable
 final class SettingsViewModel {
     private let logger = Logger(category: "SettingsViewModel")
-    @ObservationIgnored @UserDefaultStorage("mockFolderFileBookMark") var mockFolderFileBookMark: Data? = nil
-    @ObservationIgnored @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
     @ObservationIgnored @UserDefaultStorage("httpServerPort") var httpServerPort: UInt16 = 8008
+
+    @ObservationIgnored
+    var workspaces: [Workspace] {
+        get {
+            access(keyPath: \.workspaces)
+            @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
+            return workspaces
+        } set {
+            withMutation(keyPath: \.workspaces) {
+                @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
+                workspaces = newValue
+            }
+        }
+    }
 
     init() {}
 
@@ -27,8 +39,10 @@ final class SettingsViewModel {
                         throw FilePermissionHelperError.fileBookMarkAccessingFailed
                     }
 
-                    mockFolderFileBookMark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
-                    mockFolderFilePath = url.path(percentEncoded: false)
+                    let mockFolderFileBookMark = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+                    let mockFolderFilePath = url.path(percentEncoded: false)
+                    workspaces.append(Workspace(name: "Workspace \(url.lastPathComponent)", path: mockFolderFilePath, bookmark: mockFolderFileBookMark))
+                    NotificationCenter.default.post(name: .workspacesUpdated, object: nil)
                     url.stopAccessingSecurityScopedResource()
                 } catch {
                     logger.critical("Update mocks folder path failed. Error: \(error)")
@@ -37,5 +51,18 @@ final class SettingsViewModel {
         case .failure(let failure):
             logger.error("Importing files failed. Error: \(failure)")
         }
+    }
+
+    func removeWorkspace(_ workspace: Workspace) {
+        workspaces.removeAll(where: { $0 == workspace })
+        NotificationCenter.default.post(name: .workspacesUpdated, object: nil)
+    }
+
+    func workspaceRenamed(workspace: Workspace, newName: String) {
+        let _workspaces = workspaces
+        guard let index = _workspaces.firstIndex(where: { $0 == workspace }) else { return }
+        _workspaces[index].name = newName
+        workspaces = _workspaces
+        NotificationCenter.default.post(name: .workspacesUpdated, object: nil)
     }
 }

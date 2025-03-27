@@ -13,7 +13,7 @@ import CommonKit
 final class DiagnosticViewModel {
     var diagnosticItems: [DiagnosticModel] = []
     @ObservationIgnored @UserDefaultStorage("httpServerPort") var httpServerPort: UInt16 = 8008
-    @ObservationIgnored @UserDefaultStorage("mockFolderFilePath") var mockFolderFilePath: String = "/MockServer"
+    @ObservationIgnored @UserDefaultStorage("workspaces") private var workspaces: [Workspace] = []
 
     init() {
         startDiagnostic()
@@ -89,9 +89,10 @@ final class DiagnosticViewModel {
     @MainActor
     private func checkFileAccess() {
         guard let index = diagnosticItems.firstIndex(where: { $0.type == .fileAccess }) else { return }
+        guard let workspace = workspaces.current else { return }
         diagnosticItems[index].isLoading = true
 
-        let url = URL(filePath: mockFolderFilePath)
+        let url = URL(filePath: workspace.path)
 
         do {
             if try url.checkResourceIsReachable() {
@@ -112,9 +113,10 @@ final class DiagnosticViewModel {
     @MainActor
     private func checkFileWrite() {
         guard let index = diagnosticItems.firstIndex(where: { $0.type == .fileWrite }) else { return }
+        guard let workspace = workspaces.current else { return }
         diagnosticItems[index].isLoading = true
 
-        if FileManager.default.isWritableFile(atPath: mockFolderFilePath) {
+        if FileManager.default.isWritableFile(atPath: workspace.path) {
             diagnosticItems[index].isLoading = false
             diagnosticItems[index].isSuccess = true
         } else {

@@ -31,8 +31,8 @@ struct MockingStar: ParsableCommand {
         var folder: String
 
         func run() throws {
-            @UserDefaultStorage("mockFolderFilePath") var mocksFolderPath: String = "/MockServer"
-            mocksFolderPath = folder
+            @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
+            workspaces = [Workspace(name: "Workspace", path: folder, bookmark: Data())]
 
             if let logsFolder, !logsFolder.isEmpty {
                 Logger.Constant.logsWriteFilePath = logsFolder

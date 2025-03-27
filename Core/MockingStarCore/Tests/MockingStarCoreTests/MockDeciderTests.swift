@@ -81,7 +81,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(),
@@ -118,7 +117,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(),
@@ -155,7 +153,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(),
@@ -194,7 +191,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(query: [.init(name: "device", value: "android")]),
@@ -234,7 +230,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(query: [.init(name: "userId", value: "1"),
@@ -275,7 +270,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(query: [.init(name: "userId", value: "2"),
@@ -316,7 +310,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(query: [.init(name: "device", value: "android")]),
@@ -356,7 +349,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(query: [.init(name: "device", value: "android")]),
@@ -396,7 +388,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(query: [.init(name: "device", value: "android")]),
@@ -440,7 +431,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(headers: [
@@ -489,7 +479,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(headers: [
@@ -538,7 +527,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(headers: [
@@ -586,7 +574,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(headers: [
@@ -634,7 +621,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(headers: [
@@ -682,7 +668,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(headers: [
@@ -705,7 +690,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(),
@@ -743,7 +727,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(),
@@ -781,7 +764,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.decideMock(request: request(),
@@ -818,7 +800,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.searchMock(path: "/aboutus",
@@ -856,7 +837,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "EmptyResponse",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.searchMock(path: "/aboutus",
@@ -892,7 +872,6 @@ final class MockDeciderTests: XCTestCase {
 
         let flags: MockServerFlags = .init(mockSource: .default,
                                            scenario: "ErrorResponse",
-                                           shouldNotMock: false,
                                            domain: "Dev",
                                            deviceId: "")
         let result = try await decider.searchMock(path: "/aboutus",
