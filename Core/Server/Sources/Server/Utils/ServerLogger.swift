@@ -10,7 +10,7 @@ import CommonKit
 import Foundation
 import FlyingSocks
 
-extension Logger: @retroactive Logging, @unchecked @retroactive Sendable {
+extension Logger: @retroactive Logging, @unchecked Sendable {
     public func logDebug(_ debug: String) {
         self.debug(debug)
     }
