@@ -29,18 +29,39 @@ struct MockImportView: View {
             .padding(.horizontal)
             .padding(.top)
 
-            ScrollView {
-                TextField(text: $viewModel.importInput, prompt: Text(viewModel.mockImportStyle.placeholder), axis: .vertical, label: EmptyView.init)
-                    .textFieldStyle(.plain)
-                    .focused($isInputFocused)
-                    .padding()
+            VStack {
+                ScrollView {
+                    TextField(text: $viewModel.importInput, prompt: Text(viewModel.mockImportStyle.placeholder), axis: .vertical, label: EmptyView.init)
+                        .textFieldStyle(.plain)
+                        .focused($isInputFocused)
+                }
+                .frame(maxHeight: 350)
+
+                PasteButton(payloadType: String.self) { strings in
+                    guard let file = strings.first else { return }
+                    viewModel.importInput = file
+                }
+                .padding(.horizontal)
+                .buttonStyle(.plain)
             }
-            .frame(maxHeight: 350)
+            .padding(6)
+            .overlay {
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(.tertiary, lineWidth: 2)
+            }
+            .padding(10)
 
             if !viewModel.importFailedMessage.isEmpty {
                 Text(viewModel.importFailedMessage)
                     .foregroundStyle(.red)
+                    .padding(.horizontal)
             }
+
+            TipView(MockImportTip())
+                .padding(.horizontal)
+
+            TipView(MockImportNewStyleTip())
+                .padding([.horizontal, .bottom])
 
             HStack {
                 Button {
@@ -71,12 +92,6 @@ struct MockImportView: View {
                 .buttonStyle(.plain)
                 .disabled(viewModel.importInput.isEmpty)
             }
-
-            TipView(MockImportTip())
-                .padding(.horizontal)
-
-            TipView(MockImportNewStyleTip())
-                .padding([.horizontal, .bottom])
         }
         .task {
             try? await Task.sleep(for: .seconds(1))
@@ -85,6 +100,9 @@ struct MockImportView: View {
         .onChange(of: viewModel.shouldShowImportDone) { _, newValue in
             guard newValue else { return }
             dismiss()
+        }
+        .onChange(of: viewModel.mockImportStyle) {
+            viewModel.importInput = ""
         }
     }
 }
