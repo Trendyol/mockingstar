@@ -20,7 +20,7 @@ struct PluginConfigItemView: View {
     }
 
     var body: some View {
-        Group {
+        VStack {
             switch configUIModel.valueType {
             case .bool:
                 Toggle(configUIModel.key, isOn: $boolValue)
@@ -28,11 +28,9 @@ struct PluginConfigItemView: View {
             case .text:
                 TextField(configUIModel.key, text: $textValue, prompt: Text("Value"), axis: .vertical)
                     .lineLimit(1...10)
-                    .textFieldStyle(.roundedBorder)
             case .number:
                 TextField(configUIModel.key, value: $numberValue, format: .number, prompt: Text("Value"))
                     .lineLimit(1...10)
-                    .textFieldStyle(.roundedBorder)
             case .textArray:
                 LabeledContent(configUIModel.key) {
                     VStack {
@@ -40,7 +38,6 @@ struct PluginConfigItemView: View {
                             HStack {
                                 TextField(text: $text.value, prompt: Text("Value"), axis: .vertical, label: EmptyView.init)
                                     .lineLimit(1...10)
-                                    .textFieldStyle(.roundedBorder)
 
                                 Button {
                                     withAnimation {
@@ -71,7 +68,6 @@ struct PluginConfigItemView: View {
                             HStack {
                                 TextField(value: $number.value, format: .number, prompt: Text("Value"), label: EmptyView.init)
                                     .lineLimit(1...10)
-                                    .textFieldStyle(.roundedBorder)
 
                                 Button {
                                     withAnimation {
