@@ -55,6 +55,7 @@ struct MockImportView: View {
                 Text(viewModel.importFailedMessage)
                     .foregroundStyle(.red)
                     .padding(.horizontal)
+                    .textSelection(.enabled)
             }
 
             TipView(MockImportTip())
