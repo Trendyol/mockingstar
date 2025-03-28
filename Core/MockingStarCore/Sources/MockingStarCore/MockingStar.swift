@@ -15,6 +15,10 @@ import FoundationNetworking
 
 import Server
 
+public protocol MockingStarCoreInterface {
+    func importMock(url: URL, method: String, headers: [String: String], body: Data?, flags: MockServerFlags) async throws -> MockImportResult
+}
+
 public final class MockingStarCore {
     private let deciderActor = MockDeciderActor()
     private let scenariosActor = ScenarioDecidersActor()
@@ -378,7 +382,7 @@ extension MockingStarCore: ScenarioHandlerInterface {
 }
 
 // MARK: - Import
-extension MockingStarCore {
+extension MockingStarCore: MockingStarCoreInterface {
     public func importMock(url: URL, method: String, headers: [String: String], body: Data?, flags: MockServerFlags) async throws -> MockImportResult {
         var request = URLRequest(url: url)
         request.httpMethod = method

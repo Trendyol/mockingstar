@@ -78,7 +78,7 @@ struct MockImportView: View {
                 .buttonStyle(.plain)
 
                 Button {
-                    viewModel.importMock(for: mockDomain)
+                    Task { await viewModel.importMock(for: mockDomain) }
                 } label: {
                     Text("Import")
                         .foregroundColor(.white)

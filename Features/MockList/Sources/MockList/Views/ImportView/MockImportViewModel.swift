@@ -13,39 +13,39 @@ import SwiftUI
 @Observable
 final class MockImportViewModel {
     private let logger = Logger(category: "MockImportViewModel")
+    private let mockingStarCore: MockingStarCoreInterface
     private let fileSaver: FileSaverActorInterface
     var mockImportStyle: MockImportStyle = .cURL
     var importInput: String = ""
     var importFailedMessage: String = ""
     var shouldShowImportDone: Bool = false
 
-    init(fileSaver: FileSaverActorInterface = FileSaverActor.shared) {
+    init(mockingStarCore: MockingStarCoreInterface = MockingStarCore(),
+         fileSaver: FileSaverActorInterface = FileSaverActor.shared) {
+        self.mockingStarCore = mockingStarCore
         self.fileSaver = fileSaver
     }
 
-    func importMock(for mockDomain: String) {
+    func importMock(for mockDomain: String) async {
         importFailedMessage = ""
-        Task {
-            do {
-                switch mockImportStyle {
-                case .cURL:
-                    try await curlImport(mockDomain: mockDomain)
-                case .file:
-                    let mockModel = try JSONDecoder.shared.decode(MockModel.self, from: importInput.data(using: .utf8) ?? Data())
-                    mockModel.metaData.id = UUID().uuidString
-                    try await fileSaver.saveFile(mock: mockModel, mockDomain: mockDomain)
-                    shouldShowImportDone = true
-                }
-            } catch {
-                logger.error("Import failed: \(error)")
-                importFailedMessage = "Import failed: \(error.localizedDescription)\n\(error)"
+        do {
+            switch mockImportStyle {
+            case .cURL:
+                try await curlImport(mockDomain: mockDomain)
+            case .file:
+                let mockModel = try JSONDecoder.shared.decode(MockModel.self, from: importInput.data(using: .utf8) ?? Data())
+                mockModel.metaData.id = UUID().uuidString
+                try await fileSaver.saveFile(mock: mockModel, mockDomain: mockDomain)
+                shouldShowImportDone = true
             }
+        } catch {
+            logger.error("Import failed: \(error)")
+            importFailedMessage = "Import failed: \(error.localizedDescription)\n\(error)"
         }
     }
 
     private func curlImport(mockDomain: String) async throws {
         let request = try CurlParser(importInput).buildRequest()
-        let mockingStarCore = MockingStarCore()
 
         guard let url = request.url else { throw MockImportError.urlError }
 
