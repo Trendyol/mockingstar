@@ -88,6 +88,12 @@ public struct MockDetailView: View {
                     }
 
                     Menu("Copy to...") {
+                        Button("Clipboard") {
+                            viewModel.shareButtonTapped(shareStyle: .file)
+                        }
+
+                        Divider()
+
                         ForEach(domainDiscover.domains.filter { $0 != viewModel.mockDomain }, id: \.self) { mockDomain in
                             Button(mockDomain) {
                                 Task {
