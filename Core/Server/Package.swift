@@ -14,7 +14,7 @@ let package = Package(
             targets: ["Server"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/swhitty/FlyingFox.git", exact: "0.16.0"),
+        .package(url: "https://github.com/swhitty/FlyingFox.git", exact: "0.15.0"),
         .package(path: "../CommonKit"),
     ],
     targets: [
