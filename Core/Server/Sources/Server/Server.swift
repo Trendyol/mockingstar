@@ -55,7 +55,7 @@ public final class Server: ServerInterface {
                 serverActivity = ProcessInfo.processInfo.beginActivity(options: ProcessInfo.ActivityOptions.userInitiated, reason: "Mock Server")
 #endif
                 await prepareServer()
-                try await server.run()
+                try await server.start()
             } catch {
                 guard !(error is CancellationError) else { return }
                 logger.critical("Server starting error: \(error)")
