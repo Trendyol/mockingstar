@@ -17,19 +17,37 @@
     "Clear" : {
 
     },
+    "Clear Logs" : {
+
+    },
     "Copy Logs" : {
 
     },
     "Critical Logs" : {
 
     },
+    "Floating View" : {
+
+    },
     "Following" : {
+
+    },
+    "Mock Trace" : {
+
+    },
+    "Mocking Star Trace" : {
+
+    },
+    "No trace logs yet" : {
 
     },
     "Select all" : {
 
     },
     "Severity Filter" : {
+
+    },
+    "Show Mock Trace Window" : {
 
     },
     "Unselect all" : {

@@ -15,7 +15,6 @@ public enum Route: Hashable, Equatable {
     case configs_queryConfigs
     case configs_headerConfigs
     case pluginConfiguration(plugin: String)
-    case appSettings
     case logs
     case fileIntegrityCheck
 }

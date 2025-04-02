@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		5514564E2B45ACA5009C5E7E /* PrivacyAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5514564D2B45ACA5009C5E7E /* PrivacyAlertView.swift */; };
 		551456992B47E399009C5E7E /* MenubarCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551456982B47E399009C5E7E /* MenubarCommands.swift */; };
+		5518C44A2D9743EF006B36E5 /* MockTraceScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5518C4492D9743EF006B36E5 /* MockTraceScene.swift */; };
 		551918F22AF393C200B93430 /* SideBarPluginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551918F12AF393C200B93430 /* SideBarPluginView.swift */; };
 		551918F42AF393CF00B93430 /* SideBarPluginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551918F32AF393CF00B93430 /* SideBarPluginViewModel.swift */; };
 		551CF1AC2B725FB800AF91C7 /* QuickDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551CF1AB2B725FB800AF91C7 /* QuickDemo.swift */; };
@@ -67,6 +68,7 @@
 /* Begin PBXFileReference section */
 		5514564D2B45ACA5009C5E7E /* PrivacyAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyAlertView.swift; sourceTree = "<group>"; };
 		551456982B47E399009C5E7E /* MenubarCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenubarCommands.swift; sourceTree = "<group>"; };
+		5518C4492D9743EF006B36E5 /* MockTraceScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTraceScene.swift; sourceTree = "<group>"; };
 		551918F12AF393C200B93430 /* SideBarPluginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideBarPluginView.swift; sourceTree = "<group>"; };
 		551918F32AF393CF00B93430 /* SideBarPluginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideBarPluginViewModel.swift; sourceTree = "<group>"; };
 		551CF1AB2B725FB800AF91C7 /* QuickDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickDemo.swift; sourceTree = "<group>"; };
@@ -244,6 +246,7 @@
 				5599FF902B6BD7560095E1BE /* MockingStarDebug.entitlements */,
 				55BD7EDE2AF7C365008C5C14 /* Info.plist */,
 				55B4382C2A6FE25A00E2A9DD /* MockingStarApp.swift */,
+				5518C4492D9743EF006B36E5 /* MockTraceScene.swift */,
 				55B438302A6FE25D00E2A9DD /* Assets.xcassets */,
 				555308592B000B8A0001C0CC /* Localizable.xcstrings */,
 				55D9F3D12AB47CFE0056C002 /* Modules */,
@@ -500,6 +503,7 @@
 				55907DEB2AC5909200857AD1 /* SideBarServerView.swift in Sources */,
 				5514564E2B45ACA5009C5E7E /* PrivacyAlertView.swift in Sources */,
 				55A410402ADD58DF00996105 /* SettingsViewModel.swift in Sources */,
+				5518C44A2D9743EF006B36E5 /* MockTraceScene.swift in Sources */,
 				55A4104F2ADDBD4A00996105 /* InitialSettingsView.swift in Sources */,
 				55D1755F2ABC2C7C00DD3C8F /* AppNavigationSplitView.swift in Sources */,
 				55907DED2AC590A900857AD1 /* SideBarServerViewModel.swift in Sources */,

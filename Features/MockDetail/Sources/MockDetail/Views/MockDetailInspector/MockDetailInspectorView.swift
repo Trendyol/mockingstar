@@ -18,13 +18,18 @@ struct MockDetailInspectorView: View {
             GroupBox {
                 VStack {
                     LabeledContent("URL") {
-                        VStack(alignment: .leading, spacing: .zero) {
-                            TextField("URL", text: $viewModel.url, axis: .vertical)
-                                .lineLimit(1...10)
+                        ScrollView {
+                            TextField(text: $viewModel.url, axis: .vertical, label: EmptyView.init)
                                 .multilineTextAlignment(.leading)
-                            Rectangle()
-                                .frame(height: 1)
-                                .foregroundStyle(viewModel.isUrlValid ? .clear : .red)
+                                .textFieldStyle(.plain)
+                        }
+                        .frame(maxHeight: 350)
+                        .padding(6)
+                        .overlay {
+                            if !viewModel.isUrlValid {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(.red, lineWidth: 2)
+                            }
                         }
                     }
                     Divider()

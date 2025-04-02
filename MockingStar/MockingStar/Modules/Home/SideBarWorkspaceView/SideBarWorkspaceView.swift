@@ -30,6 +30,10 @@ struct SideBarWorkspaceView: View {
                     OnboardingCompleted.shared.completed = false
                 }
             }
+
+            Divider()
+
+            SettingsLink()
         } label: {
             VStack(alignment: .leading, spacing: .zero) {
                 Text("workspace")

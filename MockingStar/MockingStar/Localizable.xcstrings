@@ -10,10 +10,13 @@
     "App" : {
 
     },
-    "Bug Report" : {
+    "Automatically check for updates" : {
 
     },
-    "Check" : {
+    "Automatically download updates" : {
+
+    },
+    "Bug Report" : {
 
     },
     "Check for Updates…" : {
@@ -38,6 +41,12 @@
 
     },
     "Mock Domains" : {
+
+    },
+    "Mock Trace" : {
+
+    },
+    "Mocking Star couldn't start successfully. Please check Workspaces." : {
 
     },
     "Mocking Star encountered a problem while starting. You can try resetting the app to fix the problem." : {
@@ -96,6 +105,9 @@
 
     },
     "Source Code" : {
+
+    },
+    "Start Diagnostic" : {
 
     },
     "Test Mocking Star without client." : {
