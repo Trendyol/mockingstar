@@ -44,9 +44,10 @@ struct SideBarPluginItemView: View {
     var body: some View {
         Text(title)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(8)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
             .background(isHovering ? Color.accentColor.opacity(0.5) : Color.clear)
-            .clipShape(.rect(cornerRadius: 10))
+            .clipShape(.rect(cornerRadius: 6))
             .onHover { isHovering in
                 withAnimation { self.isHovering = isHovering }
             }

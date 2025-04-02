@@ -8,6 +8,7 @@
 import CommonKit
 import CommonViewsKit
 import JSONEditor
+import Logs
 import MockingStarCore
 import Sparkle
 import SwiftUI
@@ -21,7 +22,7 @@ struct MockingStarApp: App {
     init() {
         updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
     }
-
+    
     var body: some Scene {
         WindowGroup {
             AppNavigationSplitView()
@@ -41,6 +42,11 @@ struct MockingStarApp: App {
                     
                     try? Tips.configure([.datastoreLocation(.applicationDefault)])
                 }
+                .task {
+                    if !updaterController.updater.automaticallyChecksForUpdates {
+                        updaterController.updater.checkForUpdatesInBackground()
+                    }
+                }
         }
         .defaultSize(width: (NSScreen.main?.visibleFrame.size.width ?? 1000) / 1.5, height: (NSScreen.main?.visibleFrame.size.height ?? 600) / 1.5)
         .commands {
@@ -49,14 +55,17 @@ struct MockingStarApp: App {
             CommandGroup(after: .appInfo) {
                 CheckForUpdatesView(updater: updaterController.updater)
             }
+            MockTraceWindowCommand()
         }
 
         Window("Mocking Star Playground", id: "quick-demo") {
             QuickDemo()
         }
 
+        MockTraceScene()
+
         Settings {
-            SettingsView()
+            SettingsView(updater: updaterController.updater)
         }
     }
 }

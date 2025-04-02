@@ -38,6 +38,10 @@ public final class MockingStarCore {
 
         switch result {
         case .useMock(mock: let mock):
+            logger.info("Mock Trace", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? ""),
+                "responseType": "mock"
+            ])
             logger.info("Mock found, waiting response time", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
@@ -49,6 +53,10 @@ public final class MockingStarCore {
                     body: bodyData,
                     headers: try mock.responseHeader.asDictionary())
         case .mockNotFound where flags.mockSource == .default:
+            logger.info("Mock Trace", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? ""),
+                "responseType": "live request"
+            ])
             logger.info("Mock not found, trying to request live server: \(request.url?.path() ?? .init())", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
@@ -64,12 +72,20 @@ public final class MockingStarCore {
             }
             return liveResult
         case .mockNotFound:
+            logger.info("Mock Trace", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? ""),
+                "responseType": "no mock and disabled live request"
+            ])
             logger.warning("Mock not found and disable live environment: \(request.url?.path() ?? .init())", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
             let pluginMessage = try await pluginActor.pluginCore(for: flags.domain).mockErrorPlugin(message: "Mock not found and disable live environment: \(request.url?.path() ?? .init())")
             return (404, pluginMessage.data(using: .utf8) ?? .init(), [:])
         case .scenarioNotFound where flags.mockSource == .default:
+            logger.info("Mock Trace", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? ""),
+                "responseType": "scenario not found and live request"
+            ])
             logger.info("Scenario not found, trying to request live server", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
@@ -85,12 +101,20 @@ public final class MockingStarCore {
             }
             return liveResult
         case .scenarioNotFound:
+            logger.info("Mock Trace", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? ""),
+                "responseType": "scenario not found and disabled live request"
+            ])
             logger.warning("Scenario not found and disable live environment", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
             let pluginMessage = try await pluginActor.pluginCore(for: flags.domain).mockErrorPlugin(message: "Scenario not found and disable live environment")
             return (404, pluginMessage.data(using: .utf8) ?? .init(), [:])
         case .ignoreDomain:
+            logger.info("Mock Trace", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? ""),
+                "responseType": "ignored domain and live request"
+            ])
             logger.info("Ignoring domain: \(request.url?.host() ?? "_")", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
@@ -321,7 +345,15 @@ extension MockingStarCore: ServerMockHandlerInterface {
             "traceUrl": .string(url.absoluteString)
         ])
 
-        return try await handle(request: request, flags: flags)
+        do {
+            return try await handle(request: request, flags: flags)
+        } catch {
+            logger.info("Mock Trace", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? ""),
+                "responseType": "error"
+            ])
+            throw error
+        }
     }
 }
 

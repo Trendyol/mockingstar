@@ -135,9 +135,19 @@ public struct MockDomainConfigsView: View {
                 }
                 .keyboardShortcut("s")
 
-                ToolBarButton(title: "Settings", icon: "gear", backgroundColor: .red) {
-                    navigationStore.path.append(.appSettings)
+                SettingsLink {
+                    HStack {
+                        Image(systemName: "gear")
+                        Text("Settings")
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 6)
+                    .foregroundStyle(.white)
+                    .background(.red)
+                    .clipShape(.rect(cornerRadius: 10))
                 }
+                .buttonBorderShape(.roundedRectangle)
+                .buttonStyle(.plain)
             }
         }
         .task(id: mockDomain) { viewModel.mockDomainUpdated(mockDomain: mockDomain) }

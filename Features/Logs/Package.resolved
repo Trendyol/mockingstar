@@ -19,39 +19,12 @@
       }
     },
     {
-      "identity" : "flyingfox",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swhitty/FlyingFox.git",
-      "state" : {
-        "revision" : "00e4d51c57b4fbe4f011650f2f965d3bea1ba7c1",
-        "version" : "0.13.0"
-      }
-    },
-    {
       "identity" : "swift-log",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-log.git",
       "state" : {
         "revision" : "3d8596ed08bd13520157f0355e35caed215ffbfa",
         "version" : "1.6.3"
-      }
-    },
-    {
-      "identity" : "swift-syntax",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-syntax.git",
-      "state" : {
-        "revision" : "64889f0c732f210a935a0ad7cda38f77f876262d",
-        "version" : "509.1.1"
-      }
-    },
-    {
-      "identity" : "swiftyjs",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/yusufozgul/SwiftyJS",
-      "state" : {
-        "revision" : "cfc81d2074a43d654b5cea705daf09b356584bef",
-        "version" : "0.0.4"
       }
     }
   ],

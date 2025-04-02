@@ -13,7 +13,20 @@ import SwiftUI
 final class LogsViewModel {
     private var allLogs: [LogModel] = []
     private(set) var filteredLogs: [LogModel] = []
-    var filterType: Set<LogSeverity> = [.critical, .error, .fault, .warning]
+
+    @ObservationIgnored
+    var filterType: Set<LogSeverity> {
+        get {
+            access(keyPath: \.filterType)
+            @UserDefaultStorage("logsFilterType") var filters: Set<LogSeverity> = [.critical, .error, .fault, .warning]
+            return filters
+        } set {
+            withMutation(keyPath: \.filterType) {
+                @UserDefaultStorage("logsFilterType") var filters: Set<LogSeverity> = []
+                filters = newValue
+            }
+        }
+    }
     var searchTerm: String = ""
     private let logStreamHandler: LogStreamHandlerInterface
 

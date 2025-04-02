@@ -6,12 +6,29 @@
 //
 
 import SwiftUI
+import CommonKit
 
 struct DiagnosticView: View {
+    private let onboardingCompleted = OnboardingCompleted.shared
     let viewModel = DiagnosticViewModel()
 
     var body: some View {
-        VStack(alignment: .leading) {
+        ScrollView {
+            if !onboardingCompleted.completed {
+                if #available(macOS 15.0, *) {
+                    Image(systemName: "arrowshape.up")
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                        .scaledToFit()
+                        .symbolEffect(.breathe, options: .speed(0.4).repeat(10), value: Bool.random())
+                }
+
+                Text("Mocking Star couldn't start successfully. Please check Workspaces.")
+                    .font(.headline)
+                    .foregroundStyle(.red)
+                    .padding(.bottom)
+            }
+
             ForEach(viewModel.diagnosticItems, id: \.self) { item in
                 DiagnosticItem(icon: item.icon,
                                name: item.name,
@@ -20,11 +37,22 @@ struct DiagnosticView: View {
                                isSuccess: item.isSuccess)
             }
 
-            Button("Check") {
+            Button {
                 viewModel.startDiagnostic()
+            } label: {
+                Text("Start Diagnostic")
+                    .foregroundColor(.white)
+                    .font(.headline)
+                    .padding(7)
+                    .padding(.horizontal, 40)
+                    .background(Color.accentColor)
+                    .clipShape(.rect(cornerRadius: 15))
             }
+            .padding(.horizontal)
+            .buttonStyle(.plain)
         }
-        .padding()
+        .contentMargins(10, for: .scrollContent)
+        .padding(.horizontal)
     }
 }
 
@@ -54,6 +82,7 @@ struct DiagnosticItem: View {
                     .foregroundStyle(.red)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

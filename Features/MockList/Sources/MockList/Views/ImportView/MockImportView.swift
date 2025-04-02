@@ -33,6 +33,7 @@ struct MockImportView: View {
                 ScrollView {
                     TextField(text: $viewModel.importInput, prompt: Text(viewModel.mockImportStyle.placeholder), axis: .vertical, label: EmptyView.init)
                         .textFieldStyle(.plain)
+                        .multilineTextAlignment(.leading)
                         .focused($isInputFocused)
                 }
                 .frame(maxHeight: 350)

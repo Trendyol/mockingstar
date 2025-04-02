@@ -9,23 +9,19 @@ import CommonViewsKit
 import SwiftUI
 
 struct SideBarServerView: View {
-    private let viewModel: SideBarServerViewModel
-
-    init(viewModel: SideBarServerViewModel) {
-        self.viewModel = viewModel
-    }
+    private static var viewModel = SideBarServerViewModel()
 
     var body: some View {
         VStack {
-            ForEach(viewModel.serversUIModel) { server in
-                ServerView(server: server, viewModel: viewModel)
+            ForEach(Self.viewModel.serversUIModel) { server in
+                ServerView(server: server, viewModel: Self.viewModel)
             }
         }
     }
 }
 
 #Preview {
-    SideBarServerView(viewModel: SideBarServerViewModel())
+    SideBarServerView()
         .padding()
 }
 

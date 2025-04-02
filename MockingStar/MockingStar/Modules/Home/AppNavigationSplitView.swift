@@ -46,8 +46,6 @@ struct AppNavigationSplitView: View {
                                     MockHeaderConfigurations(viewModel: .init())
                                 case .pluginConfiguration(let plugin):
                                     PluginConfigView(plugin: plugin)
-                                case .appSettings:
-                                    SettingsView()
                                 case .logs:
                                     LogsView()
                                 case .fileIntegrityCheck:
