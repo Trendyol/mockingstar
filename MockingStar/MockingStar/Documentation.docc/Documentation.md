@@ -27,9 +27,24 @@ Mocking Star is a powerful request mocking tool designed to simplify the process
     - <doc:MockingStarCLI>
 }
 
+## Features
+
+Discover powerful features that make Mocking Star an essential tool for network mocking and testing.
+
+@Links(visualStyle: detailedGrid) {
+    - <doc:MockingStarTrace>
+    - <doc:MockImport>
+    - <doc:FileIntegrityChecker>
+}
 
 ## Tutorials
 
 @Links(visualStyle: list) {
     - <doc:XCUITest-Example>
+}
+
+## Release Notes
+
+@Links(visualStyle: detailedGrid) {
+    - <doc:ReleaseNotes>
 }
