@@ -10,47 +10,111 @@ Query Configurations allow you to control how specific query parameters are proc
 
 By default, Mocking Star's query filter executes with the "ignore" style, meaning it only considers the URL path for matching. You can modify this behavior using Query Configurations.
 
-### Configuration Scenarios
+## Visual Examples
 
-#### When Query Filter Default Style is "Ignore"
+### Ignore All Queries (Default Behavior)
 
-In this default configuration, these requests are considered the same because Mocking Star normally ignores all queries:
+When query filter default style is set to "Ignore," these requests are considered the same because Mocking Star ignores all query parameters:
 
 ```
-Request 1: https://api.example.com/productDetail/v2/102030/return-conditions?type=DigitalService
-Request 2: https://api.example.com/productDetail/v2/102030/return-conditions?type=Fashion
+/about-us?device=ios
+/about-us?device=android
 ```
 
-However, if specific query keys are crucial for a given request, you can modify this behavior:
+Both requests will use the same mock.
+
+### Ignore All Queries with Query Config (Only Key)
+
+When you add a Query Configuration with a specific key but no value:
 
 ```json
 {
-    "paths": ["/product/v2/102030"],
-    "key": "type",
+    "paths": ["/about-us"],
+    "key": "userId",
     "value": ""
 }
 ```
 
-#### When Query Filter Default Style is NOT "Ignore"
-
-In this configuration, these requests are considered different because Mocking Star strictly matches all queries:
+Mocking Star will consider the key `userId` when matching requests:
 
 ```
-Request 1: https://api.example.com/productDetail/v2/102030/return-conditions?type=DigitalService
-Request 2: https://api.example.com/productDetail/v2/102030/return-conditions?type=Fashion
+/about-us?userId=1&device=ios
+/about-us?userId=2&device=android
 ```
 
-You can modify this behavior to ignore specific query parameters:
+These requests will use different mocks because the `userId` values differ, while the `device` parameter is still ignored.
+
+### Ignore All Queries with Query Config (Key and Value)
+
+When you add a Query Configuration with both key and specific value:
 
 ```json
 {
-    "paths": ["/product/v2/102030"],
-    "key": "type",
+    "paths": ["/about-us"],
+    "key": "userId",
+    "value": "1"
+}
+```
+
+Mocking Star will only match requests where `userId` equals "1":
+
+```
+/about-us?userId=1&device=ios    (matches the config)
+/about-us?userId=2&device=android  (doesn't match the config)
+```
+
+### Match All Queries
+
+When query filter default style is set to "Match All," these requests are considered different because Mocking Star matches all query parameters:
+
+```
+/about-us?device=ios
+/about-us?device=android
+```
+
+Each request will use a different mock.
+
+### Match All Queries with Query Config (Only Key)
+
+When you add a Query Configuration with a specific key but no value:
+
+```json
+{
+    "paths": ["/about-us"],
+    "key": "device",
     "value": ""
 }
 ```
 
-Now, the requests are considered the same because Mocking Star ignores queries with the key `type` in the `/product/v2/102030` path.
+Mocking Star will ignore the `device` parameter when matching requests:
+
+```
+/about-us?device=ios
+/about-us?device=android
+```
+
+These requests will use the same mock because the `device` parameter is ignored.
+
+### Match All Queries with Query Config (Key and Value)
+
+When you add a Query Configuration with both key and specific value:
+
+```json
+{
+    "paths": ["/about-us"],
+    "key": "device",
+    "value": "ios"
+}
+```
+
+Mocking Star will only match requests where `device` equals "ios":
+
+```
+/about-us?device=ios    (matches the config)
+/about-us?device=android  (doesn't match the config)
+```
+
+Requests with `device=android` and `device=desktop` will use the same mock, but requests with `device=ios` will use a different mock.
 
 ### Configuration Parameters
 

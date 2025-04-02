@@ -10,69 +10,151 @@ Header Configurations allow you to control how specific HTTP headers are process
 
 By default, Mocking Star's header filter executes with the "ignore" style, meaning it only considers the URL path for matching. You can modify this behavior using Header Configurations.
 
-### Configuration Scenarios
+## Visual Examples
 
-#### When Header Filter Default Style is "Ignore"
+### Ignore All Headers (Default Behavior)
 
-In this default configuration, these requests are considered the same because Mocking Star normally ignores all headers:
+When header filter default style is set to "Ignore," these requests are considered the same because Mocking Star ignores all headers:
 
 ```
-Request 1:
-URL: https://api.example.com/productDetail/v2/102030/return-conditions
-Headers:
-  Platform: iphone
-  OSVersion: 17.0.1
-  Content-Type: application/json
-
-Request 2:
-URL: https://api.example.com/productDetail/v2/102030/return-conditions
-Headers:
-  Platform: iphone
-  OSVersion: 14.2.1
-  Content-Type: application/json
+/about-us Header: device=ios
+/about-us Header: device=android
 ```
 
-However, if specific header keys are crucial for a given request, you can modify this behavior:
+Both requests will use the same mock.
+
+### Ignore All Headers with Header Config (Only Key)
+
+When you add a Header Configuration with a specific key but no value:
 
 ```json
 {
-    "paths": ["/product/v2/102030"],
-    "key": "Platform",
+    "paths": ["/about-us"],
+    "key": "userId",
     "value": ""
 }
 ```
 
-#### When Header Filter Default Style is NOT "Ignore"
-
-In this configuration, these requests are considered different because Mocking Star strictly matches all headers:
+Mocking Star will consider the key `userId` when matching requests:
 
 ```
-Request 1:
-URL: https://api.example.com/productDetail/v2/102030/return-conditions
-Headers:
-  Platform: iphone
-  OSVersion: 17.0.1
-  Content-Type: application/json
-
-Request 2:
-URL: https://api.example.com/productDetail/v2/102030/return-conditions
-Headers:
-  Platform: iphone
-  OSVersion: 14.2.1
-  Content-Type: application/json
+/about-us Header: userId=1 device=ios
+/about-us Header: userId=2 device=android
 ```
 
-You can modify this behavior to ignore specific headers:
+These requests will use different mocks because the `userId` values differ, while the `device` header is still ignored.
+
+### Ignore All Headers with Header Config (Key and Value)
+
+When you add a Header Configuration with both key and specific value:
 
 ```json
 {
-    "paths": ["/product/v2/102030"],
-    "key": "OSVersion",
+    "paths": ["/about-us"],
+    "key": "userId",
+    "value": "1"
+}
+```
+
+Mocking Star will match requests where the `userId` header equals "1" and consider them the same:
+
+```
+/about-us Header: userId=1 device=ios
+/about-us Header: userId=1 device=android
+```
+
+These requests will use the same mock because both have the `userId=1` header.
+
+### Ignore All Headers with Header Config (Key and Value - Different Values)
+
+When you add a Header Configuration with both key and specific value, requests with different values will be treated differently:
+
+```json
+{
+    "paths": ["/about-us"],
+    "key": "userId",
+    "value": "1"
+}
+```
+
+```
+/about-us Header: userId=1 device=ios
+/about-us Header: userId=3 device=android
+```
+
+These requests will use different mocks because one has `userId=1` and the other has `userId=3`.
+
+### Match All Headers
+
+When header filter default style is set to "Match All," these requests are considered different because Mocking Star matches all headers:
+
+```
+/about-us Header: device=ios
+/about-us Header: device=android
+```
+
+Each request will use a different mock.
+
+### Match All Headers with Header Config (Only Key)
+
+When you add a Header Configuration with a specific key but no value:
+
+```json
+{
+    "paths": ["/about-us"],
+    "key": "device",
     "value": ""
 }
 ```
 
-Now, the requests are considered the same because Mocking Star ignores headers with the key `OSVersion` in the `/product/v2/102030` path.
+Mocking Star will ignore the `device` header when matching requests:
+
+```
+/about-us Header: device=ios
+/about-us Header: device=android
+```
+
+These requests will use the same mock because the `device` header is ignored.
+
+### Match All Headers with Header Config (Key and Value)
+
+When you add a Header Configuration with both key and specific value:
+
+```json
+{
+    "paths": ["/about-us"],
+    "key": "device",
+    "value": "ios"
+}
+```
+
+Mocking Star will treat requests with different `device` values as different:
+
+```
+/about-us Header: device=ios
+/about-us Header: device=android
+```
+
+These requests will use different mocks because they have different values for the `device` header.
+
+### Match All Headers with Header Config (Key and Value - Non-matching Values)
+
+When you add a Header Configuration with both key and specific value:
+
+```json
+{
+    "paths": ["/about-us"],
+    "key": "device",
+    "value": "ios"
+}
+```
+
+```
+/about-us Header: device=android
+/about-us Header: device=desktop
+```
+
+These requests will use the same mock because neither matches the specified `device=ios` value.
 
 ### Configuration Parameters
 
