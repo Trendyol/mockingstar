@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 2.0.0</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed <em> feat: Add security-gates and update README by @emrecanvurallll in https://github.com/Trendyol/mockingstar/pull/40 </em> Fix security pipelines by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/44 <em> features/ImproveInitilizationErrors by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/41 </em> features/FileIntegrityCheckerModule by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/42 <em> features/ImportMock by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/43 </em> Features/refine configs by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/45 <em> Features/url edit support by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/46 </em> Features/navigation support new mock creation by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/49 <em> Improve logs by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/47 </em> Features/workspace by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/48 <em> Features/file import by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/50 </em> features/MockTrace by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/51 <em> Update DocC by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/52 </em> Fix/improve trace UI&amp;fix curl import by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/53</h2>
+                ]]>
+            </description>
+            <pubDate>Pzt, 14 Nis 2025 13:54:09 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/2.0.0-14/MockingStar-App.zip"
+            sparkle:version="14" sparkle:shortVersionString="2.0.0"
+            sparkle:edSignature="zVX0d9u1f6WVz7KQQyQv7aeK4znXbnd/WpfJizcUU0i/MFXvfjUTVJPYs/B0LQGCKo7Mznyn2q4O0o1wvgR5DA==" length="5227418"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 1.1.6</title>
             <description>
                 <![CDATA[
