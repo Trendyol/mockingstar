@@ -82,13 +82,21 @@ struct MockImportView: View {
                     Task { await viewModel.importMock(for: mockDomain) }
                 } label: {
                     Text("Import")
-                        .foregroundColor(.white)
+                        .foregroundColor(viewModel.isLoading ? .accentColor : .white)
                         .font(.headline)
                         .padding(7)
                         .padding(.horizontal, 40)
                         .background(Color.accentColor)
                         .clipShape(.rect(cornerRadius: 15))
                         .padding(.bottom)
+                        .overlay {
+                            if viewModel.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                    .controlSize(.small)
+                                    .padding(.bottom)
+                            }
+                        }
                 }
                 .padding(.horizontal)
                 .buttonStyle(.plain)

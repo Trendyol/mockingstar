@@ -24,7 +24,14 @@ public struct CurlParser {
         }
         
         var request = URLRequest(url: url)
-        request.httpMethod = parsedCommand.request ?? "GET"
+        if let method = parsedCommand.request {
+            request.httpMethod = method
+        } else if !parsedCommand.data.isEmpty || !parsedCommand.dataRaw.isEmpty {
+            request.httpMethod = "POST"
+        } else {
+            request.httpMethod = "GET"
+        }
+
         if !parsedCommand.headers.isEmpty {
             var headerDict = [String: String]()
             for header in parsedCommand.headers {
@@ -84,7 +91,7 @@ struct CURLCommand: ParsableCommand {
     var urlOption: String?
     
     @Option(name: [.customShort("L"), .customLong("location")], help: "Follow redirects")
-    var location: Bool = false
+    var location: String = ""
 
     @Option(name: [.customShort("X"), .customLong("request")], help: "The HTTP method to use")
     var request: String?
@@ -105,7 +112,11 @@ struct CURLCommand: ParsableCommand {
         if let urlOption = urlOption {
             return urlOption
         }
-        
+
+        if !location.isEmpty {
+            return location
+        }
+
         if let firstUrl = urlArgument.first(where: { $0.hasPrefix("http://") || $0.hasPrefix("https://") }) {
             return firstUrl
         }
