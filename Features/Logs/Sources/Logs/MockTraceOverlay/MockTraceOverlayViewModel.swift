@@ -16,7 +16,6 @@ final class MockTraceOverlayViewModel {
 
     init(logStreamHandler: LogStreamHandlerInterface = LogStreamHandler.shared) {
         self.logStreamHandler = logStreamHandler
-        Task { [weak self] in await self?.readLogs() }
     }
 
     @MainActor

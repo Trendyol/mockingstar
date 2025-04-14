@@ -22,6 +22,7 @@ public struct MockTraceOverlayView: View {
             overlayContent
         }
         .frame(minWidth: 350, minHeight: 500)
+        .task { await viewModel.readLogs() }
     }
     
     private var overlayHeader: some View {
@@ -32,10 +33,13 @@ public struct MockTraceOverlayView: View {
             
             Spacer()
 
-            Button("Floating View", systemImage: isFloatingMockTraceViewEnabled ? "pin.slash" : "pin") {
-                isFloatingMockTraceViewEnabled.toggle()
+            if #available(macOS 15.0, *) {
+                Button("Floating View", systemImage: isFloatingMockTraceViewEnabled ? "pin.slash" : "pin") {
+                    isFloatingMockTraceViewEnabled.toggle()
+                }
+                .labelStyle(.iconOnly)
+                .help("Pin trace view to the top of the screen")
             }
-            .labelStyle(.iconOnly)
 
             Button("Clear Logs", systemImage: "trash") {
                 viewModel.clearLogs()

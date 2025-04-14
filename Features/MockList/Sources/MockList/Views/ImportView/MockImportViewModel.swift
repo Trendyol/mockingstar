@@ -19,6 +19,7 @@ final class MockImportViewModel {
     var importInput: String = ""
     var importFailedMessage: String = ""
     var shouldShowImportDone: Bool = false
+    var isLoading = false
 
     init(mockingStarCore: MockingStarCoreInterface = MockingStarCore(),
          fileSaver: FileSaverActorInterface = FileSaverActor.shared) {
@@ -27,6 +28,8 @@ final class MockImportViewModel {
     }
 
     func importMock(for mockDomain: String) async {
+        isLoading = true
+        defer { isLoading = false }
         importFailedMessage = ""
         do {
             switch mockImportStyle {
