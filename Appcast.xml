@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 2.0.1</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed</h2><ul><li>Disable unsaved changes tip due to crash on some devices by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/55 <em> Skip decoding error mocks by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/56 </em> Update readme by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/54 * Replace SceneStorage to AppStorage for mock domain by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/57</li></ul>
+                ]]>
+            </description>
+            <pubDate>Sal, 13 May 2025 09:25:47 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/2.0.1-15/MockingStar-App.zip"
+            sparkle:version="15" sparkle:shortVersionString="2.0.1"
+            sparkle:edSignature="248KEsuBHRBkMUQuEhlfBxtzDD/EBg75JAOeEbpxtD6XJFYX14lPkcpbJKxYI6zvPjXXQR0GKenNPj0eKDTnBA==" length="5211184"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 2.0.0</title>
             <description>
                 <![CDATA[
