@@ -132,7 +132,14 @@ public final class MockDiscover: MockDiscoverInterface {
         try fileManager
             .folderContent(at: url)
             .filter { !$0.hasDirectoryPath }
-            .map { try loadMock(fileURL: $0)}
+            .compactMap {
+                do {
+                    return try loadMock(fileURL: $0)
+                } catch {
+                    logger.error("Loading mock failed - \($0.path()): \(error)")
+                    return nil
+                }
+            }
     }
 
     /// Loads a mock from the specified file URL.
