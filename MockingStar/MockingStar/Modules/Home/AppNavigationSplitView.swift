@@ -17,7 +17,7 @@ import SwiftUI
 
 struct AppNavigationSplitView: View {
     @Bindable private var navigationStore = NavigationStore.shared
-    @SceneStorage("mockDomain") var mockDomain: String = ""
+    @AppStorage("mockDomain") var mockDomain: String = ""
     @AppStorage("isOnboardingDone") private var isOnboardingDone: Bool = false
     private let mockListViewModel = MockListViewModel()
     private let onboardingCompleted = OnboardingCompleted.shared

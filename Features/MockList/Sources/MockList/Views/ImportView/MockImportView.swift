@@ -10,7 +10,7 @@ import TipKit
 
 struct MockImportView: View {
     @Bindable var viewModel: MockImportViewModel
-    @SceneStorage("mockDomain") var mockDomain: String = ""
+    @AppStorage("mockDomain") var mockDomain: String = ""
     @FocusState private var isInputFocused: Bool
     @Environment(\.dismiss) var dismiss
 

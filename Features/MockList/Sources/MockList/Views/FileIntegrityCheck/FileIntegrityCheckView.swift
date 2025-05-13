@@ -11,7 +11,7 @@ import TipKit
 
 public struct FileIntegrityCheckView: View {
     private let viewModel = FileIntegrityCheckViewModel()
-    @SceneStorage("mockDomain") var mockDomain: String = ""
+    @AppStorage("mockDomain") var mockDomain: String = ""
     public init() {}
 
     public var body: some View {

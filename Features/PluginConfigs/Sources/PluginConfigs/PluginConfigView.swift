@@ -11,7 +11,7 @@ import SwiftUI
 public struct PluginConfigView: View {
     private let plugin: String
     @Bindable private var viewModel: PluginConfigViewModel
-    @SceneStorage("mockDomain") private var mockDomain: String = ""
+    @AppStorage("mockDomain") private var mockDomain: String = ""
 
     public init(plugin: String) {
         self.plugin = plugin

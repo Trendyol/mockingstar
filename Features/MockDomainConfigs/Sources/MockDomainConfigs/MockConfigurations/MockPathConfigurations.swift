@@ -17,7 +17,7 @@ public struct MockPathConfigurations: View {
     @State private var queryExecuteStyle: QueryExecuteStyle = .ignoreAll
     @State private var headerExecuteStyle: HeaderExecuteStyle = .ignoreAll
     @State private var shouldShowInspectorView: Bool = true
-    @SceneStorage("mockDomain") var mockDomain: String = ""
+    @AppStorage("mockDomain") var mockDomain: String = ""
 
     public init(viewModel: MockDomainConfigsViewModel) {
         self.viewModel = viewModel

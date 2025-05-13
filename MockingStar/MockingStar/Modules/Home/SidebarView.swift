@@ -13,7 +13,7 @@ import TipKit
 
 struct SidebarView: View {
     @Environment(MockDomainDiscover.self) private var domainDiscover: MockDomainDiscover
-    @SceneStorage("mockDomain") private var mockDomain: String = ""
+    @AppStorage("mockDomain") private var mockDomain: String = ""
     @SceneStorage("isConfigsExpanded") private var isConfigsExpanded: Bool = true
     private let navigationStore = NavigationStore.shared
     @StateObject private var pluginViewModel = SideBarPluginViewModel()
