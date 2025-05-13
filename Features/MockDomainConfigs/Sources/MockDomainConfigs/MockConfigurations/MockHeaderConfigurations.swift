@@ -16,7 +16,7 @@ public struct MockHeaderConfigurations: View {
     @State private var key: String = ""
     @State private var value: String = ""
     @State private var shouldShowInspectorView: Bool = true
-    @SceneStorage("mockDomain") var mockDomain: String = ""
+    @AppStorage("mockDomain") var mockDomain: String = ""
 
     public init(viewModel: MockDomainConfigsViewModel) {
         self.viewModel = viewModel

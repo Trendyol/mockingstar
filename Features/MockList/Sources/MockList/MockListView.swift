@@ -13,7 +13,7 @@ import SwiftUI
 public struct MockListView: View {
     @Bindable var viewModel: MockListViewModel
     @Environment(NavigationStore.self) private var navigationStore: NavigationStore
-    @SceneStorage("mockDomain") var mockDomain: String = ""
+    @AppStorage("mockDomain") var mockDomain: String = ""
     @AppStorage("MockListColumnCustomization") private var columnCustomization: TableColumnCustomization<MockModel>
     @AppStorage("isFirstOpen") private var isFirstOpen: Bool = true
     @State private var isSearchActive: Bool = false

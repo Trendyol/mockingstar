@@ -11,7 +11,7 @@ import SwiftUI
 
 struct SideBarPluginView: View {
     private let viewModel: SideBarPluginViewModel
-    @SceneStorage("mockDomain") private var mockDomain: String = ""
+    @AppStorage("mockDomain") private var mockDomain: String = ""
 
     init(viewModel: SideBarPluginViewModel) {
         self.viewModel = viewModel

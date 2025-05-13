@@ -12,7 +12,7 @@ import TipKit
 
 public struct MockDomainConfigsView: View {
     @Bindable var viewModel: MockDomainConfigsViewModel
-    @SceneStorage("mockDomain") var mockDomain: String = ""
+    @AppStorage("mockDomain") var mockDomain: String = ""
     @Environment(NavigationStore.self) private var navigationStore: NavigationStore
 
     public init(viewModel: MockDomainConfigsViewModel) {

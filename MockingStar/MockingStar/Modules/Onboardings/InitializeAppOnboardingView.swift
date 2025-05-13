@@ -14,7 +14,7 @@ struct InitializeAppOnboardingView: View {
     @State private var onboardingMessage: String = "loading"
     @State private var onboardingFailed: Bool = false
     @AppStorage("isOnboardingDone") private var isOnboardingDone: Bool = false
-    @SceneStorage("mockDomain") private var mockDomain: String = ""
+    @AppStorage("mockDomain") private var mockDomain: String = ""
     @UserDefaultStorage("workspaces") private var workspaces: [Workspace] = []
 
     init() {
