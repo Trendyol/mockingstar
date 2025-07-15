@@ -8,7 +8,7 @@
 import AnyCodable
 import CommonKit
 import CommonViewsKit
-import JSONEditor
+import Editor
 import MockingStarCore
 import PluginCore
 import SwiftUI
@@ -30,15 +30,15 @@ public final class MockDetailViewModel {
     // MARK: Data Models
     private var originalMockModel: MockModel
     let mockDomain: String
-    private let editorContent: JSONEditorContent = .init()
-    @ObservationIgnored var selectedEditorType: MockDetailEditorType = .responseBody { didSet { jsonEditorModelTypeChanged() }}
+    private let editorContent: EditorContent = .init()
+    @ObservationIgnored var selectedEditorType: MockDetailEditorType = .responseBody { didSet { editorModelTypeChanged() }}
     var mockModel: MockModel
 
-    var jsonValidationTask: Task<(), Never>? = nil
+    var editorValidationTask: Task<(), Never>? = nil
 
     // MARK: Alerts & Navigations
     private(set) var shouldDismissView: Bool = false
-    private(set) var jsonValidationMessage: String? = nil
+    private(set) var editorValidationMessage: String? = nil
     var shouldShowAlert = false
     private(set) var alertMessage = ""
     private(set) var alertActionTitle = ""
@@ -63,13 +63,18 @@ public final class MockDetailViewModel {
         self.mockDomain = mockDomain
         self.mockModel = mockModel.copy() as! MockModel
 
-        jsonEditorModelTypeChanged()
+        editorModelTypeChanged()
         registerContentChange()
         JsonEditorCache.shared.content = editorContent
     }
 
     /// Updates the content of the JSON editor based on the selected editor type.
-    func jsonEditorModelTypeChanged() {
+    func editorModelTypeChanged() {
+        editorContent.type = switch selectedEditorType {
+        case .responseBody: mockModel.metaData.responseBodyType ?? .json
+        case .requestBody: mockModel.metaData.requestBodyType ?? .json
+        case .responseHeader, .requestHeader: .json
+        }
         editorContent.content = switch selectedEditorType {
         case .responseBody: mockModel.responseBody
         case .responseHeader: mockModel.responseHeader
@@ -101,40 +106,27 @@ public final class MockDetailViewModel {
             case .requestBody: mockModel.requestBody = editorContent
             case .requestHeader: mockModel.requestHeader = editorContent
             }
-            validateEditorJson()
+            validateEditor()
         }
     }
 
-    /// Cancels the current JSON validation task and initiates a new validation task.
-    private func validateEditorJson() {
-        jsonValidationTask?.cancel()
-        jsonValidationTask = Task(priority: .utility) { @MainActor in
-            let (_, message) = jsonValidator(jsonText: editorContent.content)
-            jsonValidationMessage = message
-        }
-    }
-
-    /// Validates JSON text and returns a tuple indicating validity and an optional error message.
-    ///
-    /// This function takes a JSON text as input and checks its validity using the `JSONSerialization` class.
-    /// If the conversion to data or JSON validation fails, it returns a tuple with `isValid` set to false and
-    /// an error message indicating the reason for the failure. Otherwise, it returns a tuple with `isValid` set to true.
-    ///
-    /// - Parameters:
-    ///   - jsonText: The JSON text to be validated.
-    /// - Returns: A tuple indicating JSON validity and an optional error message.
-    private func jsonValidator(jsonText: String) -> (isValid: Bool, errorMessage: String?) {
-        guard !jsonText.isEmpty else { return (true, nil) }
-        guard let data = jsonText.data(using: .utf8) else {
-            return (false, "Converting to data failed")
-        }
-
-        do {
-            let _ = try JSONSerialization.jsonObject(with: data)
-            return (true, nil)
-        } catch {
-            let nsError = error as NSError
-            return (false, "Json validation failed: \(nsError.userInfo["NSDebugDescription"] ?? "NO DEBUG ERROR")")
+    /// Cancels the current editor content validation task and initiates a new validation task.
+    private func validateEditor() {
+        editorValidationTask?.cancel()
+        editorValidationTask = Task(priority: .utility) { @MainActor in
+            do {
+                switch selectedEditorType {
+                case .responseBody:
+                    try mockModel.metaData.responseBodyType.validate(body: editorContent.content)
+                case .requestBody:
+                    try mockModel.metaData.requestBodyType.validate(body: editorContent.content)
+                case .requestHeader, .responseHeader:
+                    try MockModelBodyType.json.validate(body: editorContent.content)
+                }
+                editorValidationMessage = nil
+            } catch {
+                editorValidationMessage = error.localizedDescription
+            }
         }
     }
 
@@ -148,29 +140,47 @@ public final class MockDetailViewModel {
     /// Saves the changes made to the current mock model.
     ///
     /// This function is responsible for saving changes made to the mock model. It performs various checks on the
-    /// validity of the JSON content in different sections of the mock model, such as response body, request body,
-    /// response headers, and request headers. If any of these sections contain invalid JSON, an error message is
-    /// displayed using the `showErrorMessage` function. If the JSON is valid, the function updates the metadata and
+    /// validity of the  content in different sections of the mock model, such as response body, request body,
+    /// response headers, and request headers. If any of these sections contain invalid content, an error message is
+    /// displayed using the `showErrorMessage` function. If the content is valid, the function updates the metadata and
     /// content of the original mock model and persists the changes to the file. If the scenario has changed, the file
     /// is moved to the appropriate folder. After the save operation, a success message is displayed.
     func saveChanges() {
         guard originalMockModel != mockModel else { return }
         let shouldMoveFile = originalMockModel.metaData.scenario != mockModel.metaData.scenario || originalMockModel.metaData.url != mockModel.metaData.url
 
-        let (isResponseBodyValid, responseBodyMessage) = jsonValidator(jsonText: mockModel.responseBody)
-        let (isRequestBodyValid, requestBodyMessage) = jsonValidator(jsonText: mockModel.requestBody)
-        let (isResponseHeaderValid, responseHeaderMessage) = jsonValidator(jsonText: mockModel.responseHeader)
-        let (isRequestHeaderValid, requestHeaderMessage) = jsonValidator(jsonText: mockModel.requestHeader)
+        // Request Body
+        do { try mockModel.metaData.requestBodyType.validate(body: mockModel.requestBody) }
+        catch {
+            return showAlert("Request Body not valid\n" + error.localizedDescription,
+                      alertActionTitle: "Discard Changes") { [weak self] in
+                self?.discardChanges()
+            }
+        }
 
-        let alertMessage: String?
-        if !isResponseBodyValid { alertMessage = "Response Body not valid\n\(responseBodyMessage.orEmpty)" }
-        else if !isRequestBodyValid { alertMessage = "Request Body not valid\n\(requestBodyMessage.orEmpty)" }
-        else if !isResponseHeaderValid { alertMessage = "Response Headers not valid\n\(responseHeaderMessage.orEmpty)" }
-        else if !isRequestHeaderValid { alertMessage = "Request Headers not valid\n\(requestHeaderMessage.orEmpty)" }
-        else { alertMessage = nil }
+        // Request Header
+        do { try MockModelBodyType.json.validate(body: mockModel.requestHeader) }
+        catch {
+            return showAlert("Request Headers not valid\n" + error.localizedDescription,
+                      alertActionTitle: "Discard Changes") { [weak self] in
+                self?.discardChanges()
+            }
+        }
 
-        if let alertMessage {
-            showAlert(alertMessage, alertActionTitle: "Discard Changes") { [weak self] in
+        // Response Body
+        do { try mockModel.metaData.responseBodyType.validate(body: mockModel.responseBody) }
+        catch {
+            return showAlert("Response Body not valid\n" + error.localizedDescription,
+                      alertActionTitle: "Discard Changes") { [weak self] in
+                self?.discardChanges()
+            }
+        }
+
+        // Response Header
+        do { try MockModelBodyType.json.validate(body: mockModel.responseHeader) }
+        catch {
+            return showAlert("Response Headers not valid\n" + error.localizedDescription,
+                      alertActionTitle: "Discard Changes") { [weak self] in
                 self?.discardChanges()
             }
         }
@@ -247,8 +257,8 @@ public final class MockDetailViewModel {
 
     func discardChanges() {
         mockModel = originalMockModel.copy() as! MockModel
-        jsonEditorModelTypeChanged()
-        validateEditorJson()
+        editorModelTypeChanged()
+        validateEditor()
     }
     
     func shareButtonTapped(shareStyle: ShareStyle) {

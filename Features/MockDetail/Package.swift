@@ -25,7 +25,7 @@ let package = Package(
         .target(
             name: "MockDetail",
         dependencies: [
-            .product(name: "JSONEditor", package: "Editor"),
+            .product(name: "Editor", package: "Editor"),
             .product(name: "DiffEditor", package: "Editor"),
             "CommonViewsKit",
             "PluginCore",
