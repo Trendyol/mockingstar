@@ -1,5 +1,5 @@
 import XCTest
-@testable import JSONEditor
+@testable import Editor
 
 final class JSONEditorTests: XCTestCase {
     func testExample() throws {
