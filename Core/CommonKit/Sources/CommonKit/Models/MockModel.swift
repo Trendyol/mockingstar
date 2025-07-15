@@ -55,32 +55,23 @@ public final class MockModel: Codable, Identifiable, NSCopying {
         metaData = try container.decode(MockModelMetaData.self, forKey: .metaData)
         let requestHeader: MockModelHeader = try container.decode(MockModelHeader.self, forKey: .requestHeader)
         let responseHeader: MockModelHeader = try container.decode(MockModelHeader.self, forKey: .responseHeader)
-        let requestBody: AnyCodableModel = try container.decode(AnyCodableModel.self, forKey: .requestBody)
-        let responseBody: AnyCodableModel = try container.decode(AnyCodableModel.self, forKey: .responseBody)
+        let requestBody: MockModelBody = try container.decode(MockModelBody.self, forKey: .requestBody)
+        let responseBody: MockModelBody = try container.decode(MockModelBody.self, forKey: .responseBody)
 
         self.requestBody = requestBody.description
         self.responseBody = responseBody.description
         self.responseHeader = responseHeader.description
         self.requestHeader = requestHeader.description
+        metaData.requestBodyType = requestBody.type
+        metaData.responseBodyType = responseBody.type
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(metaData, forKey: .metaData)
 
-        let requestBody: AnyCodableModel
-        if self.requestBody.isEmpty {
-            requestBody = .init(NSNull())
-        } else {
-            requestBody = try .init(jsonText: self.requestBody)
-        }
-
-        let responseBody: AnyCodableModel
-        if self.responseBody.isEmpty {
-            responseBody = .init(NSNull())
-        } else {
-            responseBody = try .init(jsonText: self.responseBody)
-        }
+        let requestBody: MockModelBody = try .from(string: self.requestBody)
+        let responseBody: MockModelBody = try .from(string: self.responseBody)
 
         try container.encode(requestBody, forKey: .requestBody)
         try container.encode(responseBody, forKey: .responseBody)
@@ -134,6 +125,19 @@ public class MockModelMetaData: Codable, Identifiable, NSCopying {
     public var responseTime: Double
     public var scenario: String
     public var id: String
+    public internal(set) var requestBodyType: MockModelBodyType?
+    public internal(set) var responseBodyType: MockModelBodyType?
+
+    enum CodingKeys: String, CodingKey {
+        case url
+        case method
+        case appendTime
+        case updateTime
+        case httpStatus
+        case responseTime
+        case scenario
+        case id
+    }
 
     public init(url: URL,
                 method: String,
@@ -142,7 +146,9 @@ public class MockModelMetaData: Codable, Identifiable, NSCopying {
                 httpStatus: Int,
                 responseTime: Double,
                 scenario: String,
-                id: String = UUID().uuidString) {
+                id: String = UUID().uuidString,
+                requestBodyType: MockModelBodyType? = nil,
+                responseBodyType: MockModelBodyType? = nil) {
         self.url = url
         self.method = method
         self.appendTime = appendTime
@@ -151,6 +157,22 @@ public class MockModelMetaData: Codable, Identifiable, NSCopying {
         self.responseTime = responseTime
         self.scenario = scenario
         self.id = id
+        self.requestBodyType = requestBodyType
+        self.responseBodyType = responseBodyType
+    }
+
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        url = try container.decode(URL.self, forKey: .url)
+        method = try container.decode(String.self, forKey: .method)
+        appendTime = try container.decode(Date.self, forKey: .appendTime)
+        updateTime = try container.decode(Date.self, forKey: .updateTime)
+        httpStatus = try container.decode(Int.self, forKey: .httpStatus)
+        responseTime = try container.decode(Double.self, forKey: .responseTime)
+        scenario = try container.decode(String.self, forKey: .scenario)
+        id = try container.decode(String.self, forKey: .id)
+        requestBodyType = nil
+        responseBodyType = nil
     }
 
     public func copy(with zone: NSZone? = nil) -> Any {
@@ -161,7 +183,9 @@ public class MockModelMetaData: Codable, Identifiable, NSCopying {
                           httpStatus: httpStatus,
                           responseTime: responseTime,
                           scenario: scenario,
-                          id: id)
+                          id: id,
+                          requestBodyType: requestBodyType,
+                          responseBodyType: responseBodyType)
     }
 }
 
@@ -273,7 +297,7 @@ extension MockModelHeader {
             return "Error converting to JSON: \(error)."
         }
     }
-    
+
     /// JSON representation headers to key value dictionary header
     /// - Parameter jsonText: JSON text headers
     /// - Returns: Key-value header dictionary
@@ -309,5 +333,163 @@ public extension MockModelHeaderString {
 
     init(_ dictionary: MockModelHeader) {
         self.init(dictionary.description)
+    }
+}
+
+public enum MockModelBodyType {
+    case null, json, html, xml, graphql, text
+}
+
+public enum MockModelBodyValidationError: Error, LocalizedError {
+    case invalidJSON(String)
+    case dataConversionFailed
+
+    public var errorDescription: String? {
+        switch self {
+        case .invalidJSON(let message):
+            return "JSON validation failed: \(message)"
+        case .dataConversionFailed:
+            return "Converting to data failed"
+        }
+    }
+}
+
+public extension MockModelBodyType {
+    func validate(body: String) throws {
+        switch self {
+        case .json:
+            try jsonValidator(body)
+        case .null, .text, .html, .xml, .graphql:
+            break
+        }
+    }
+
+    private func jsonValidator(_ body: String) throws {
+        guard !body.isEmpty else { return }
+        guard let data = body.data(using: .utf8) else {
+            throw MockModelBodyValidationError.dataConversionFailed
+        }
+
+        do {
+            let _ = try JSONSerialization.jsonObject(with: data)
+        } catch {
+            let nsError = error as NSError
+            let errorMessage = nsError.userInfo["NSDebugDescription"] as? String ?? "NO DEBUG ERROR"
+            throw MockModelBodyValidationError.invalidJSON(errorMessage)
+        }
+    }
+}
+
+public extension MockModelBodyType? {
+    func validate(body: String) throws {
+        try self?.validate(body: body)
+    }
+}
+
+public enum MockModelBody: Codable, CustomStringConvertible {
+    case null
+    case json(AnyCodableModel)
+    case html(String)
+    case xml(String)
+    case graphql(String)
+    case text(String)
+
+    public var description: String {
+        switch self {
+        case .null: ""
+        case .json(let json): json.description
+        case .html(let html): html
+        case .xml(let xml): xml
+        case .graphql(let graphql): graphql
+        case .text(let text): text
+        }
+    }
+
+    public var type: MockModelBodyType {
+        switch self {
+        case .null: .null
+        case .json: .json
+        case .html: .html
+        case .xml: .xml
+        case .graphql: .graphql
+        case .text: .text
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+
+        if container.decodeNil() {
+            self = .null
+            return
+        }
+
+        if let jsonValue = try? container.decode(AnyCodableModel.self),
+           jsonValue.description != "Not Valid JSON" {
+            self = .json(jsonValue)
+            return
+        }
+
+        if let stringValue = try? container.decode(String.self) {
+            self = try Self.parseContent(from: stringValue)
+            return
+        }
+
+        throw DecodingError.typeMismatch(MockModelBody.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Unable to decode MockModelBody"))
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+
+        switch self {
+        case .null:
+            try container.encodeNil()
+        case .json(let json):
+            try container.encode(json)
+        case .html(let html):
+            try container.encode(html)
+        case .xml(let xml):
+            try container.encode(xml)
+        case .graphql(let graphql):
+            try container.encode(graphql)
+        case .text(let text):
+            try container.encode(text)
+        }
+    }
+
+    public static func from(string: String) throws -> MockModelBody {
+        try parseContent(from: string)
+    }
+
+    private static func parseContent(from string: String) throws -> MockModelBody {
+        let trimmedString = string.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if trimmedString.isEmpty {
+            return .null
+        }
+
+        if let json = try? AnyCodableModel(jsonText: trimmedString) {
+            return .json(json)
+        }
+
+        if trimmedString.hasPrefix("<") && trimmedString.hasSuffix(">") {
+            let lowercased = trimmedString.lowercased()
+            if lowercased.contains("<!doctype html") ||
+                lowercased.contains("<html") ||
+                lowercased.contains("<head>") ||
+                lowercased.contains("<body>") {
+                return .html(string)
+            } else {
+                return .xml(string)
+            }
+        }
+
+        if (trimmedString.contains("query") && (trimmedString.contains("{") || trimmedString.contains("("))) ||
+            (trimmedString.contains("mutation") && (trimmedString.contains("{") || trimmedString.contains("("))) ||
+            (trimmedString.contains("subscription") && (trimmedString.contains("{") || trimmedString.contains("("))) {
+            return .graphql(string)
+        }
+
+        return .text(string)
     }
 }
