@@ -46,6 +46,9 @@
     "123" : {
 
     },
+    "Add New Filter" : {
+
+    },
     "Config key: `device`" : {
 
     },
@@ -56,6 +59,9 @@
 
     },
     "Config key: `userId` value: `1`" : {
+
+    },
+    "Create filter rules with AND/OR logic and specify the action (Mock/Do Not Mock). Each filter can be chained with others using AND/OR operators. Use 'Mock' or 'Do Not Mock' to determine the final action for matching requests.\n\nExample: 'Path contains api AND Method equals GET' -> Mock" : {
 
     },
     "Default behavior for all paths is `%@`." : {
@@ -73,7 +79,10 @@
     "Different mock" : {
 
     },
-    "Domains" : {
+    "Enabled Domains" : {
+
+    },
+    "Enhanced Mock Filter" : {
 
     },
     "Execute All Headers" : {
@@ -82,7 +91,10 @@
     "Execute All Queries" : {
 
     },
-    "Filters" : {
+    "filter by value" : {
+
+    },
+    "Filter value" : {
 
     },
     "Header Configs" : {
@@ -139,7 +151,7 @@
     "Mock Configurations" : {
 
     },
-    "Mock Filter" : {
+    "Mock Filters" : {
 
     },
     "Mocking Star uses exact matching of request paths to determine mocks. \nHowever, there are cases where path components can be ignored. Path Configurations allow you to modify the path matching style." : {
@@ -187,6 +199,9 @@
     "Settings" : {
 
     },
+    "Then" : {
+
+    },
     "trendyol.com" : {
 
     },
@@ -200,9 +215,6 @@
 
     },
     "Value" : {
-
-    },
-    "When saving a new mock, filter check is performed to determine whether mock should be saved. This filter check allows you to configure whether a mock should be saved or not. If there are multiple filters, having at least one filter that matches is sufficient for to be saved." : {
 
     },
     "You can find more information about header configurations in the Docs." : {

@@ -79,48 +79,48 @@ final class AppFilterConfigDomain: Equatable, Identifiable, Hashable {
 @Observable
 final class MockFilterConfigs: Equatable, Identifiable, Hashable {
     var id: UUID
-    var isActive: Bool
     var selectedLocation: FilterType
     var selectedFilter: FilterStyle
     var inputText: String
+    var logicType: FilterLogicType
 
-    init(isActive: Bool = true,
-         selectedLocation: FilterType = .all,
+    init(selectedLocation: FilterType = .all,
          selectedFilter: FilterStyle = .contains,
-         inputText: String) {
+         inputText: String,
+         logicType: FilterLogicType = .or) {
         id = .init()
-        self.isActive = isActive
         self.selectedLocation = selectedLocation
         self.selectedFilter = selectedFilter
         self.inputText = inputText
+        self.logicType = logicType
     }
 
     convenience init(mockFilterConfig: MockFilterConfigModel) {
-        self.init(isActive: mockFilterConfig.isActive,
-                  selectedLocation: mockFilterConfig.selectedLocation,
+        self.init(selectedLocation: mockFilterConfig.selectedLocation,
                   selectedFilter: mockFilterConfig.selectedFilter,
-                  inputText: mockFilterConfig.inputText)
+                  inputText: mockFilterConfig.inputText,
+                  logicType: mockFilterConfig.logicType)
     }
 
     func asMockFilterConfigModel() -> MockFilterConfigModel {
-        MockFilterConfigModel(isActive: isActive,
-                              selectedLocation: selectedLocation,
+        MockFilterConfigModel(selectedLocation: selectedLocation,
                               selectedFilter: selectedFilter,
-                              inputText: inputText)
+                              inputText: inputText,
+                              logicType: logicType)
     }
 
     static func == (lhs: MockFilterConfigs, rhs: MockFilterConfigs) -> Bool {
-        lhs.isActive == rhs.isActive &&
         lhs.selectedLocation == rhs.selectedLocation &&
         lhs.selectedFilter == rhs.selectedFilter &&
-        lhs.inputText == rhs.inputText
+        lhs.inputText == rhs.inputText &&
+        lhs.logicType == rhs.logicType
     }
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine(isActive)
         hasher.combine(selectedLocation)
         hasher.combine(selectedFilter)
         hasher.combine(inputText)
+        hasher.combine(logicType)
     }
 }
 

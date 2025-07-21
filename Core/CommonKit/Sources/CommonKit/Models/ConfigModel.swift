@@ -288,9 +288,9 @@ public final class HeaderConfigModel: Codable, Equatable, Identifiable, Hashable
 /// ```json
 ///{
 ///      "inputText" : "product",
-///      "isActive" : true,
 ///      "selectedFilter" : "contains",
-///      "selectedLocation" : "path"
+///      "selectedLocation" : "path",
+///      "logicType": "or"
 ///}
 /// ```
 /// Based on given config model, 
@@ -301,33 +301,42 @@ public final class HeaderConfigModel: Codable, Equatable, Identifiable, Hashable
 public final class MockFilterConfigModel: Codable, Equatable, Identifiable, Hashable {
     public var id: String = UUID().uuidString
 
-    public var isActive: Bool
     public var selectedLocation: FilterType
     public var selectedFilter: FilterStyle
     public var inputText: String
+    public var logicType: FilterLogicType
 
-    public init(isActive: Bool = true,
-                selectedLocation: FilterType = .all,
+    public init(selectedLocation: FilterType = .all,
                 selectedFilter: FilterStyle = .contains,
-                inputText: String) {
-        self.isActive = isActive
+                inputText: String,
+                logicType: FilterLogicType = .or) {
         self.selectedLocation = selectedLocation
         self.selectedFilter = selectedFilter
         self.inputText = inputText
+        self.logicType = logicType
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(String.self, forKey: .id)
+        self.selectedLocation = try container.decode(FilterType.self, forKey: .selectedLocation)
+        self.selectedFilter = try container.decode(FilterStyle.self, forKey: .selectedFilter)
+        self.inputText = try container.decode(String.self, forKey: .inputText)
+        self.logicType = (try? container.decode(FilterLogicType.self, forKey: .logicType)) ?? .or
     }
 
     public static func == (lhs: MockFilterConfigModel, rhs: MockFilterConfigModel) -> Bool {
-        lhs.isActive == rhs.isActive &&
         lhs.selectedLocation == rhs.selectedLocation &&
         lhs.selectedFilter == rhs.selectedFilter &&
-        lhs.inputText == rhs.inputText
+        lhs.inputText == rhs.inputText &&
+        lhs.logicType == rhs.logicType
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(isActive)
         hasher.combine(selectedLocation)
         hasher.combine(selectedFilter)
         hasher.combine(inputText)
+        hasher.combine(logicType)
     }
 }
 
@@ -362,6 +371,36 @@ public enum FilterStyle: String, Codable, CaseIterable {
         case .endWith: "End With"
         case .equal: "Equal"
         case .notEqual: "Not Equal"
+        }
+    }
+}
+
+public enum FilterLogicType: String, Codable, CaseIterable {
+    case and = "and"
+    case or = "or"
+    case mock = "mock"
+    case doNotMock = "doNotMock"
+    
+    public var title: String {
+        switch self {
+        case .and: "AND"
+        case .or: "OR"
+        case .mock: "Mock"
+        case .doNotMock: "Do Not Mock"
+        }
+    }
+    
+    public var isOperator: Bool {
+        switch self {
+        case .and, .or: true
+        case .mock, .doNotMock: false
+        }
+    }
+    
+    public var isAction: Bool {
+        switch self {
+        case .and, .or: false
+        case .mock, .doNotMock: true
         }
     }
 }

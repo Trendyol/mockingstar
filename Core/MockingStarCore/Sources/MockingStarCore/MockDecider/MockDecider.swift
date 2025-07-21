@@ -236,7 +236,7 @@ final class MockDecider {
 extension MockDecider: MockDeciderInterface {
     /// Active state mock filter configurations
     var mockFilters: [MockFilterConfigModel] {
-        configs.configs.mockFilterConfigs.filter(\.isActive)
+        configs.configs.mockFilterConfigs
     }
 
     /// Decides the appropriate mock response for a given URLRequest based on mock data.

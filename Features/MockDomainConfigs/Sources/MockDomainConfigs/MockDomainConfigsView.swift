@@ -19,115 +19,180 @@ public struct MockDomainConfigsView: View {
         self.viewModel = viewModel
     }
 
-    public var body: some View {
-        ScrollView {
-            Form {
-                LabeledContent("Mock Configurations") {
-                    VStack(alignment: .leading) {
-                        NavigationLink("Path Configurations") {
-                            MockPathConfigurations(viewModel: viewModel)
-                        }
-
-                        NavigationLink("Query Configurations") {
-                            MockQueryConfigurations(viewModel: viewModel)
-                        }
-
-                        NavigationLink("Header Configurations") {
-                            MockHeaderConfigurations(viewModel: viewModel)
-                        }
-                    }
+    @ViewBuilder
+    private func mockConfiguration() -> some View {
+        VStack(alignment: .leading) {
+            Text("Mock Configurations")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            HStack {
+                ToolBarButton(title: "Path Configurations", icon: "document.badge.gearshape", backgroundColor: .gray) {
+                    navigationStore.open(.configs_pathConfigs)
                 }
+                ToolBarButton(title: "Query Configurations", icon: "document.badge.gearshape", backgroundColor: .gray) {
+                    navigationStore.open(.configs_queryConfigs)
+                }
+                ToolBarButton(title: "Header Configurations", icon: "document.badge.gearshape", backgroundColor: .gray) {
+                    navigationStore.open(.configs_headerConfigs)
+                }
+            }
+        }
+    }
 
-                Picker(selection: $viewModel.appFilterConfigs.queryExecuteStyle) {
-                    ForEach(QueryExecuteStyle.allCases, id: \.self) { Text($0.title).tag($0) }
-                } label: {
+    @ViewBuilder
+    private func executionSelection() -> some View {
+        VStack(alignment: .leading) {
+            Text("Mock Configurations")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Picker(selection: $viewModel.appFilterConfigs.queryExecuteStyle) {
+                ForEach(QueryExecuteStyle.allCases, id: \.self) { Text($0.title).tag($0) }
+            } label: {
+                HStack {
                     Text("Query Execution")
                     HelpButton { QueryExecutionTip.isTipPresented.toggle() }
                 }
-                TipView(QueryExecutionTip())
-                    .padding(.bottom)
+            }
+            .frame(width: 400)
 
-                Picker(selection: $viewModel.appFilterConfigs.headerExecuteStyle) {
-                    ForEach(HeaderExecuteStyle.allCases, id: \.self) { Text($0.title).tag($0) }
-                } label: {
+            TipView(QueryExecutionTip())
+                .padding(.bottom)
+
+            Picker(selection: $viewModel.appFilterConfigs.headerExecuteStyle) {
+                ForEach(HeaderExecuteStyle.allCases, id: \.self) { Text($0.title).tag($0) }
+            } label: {
+                HStack {
                     Text("Header Execution")
                     HelpButton { HeaderExecutionTip.isTipPresented.toggle() }
                 }
-                TipView(HeaderExecutionTip())
-                    .padding(.bottom)
+            }
+            .frame(width: 400)
 
-                LabeledContent("Domains") {
-                    VStack {
-                        ForEach(viewModel.appFilterConfigs.domains) { domain in
-                            MockDomainConfigsDomainView(domain: domain) {
-                                withAnimation {
-                                    viewModel.withMutation(keyPath: \.appFilterConfigs) {
-                                        viewModel.appFilterConfigs.domains.removeAll(where: { $0.domain == domain.domain })
-                                    }
-                                }
-                            }
-                        }
-                    }
+            TipView(HeaderExecutionTip())
+                .padding(.bottom)
+        }
+    }
 
-                    Button {
-                        withAnimation {
+    @ViewBuilder
+    private func domains() -> some View {
+        VStack(alignment: .leading) {
+            Text("Enabled Domains")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(alignment: .top) {
+                VStack(alignment: .leading) {
+                    ForEach(viewModel.appFilterConfigs.domains) { domain in
+                        MockDomainConfigsDomainView(domain: domain) {
                             viewModel.withMutation(keyPath: \.appFilterConfigs) {
-                                viewModel.appFilterConfigs.domains.append(.init(domain: .init()))
+                                viewModel.appFilterConfigs.domains.removeAll(where: { $0.domain == domain.domain })
                             }
                         }
-                    } label: {
-                        Image(systemName: "plus.circle")
-                            .foregroundStyle(Color.accentColor)
-                    }
-                    .padding(.leading, 4)
-                }
-
-                LabeledContent("Path Matching Ratio") {
-                    VStack {
-                        TextField(value: $viewModel.appFilterConfigs.pathMatchingRatio, format: .number, label: EmptyView.init)
-                        Slider(value: $viewModel.appFilterConfigs.pathMatchingRatio, in: 0...1)
-
-                        TipView(PathMatchingRatioTip())
+                        .frame(width: 400)
                     }
                 }
 
-                Divider()
-
-                LabeledContent("Filters") {
-                    HStack(alignment: .top) {
-                        VStack {
-                            ForEach(viewModel.mocksFilters) { filter in
-                                MockDomainConfigsMockFilterView(filter: filter) {
-                                    withAnimation {
-                                        viewModel.withMutation(keyPath: \.mocksFilters) {
-                                            viewModel.mocksFilters.removeAll(where: { $0.id == filter.id })
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        Button {
-                            withAnimation {
-                                viewModel.withMutation(keyPath: \.mocksFilters) {
-                                    viewModel.mocksFilters.append(.init(inputText: .init()))
-                                }
-                            }
-                        } label: {
-                            Image(systemName: "plus.circle")
-                                .foregroundStyle(Color.accentColor)
+                Button {
+                    withAnimation {
+                        viewModel.withMutation(keyPath: \.appFilterConfigs) {
+                            viewModel.appFilterConfigs.domains.append(.init(domain: .init()))
                         }
                     }
+                } label: {
+                    Image(systemName: "plus.circle")
+                        .foregroundStyle(Color.accentColor)
                 }
+                .padding(.leading, 4)
+            }
+        }
+    }
 
-                TipView(MockFilterTip())
+    @ViewBuilder
+    private func pathMatchingRatio() -> some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text("Path Matching Ratio")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+
+                HelpButton { PathMatchingRatioTip.isTipPresented.toggle() }
 
                 Spacer()
             }
+
+            HStack {
+                TextField(value: $viewModel.appFilterConfigs.pathMatchingRatio, format: .number, label: EmptyView.init)
+                    .frame(width: 150)
+                    .textFieldStyle(.roundedBorder)
+                Slider(value: $viewModel.appFilterConfigs.pathMatchingRatio, in: 0...1)
+                    .frame(maxWidth: 150)
+            }
+
+            TipView(PathMatchingRatioTip())
         }
-        .contentMargins(.vertical, 20)
-        .padding(.horizontal)
-        .background(.background)
+    }
+
+    @ViewBuilder
+    private func filters() -> some View {
+        Section {
+            HStack {
+                Text("Mock Filters")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+
+                HelpButton { EnhancedMockFilterTip.isTipPresented.toggle() }
+
+                Spacer()
+            }
+
+            ForEach(Array(viewModel.mocksFilters.enumerated()), id: \.element.id) { index, filter in
+                EnhancedMockFilterView(
+                    filter: filter,
+                    isLast: index == viewModel.mocksFilters.count - 1,
+                    onDelete: {
+                        withAnimation {
+                            viewModel.removeFilter(id: filter.id)
+                        }
+                    }
+                )
+            }
+            .onMove { source, destination in
+                withAnimation {
+                    viewModel.moveFilter(from: source, to: destination)
+                }
+            }
+
+            ToolBarButton(title: "Add New Filter", icon: "camera.filters", backgroundColor: .gray) {
+                withAnimation { viewModel.addNewFilter() }
+            }
+
+            TipView(EnhancedMockFilterTip())
+        }
+    }
+
+    public var body: some View {
+        List {
+            mockConfiguration()
+                .listRowSeparator(.hidden)
+            Spacer().frame(height: 40)
+            executionSelection()
+                .listRowSeparator(.hidden)
+            Spacer().frame(height: 40)
+            domains()
+                .listRowSeparator(.hidden)
+            Spacer().frame(height: 40)
+            pathMatchingRatio()
+                .listRowSeparator(.hidden)
+            Spacer().frame(height: 40)
+            filters()
+                .listRowSeparator(.hidden)
+        }
+        .contentMargins(20, for: .scrollContent)
         .toolbar {
             ToolbarItemGroup {
                 ToolBarButton(title: "Save", icon: "tray.and.arrow.down", backgroundColor: .blue) {
@@ -181,55 +246,81 @@ struct MockDomainConfigsDomainView: View {
     }
 }
 
-struct MockDomainConfigsMockFilterView: View {
+struct EnhancedMockFilterView: View {
     @Bindable private var filter: MockFilterConfigs
+    private var isLast: Bool
     private var onDelete: () -> Void
 
-    init(filter: MockFilterConfigs, onDelete: @escaping () -> Void) {
+    init(filter: MockFilterConfigs, isLast: Bool, onDelete: @escaping () -> Void) {
         self.filter = filter
+        self.isLast = isLast
         self.onDelete = onDelete
     }
 
     var body: some View {
-        GeometryReader { geometryProxy in
-            HStack {
-                Toggle(isOn: $filter.isActive, label: EmptyView.init)
-                Picker(selection: $filter.selectedLocation, content: {
-                    ForEach(FilterType.allCases, id: \.self) { Text($0.title).tag($0) }
-                }, label: EmptyView.init).frame(width: geometryProxy.size.width * 0.15)
-                Picker(selection: $filter.selectedFilter, content: {
-                    ForEach(FilterStyle.allCases, id: \.self) { Text($0.title).tag($0) }
-                }, label: EmptyView.init).frame(width: geometryProxy.size.width * 0.15)
-                TextField(text: $filter.inputText, label: EmptyView.init)
-                    .textFieldStyle(.roundedBorder)
+        VStack(spacing: .zero) {
+            HStack(spacing: 8) {
+                Image(systemName: "line.3.horizontal")
+                    .foregroundColor(.secondary)
+                    .font(.caption)
 
-                Button {
-                    onDelete()
-                } label: {
-                    Image(systemName: "minus.circle")
-                        .foregroundStyle(Color.accentColor)
+                Group {
+                    Picker(selection: $filter.selectedLocation, content: {
+                        ForEach(FilterType.allCases, id: \.self) { Text($0.title).tag($0) }
+                    }, label: EmptyView.init)
+                    .frame(width: 100)
+
+                    Picker(selection: $filter.selectedFilter, content: {
+                        ForEach(FilterStyle.allCases, id: \.self) { Text($0.title).tag($0) }
+                    }, label: EmptyView.init)
+                    .frame(width: 120)
+
+                    TextField("Filter value", text: $filter.inputText, prompt: Text("filter by value"), axis: .vertical)
+                        .lineLimit(5)
+                        .textFieldStyle(.roundedBorder)
+
+                    Button("Remove", systemImage: "minus.circle", role: .destructive, action: onDelete)
                 }
             }
+            .padding(10)
+            .background(.quinary)
+            .clipShape(.rect(cornerRadius: 8))
+            .padding(.horizontal)
+
+
+            VStack(spacing: 1) {
+                if filter.logicType == .and { Image(systemName: "chevron.up.2") }
+                if filter.logicType == .or { Image(systemName: "chevron.up.dotted.2") }
+                if filter.logicType.isAction { Text("Then").foregroundColor(.secondary) }
+
+                Picker(selection: $filter.logicType, content: {
+                    ForEach(FilterLogicType.allCases.filter { isLast ? $0.isAction : $0.isOperator }, id: \.self) { type in
+                        Text(type.title).tag(type)
+                    }
+                }, label: EmptyView.init)
+                .pickerStyle(.segmented)
+                .frame(width: 100)
+
+                if filter.logicType == .and { Image(systemName: "chevron.down.2") }
+                if filter.logicType == .or { Image(systemName: "chevron.down.dotted.2") }
+            }
+            .padding(.vertical, 3)
         }
-        .padding(.bottom, 8)
     }
 }
 
-struct MockFilterTip: Tip {
-    var title: Text {
-        Text("Mock Filter")
-    }
-
-    var message: Text? {
-        Text("When saving a new mock, filter check is performed to determine whether mock should be saved. This filter check allows you to configure whether a mock should be saved or not. If there are multiple filters, having at least one filter that matches is sufficient for to be saved.")
-    }
-
-    var image: Image? {
-        Image(systemName: "camera.filters")
-    }
-}
-
+// MARK: - Tip Views
 struct PathMatchingRatioTip: Tip {
+    @Parameter
+    static var isTipPresented: Bool = false
+    var rules: [Rule] {
+        [
+            #Rule(Self.$isTipPresented) {
+                $0 == true
+            }
+        ]
+    }
+
     var title: Text {
         Text("Path Matching Ratio")
     }
@@ -288,5 +379,29 @@ struct HeaderExecutionTip: Tip {
 
     var image: Image? {
         Image(systemName: "questionmark")
+    }
+}
+
+struct EnhancedMockFilterTip: Tip {
+    @Parameter
+    static var isTipPresented: Bool = false
+    var rules: [Rule] {
+        [
+            #Rule(Self.$isTipPresented) {
+                $0 == true
+            }
+        ]
+    }
+
+    var title: Text {
+        Text("Enhanced Mock Filter")
+    }
+
+    var message: Text? {
+        Text("Create filter rules with AND/OR logic and specify the action (Mock/Do Not Mock). Each filter can be chained with others using AND/OR operators. Use 'Mock' or 'Do Not Mock' to determine the final action for matching requests.\n\nExample: 'Path contains api AND Method equals GET' -> Mock")
+    }
+
+    var image: Image? {
+        Image(systemName: "camera.filters")
     }
 }
