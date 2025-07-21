@@ -227,6 +227,51 @@ public final class MockingStarCore {
         }
     }
 
+    /// Evaluates a complete set of mock filters to determine if a request should be saved as a mock.
+    ///
+    /// This method processes an array of filter configurations and applies them sequentially using logical operations
+    /// to determine whether the given request should be automatically saved as a mock file. The evaluation considers
+    /// request properties like path, query parameters, HTTP method, status code, and scenario.
+    ///
+    /// ## Filter Processing Logic
+    ///
+    /// 1. **Individual Filter Evaluation**: Each filter is evaluated using ``mockFilterResult(_:request:scenario:statusCode:)``
+    /// 2. **Logical Combination**: Filter results are combined using AND/OR operators as specified in filter configurations
+    /// 3. **Action Determination**: The final action (Mock/Do Not Mock) determines the return value
+    ///
+    /// ## Example Usage
+    ///
+    /// ```swift
+    /// let request = URLRequest(url: URL(string: "https://api.example.com/users")!)
+    /// let filters = [
+    ///     MockFilterConfigModel(selectedLocation: .path, selectedFilter: .contains, inputText: "api", logicType: .mock)
+    /// ]
+    /// let shouldSave = executeMockFilterForShouldSave(for: request, scenario: "production", statusCode: 200, mockFilters: filters)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - request: The `URLRequest` being evaluated for mock saving
+    ///   - scenario: The current mock scenario name (used for scenario-based filtering)
+    ///   - statusCode: The HTTP response status code of the request
+    ///   - mockFilters: Array of ``MockFilterConfigModel`` configurations to apply
+    /// - Returns: `true` if the request should be saved as a mock, `false` otherwise
+    ///
+    /// - Note: If no filters are provided, the method returns `true` by default (allowing all requests to be saved)
+    /// - Warning: Complex filter chains may impact performance. Consider optimizing filter order and specificity.
+    ///
+    /// ## Filter Logic Flow
+    ///
+    /// The method follows this logical flow:
+    /// 1. Return `true` if no filters are configured (default allow behavior)
+    /// 2. Evaluate each filter against the request properties
+    /// 3. Combine results using logical operators (AND/OR) in sequence
+    /// 4. Apply the final action based on the last action-type filter (Mock/Do Not Mock)
+    ///
+    /// ## Related Documentation
+    ///
+    /// - ``mockFilterResult(_:request:scenario:statusCode:)`` - Evaluates individual filters
+    /// - ``MockFilterConfigModel`` - Filter configuration structure
+    /// - <doc:MockSaveFilters> - Complete guide to mock save filters
     func executeMockFilterForShouldSave(for request: URLRequest, scenario: String, statusCode: Int, mockFilters: [MockFilterConfigModel]) -> Bool {
         guard !mockFilters.isEmpty else { return true }
 
@@ -258,6 +303,74 @@ public final class MockingStarCore {
         return mockFilters.last(where: \.logicType.isAction)?.logicType == .mock ? combinedResult : !combinedResult
     }
 
+    /// Evaluates a single mock filter against request properties to determine if the filter condition is met.
+    ///
+    /// This method extracts relevant data from the request based on the filter's target location and applies
+    /// the specified filter style to determine if the condition matches. All string comparisons are performed
+    /// case-insensitively for consistent behavior across different input formats.
+    ///
+    /// ## Filter Evaluation Process
+    ///
+    /// 1. **Data Extraction**: Extract relevant strings based on filter location (path, query, method, etc.)
+    /// 2. **Case Normalization**: Convert both filter text and request data to lowercase
+    /// 3. **Condition Matching**: Apply the filter style (contains, equals, starts with, etc.)
+    /// 4. **Result Return**: Return boolean indicating if any extracted data matches the condition
+    ///
+    /// ## Supported Filter Locations
+    ///
+    /// - **All**: Combines path, query, scenario, method, and status code
+    /// - **Path**: URL path component (e.g., `/api/users/123`)
+    /// - **Query**: URL query string (e.g., `page=1&size=10`)
+    /// - **Scenario**: Current mock scenario name
+    /// - **Method**: HTTP method (GET, POST, PUT, DELETE, etc.)
+    /// - **Status Code**: HTTP response status code as string
+    ///
+    /// ## Filter Styles
+    ///
+    /// - **Contains**: Check if any data contains the filter text
+    /// - **Not Contains**: Check if no data contains the filter text
+    /// - **Starts With**: Check if any data starts with the filter text
+    /// - **Ends With**: Check if any data ends with the filter text  
+    /// - **Equal**: Check if any data exactly equals the filter text
+    /// - **Not Equal**: Check if no data exactly equals the filter text
+    ///
+    /// ## Example Usage
+    ///
+    /// ```swift
+    /// let filter = MockFilterConfigModel(
+    ///     selectedLocation: .path,
+    ///     selectedFilter: .contains,
+    ///     inputText: "users",
+    ///     logicType: .or
+    /// )
+    /// let request = URLRequest(url: URL(string: "https://api.example.com/api/users/123")!)
+    /// let matches = mockFilterResult(filter, request: request, scenario: "production", statusCode: 200)
+    /// // Returns: true (path contains "users")
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - filter: The ``MockFilterConfigModel`` configuration specifying the filter criteria
+    ///   - request: The `URLRequest` being evaluated
+    ///   - scenario: The current mock scenario name
+    ///   - statusCode: The HTTP response status code
+    /// - Returns: `true` if the filter condition is met, `false` otherwise
+    ///
+    /// - Note: All string comparisons are case-insensitive to ensure consistent matching behavior
+    /// - Important: The method returns `true` if ANY of the extracted filterable items match the condition
+    ///
+    /// ## Implementation Details
+    ///
+    /// The method uses Swift's pattern matching to extract appropriate data based on the filter location:
+    /// - URL components are extracted using `URLRequest.url` properties
+    /// - Query parameters are extracted as complete query string
+    /// - Status codes are converted to strings for text-based filtering
+    /// - All extracted strings are normalized to lowercase before comparison
+    ///
+    /// ## Related Documentation
+    ///
+    /// - ``executeMockFilterForShouldSave(for:scenario:statusCode:mockFilters:)`` - Combines multiple filter results
+    /// - ``MockFilterConfigModel`` - Filter configuration structure
+    /// - <doc:MockSaveFilters> - Complete guide to mock save filters
     func mockFilterResult(_ filter: MockFilterConfigModel, request: URLRequest, scenario: String, statusCode: Int) -> Bool {
         let filterableItems: [String] = switch filter.selectedLocation {
         case .all: [request.url?.path(percentEncoded: false),
