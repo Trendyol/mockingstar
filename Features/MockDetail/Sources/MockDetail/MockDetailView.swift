@@ -7,7 +7,7 @@
 
 import CommonKit
 import CommonViewsKit
-import JSONEditor
+import Editor
 import MockingStarCore
 import SwiftUI
 import TipKit
@@ -34,10 +34,10 @@ public struct MockDetailView: View {
         .navigationTitle(viewModel.mockModel.metaData.url.path())
         .toolbar {
             ToolbarItemGroup(placement: .navigation) {
-                if viewModel.jsonValidationMessage != nil {
-                    Label("JSON Validation Error", systemImage: "text.badge.xmark")
+                if viewModel.editorValidationMessage != nil {
+                    Label("Content Validation Error", systemImage: "text.badge.xmark")
                         .foregroundStyle(Color.red)
-                        .help(viewModel.jsonValidationMessage ?? "")
+                        .help(viewModel.editorValidationMessage ?? "")
                 }
             }
 
@@ -151,8 +151,8 @@ public struct MockDetailView: View {
         }
         .onChange(of: viewModel.shouldDismissView) { dismissIfNeeded() }
         .onChange(of: viewModel.shouldShowAlert) { dismissIfNeeded() }
-        .task(id: viewModel.mockModel.responseBody) { viewModel.jsonEditorModelTypeChanged() }
-        .task(id: viewModel.mockModel.responseHeader) { viewModel.jsonEditorModelTypeChanged() }
+        .task(id: viewModel.mockModel.responseBody) { viewModel.editorModelTypeChanged() }
+        .task(id: viewModel.mockModel.responseHeader) { viewModel.editorModelTypeChanged() }
         .task(id: viewModel.mockModel.metaData) { viewModel.checkUnsavedChanges() }
         .task { viewModel.checkFilePath() }
         .background(.background)

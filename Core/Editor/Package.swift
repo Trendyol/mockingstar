@@ -9,14 +9,20 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "JSONEditor",
-            targets: ["JSONEditor"]),
+            name: "Editor",
+            targets: ["Editor"]),
         .library(
             name: "DiffEditor",
             targets: ["DiffEditor"]),
     ],
+    dependencies: [
+        .package(path: "../CommonKit"),
+    ],
     targets: [
-        .target(name: "JSONEditor",
+        .target(name: "Editor",
+                dependencies: [
+                    "CommonKit",
+                ],
                 resources: [
                     .copy("Resources/MonacoEditor"),
                 ]),
@@ -25,8 +31,8 @@ let package = Package(
                     .copy("Resources/DiffEditor"),
                 ]),
 
-            .testTarget(name: "JSONEditorTests",
-                        dependencies: ["JSONEditor"]),
+            .testTarget(name: "EditorTests",
+                        dependencies: ["Editor"]),
 
             .testTarget(name: "DiffEditorTests",
                         dependencies: ["DiffEditor"]),

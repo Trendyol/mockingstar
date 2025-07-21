@@ -13,9 +13,9 @@
 		551918F22AF393C200B93430 /* SideBarPluginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551918F12AF393C200B93430 /* SideBarPluginView.swift */; };
 		551918F42AF393CF00B93430 /* SideBarPluginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551918F32AF393CF00B93430 /* SideBarPluginViewModel.swift */; };
 		551CF1AC2B725FB800AF91C7 /* QuickDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551CF1AB2B725FB800AF91C7 /* QuickDemo.swift */; };
+		553661142E269F33001E6A08 /* Editor in Frameworks */ = {isa = PBXBuildFile; productRef = 553661132E269F33001E6A08 /* Editor */; };
 		5553085A2B000B8A0001C0CC /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 555308592B000B8A0001C0CC /* Localizable.xcstrings */; };
 		5557F2712B074077008957B1 /* DiffEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 5557F2702B074077008957B1 /* DiffEditor */; };
-		5557F2732B074077008957B1 /* JSONEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 5557F2722B074077008957B1 /* JSONEditor */; };
 		5557F2752B074077008957B1 /* Logs in Frameworks */ = {isa = PBXBuildFile; productRef = 5557F2742B074077008957B1 /* Logs */; };
 		5557F2772B074077008957B1 /* MockDetail in Frameworks */ = {isa = PBXBuildFile; productRef = 5557F2762B074077008957B1 /* MockDetail */; };
 		5557F2792B074077008957B1 /* MockDomainConfigs in Frameworks */ = {isa = PBXBuildFile; productRef = 5557F2782B074077008957B1 /* MockDomainConfigs */; };
@@ -114,11 +114,11 @@
 				5557F2712B074077008957B1 /* DiffEditor in Frameworks */,
 				5557F27B2B074078008957B1 /* MockingStarCore in Frameworks */,
 				5557F2752B074077008957B1 /* Logs in Frameworks */,
-				5557F2732B074077008957B1 /* JSONEditor in Frameworks */,
 				5557F27F2B074157008957B1 /* MockList in Frameworks */,
 				55CBE2172B6A595D00A330F0 /* Sparkle in Frameworks */,
 				5557F2812B074166008957B1 /* PluginConfigs in Frameworks */,
 				5557F2832B074166008957B1 /* PluginCore in Frameworks */,
+				553661142E269F33001E6A08 /* Editor in Frameworks */,
 				5557F2772B074077008957B1 /* MockDetail in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -360,7 +360,6 @@
 			name = MockingStar;
 			packageProductDependencies = (
 				5557F2702B074077008957B1 /* DiffEditor */,
-				5557F2722B074077008957B1 /* JSONEditor */,
 				5557F2742B074077008957B1 /* Logs */,
 				5557F2762B074077008957B1 /* MockDetail */,
 				5557F2782B074077008957B1 /* MockDomainConfigs */,
@@ -370,6 +369,7 @@
 				5557F2802B074166008957B1 /* PluginConfigs */,
 				5557F2822B074166008957B1 /* PluginCore */,
 				55CBE2162B6A595D00A330F0 /* Sparkle */,
+				553661132E269F33001E6A08 /* Editor */,
 			);
 			productName = MockingStar;
 			productReference = 55B438292A6FE25A00E2A9DD /* MockingStar.app */;
@@ -884,13 +884,13 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		553661132E269F33001E6A08 /* Editor */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Editor;
+		};
 		5557F2702B074077008957B1 /* DiffEditor */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DiffEditor;
-		};
-		5557F2722B074077008957B1 /* JSONEditor */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = JSONEditor;
 		};
 		5557F2742B074077008957B1 /* Logs */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -6,18 +6,18 @@
 //
 
 import DiffEditor
-import JSONEditor
+import Editor
 import SwiftUI
 
 final class JsonEditorCache {
     static let shared = JsonEditorCache()
-    let editor: JSONEditorView
-    var content: JSONEditorContent = .init(content: "") {
+    let editor: EditorView
+    var content: EditorContent = .init(content: "") {
         didSet { updateContent() }
     }
 
     private init() {
-        editor = JSONEditorView()
+        editor = EditorView()
     }
 
     private func updateContent() {

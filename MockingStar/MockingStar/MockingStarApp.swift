@@ -7,7 +7,7 @@
 
 import CommonKit
 import CommonViewsKit
-import JSONEditor
+import Editor
 import Logs
 import MockingStarCore
 import Sparkle
@@ -31,7 +31,7 @@ struct MockingStarApp: App {
                 .environment(NotificationManager.shared)
                 .task {
                     await MainActor.run {
-                        JSONEditorView.warmUp()
+                        EditorView.warmUp()
                     }
                 }
                 .task {

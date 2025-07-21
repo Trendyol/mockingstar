@@ -227,24 +227,6 @@ public final class MockingStarCore {
             throw MockSaveResult.preventedByFilters
         }
 
-        guard body == "".data(using: .utf8) || (try? JSONSerialization.jsonObject(with: body)) != nil else {
-            logger.warning("Mock won't save due to response body is not json, path: \(request.url?.path() ?? "-")", metadata: [
-                "traceUrl": .string(request.url?.absoluteString ?? "")
-            ])
-            throw MockSaveResult.responseBodyFormatError
-        }
-
-        if let requestBody = request.httpBody {
-            if requestBody == "".data(using: .utf8) {
-                request.httpBody = nil
-            } else if (try? JSONSerialization.jsonObject(with: requestBody)) == nil {
-                logger.warning("Mock won't save due to request body is not json, path: \(request.url?.path() ?? "-")", metadata: [
-                    "traceUrl": .string(request.url?.absoluteString ?? "")
-                ])
-                throw MockSaveResult.requestBodyFormatError
-            }
-        }
-
         do {
             logger.debug("Saving file", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")

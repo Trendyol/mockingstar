@@ -25,6 +25,9 @@
     "Clipboard" : {
 
     },
+    "Content Validation Error" : {
+
+    },
     "Copy to..." : {
 
     },
@@ -68,9 +71,6 @@
 
     },
     "Is Modified" : {
-
-    },
-    "JSON Validation Error" : {
 
     },
     "Load async Plugin" : {
