@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 2.1.0</title>
+            <description>
+                <![CDATA[
+
+                ]]>
+            </description>
+            <pubDate>Pzt, 21 Tem 2025 20:02:40 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/2.1.0-16/MockingStar-App.zip"
+            sparkle:version="16" sparkle:shortVersionString="2.1.0"
+            sparkle:edSignature="jKa5OsW8t0EDQ6lYyh4Yjm91vF1/XI2G0wXv5M3ENz8ybUum5Lux1n0+jJsr4PjD0k9RL3oNnneuT2TO9GKUBQ==" length="7605544"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 2.0.1</title>
             <description>
                 <![CDATA[
