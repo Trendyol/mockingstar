@@ -180,38 +180,7 @@ public final class MockingStarCore {
         ])
         var request = request
 
-        var shouldSave = decider.mockFilters.contains(where: { filter in
-            let filterableItems: [String] = switch filter.selectedLocation {
-            case .all: [request.url?.path(percentEncoded: false),
-                        request.url?.query(percentEncoded: false),
-                        flags.scenario,
-                        request.httpMethod,
-                        String(status)].compactMap { $0 }
-            case .path: [request.url?.path(percentEncoded: false)].compactMap { $0 }
-            case .query: [request.url?.query(percentEncoded: false)].compactMap { $0 }
-            case .scenario: [flags.scenario].compactMap { $0 }
-            case .method: [request.httpMethod].compactMap { $0 }
-            case .statusCode: [String(status)]
-            }
-
-            return filterableItems.contains(where: {
-                let lhs = $0.lowercased()
-                let rhs = filter.inputText.lowercased()
-
-                switch filter.selectedFilter {
-                case .contains: return lhs.contains(rhs)
-                case .notContains: return !lhs.contains(rhs)
-                case .startWith:  return lhs.starts(with: rhs)
-                case .endWith: return lhs.starts(with: rhs)
-                case .equal: return lhs == rhs
-                case .notEqual: return lhs != rhs
-                }
-            })
-        })
-        
-        if decider.mockFilters.isEmpty {
-            shouldSave = true
-        }
+        let shouldSave = executeMockFilterForShouldSave(for: request, scenario: flags.scenario ?? "", statusCode: status, mockFilters: decider.mockFilters)
 
         if let pathComponents = request.url?.pathComponents, pathComponents.count >= 10 {
             logger.error("Request path components count more than limit.", metadata: [
@@ -256,6 +225,66 @@ public final class MockingStarCore {
             ])
             throw error
         }
+    }
+
+    func executeMockFilterForShouldSave(for request: URLRequest, scenario: String, statusCode: Int, mockFilters: [MockFilterConfigModel]) -> Bool {
+        guard !mockFilters.isEmpty else { return true }
+
+        var results: [Bool] = []
+        var filterLogics: [FilterLogicType] = []
+
+        for filter in mockFilters {
+            results.append(mockFilterResult(filter, request: request, scenario: scenario, statusCode: statusCode))
+
+            if filter.logicType.isOperator {
+                filterLogics.append(filter.logicType)
+            }
+        }
+
+        guard !results.isEmpty else { return true }
+        var combinedResult: Bool = results[0]
+
+        for filter in zip(results[1...], filterLogics).map({ (result: $0, logic: $1) }) {
+            switch filter.logic {
+            case .and:
+                combinedResult = combinedResult && filter.result
+            case .or:
+                combinedResult = combinedResult || filter.result
+            default:
+                break
+            }
+        }
+
+        return mockFilters.last(where: \.logicType.isAction)?.logicType == .mock ? combinedResult : !combinedResult
+    }
+
+    func mockFilterResult(_ filter: MockFilterConfigModel, request: URLRequest, scenario: String, statusCode: Int) -> Bool {
+        let filterableItems: [String] = switch filter.selectedLocation {
+        case .all: [request.url?.path(percentEncoded: false),
+                    request.url?.query(percentEncoded: false),
+                    scenario,
+                    request.httpMethod,
+                    String(statusCode)].compactMap { $0 }
+        case .path: [request.url?.path(percentEncoded: false)].compactMap { $0 }
+        case .query: [request.url?.query(percentEncoded: false)].compactMap { $0 }
+        case .scenario: [scenario].compactMap { $0 }
+        case .method: [request.httpMethod].compactMap { $0 }
+        case .statusCode: [String(statusCode)]
+        }
+
+        return filterableItems.contains(where: {
+            let lhs = $0.lowercased()
+            let rhs = filter.inputText.lowercased()
+
+            switch filter.selectedFilter {
+            case .contains: return lhs.contains(rhs)
+            case .notContains: return !lhs.contains(rhs)
+            case .startWith: return lhs.starts(with: rhs)
+            case .endWith: return lhs.hasSuffix(rhs)
+            case .equal: return lhs == rhs
+            case .notEqual: return lhs != rhs
+            }
+        })
     }
 
     private func saveFile(request: URLRequest, flags: MockServerFlags, status: Int, body: Data, headers: [String: String]) async throws {

@@ -150,8 +150,51 @@ public final class MockDomainConfigsViewModel {
         pathConfigs = configs.pathConfigs.map { .init(pathConfig: $0) }
         queryConfigs = configs.queryConfigs.map { .init(queryConfig: $0) }
         headerConfigs = configs.headerConfigs.map { .init(headerConfig: $0) }
+        migrateFilterLogicTypes()
     }
 
+    private func migrateFilterLogicTypes() {
+        guard !mocksFilters.isEmpty else { return }
+        
+        for (index, filter) in mocksFilters.enumerated() {
+            if index == mocksFilters.count - 1 {
+                if filter.logicType.isOperator {
+                    filter.logicType = .mock
+                }
+            } else {
+                if filter.logicType.isAction {
+                    filter.logicType = .or
+                }
+            }
+        }
+    }
+    
+    func addNewFilter() {
+        withMutation(keyPath: \.mocksFilters) {
+            if let lastFilter = mocksFilters.last {
+                if lastFilter.logicType.isAction {
+                    lastFilter.logicType = .or
+                }
+            }
+            
+            mocksFilters.append(.init(inputText: "", logicType: .mock))
+        }
+    }
+    
+    func removeFilter(id: UUID) {
+        withMutation(keyPath: \.mocksFilters) {
+            mocksFilters.removeAll(where: { $0.id == id })
+            migrateFilterLogicTypes()
+        }
+    }
+    
+    func moveFilter(from source: IndexSet, to destination: Int) {
+        withMutation(keyPath: \.mocksFilters) {
+            mocksFilters.move(fromOffsets: source, toOffset: destination)
+            migrateFilterLogicTypes()
+        }
+    }
+    
     private func listenMockDiscover() {
         Task {
             for await result in mockDiscover.mockDiscoverResult {
