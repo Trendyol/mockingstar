@@ -474,7 +474,8 @@ extension MockingStarCore: ServerMockHandlerInterface {
         } catch {
             logger.info("Mock Trace", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? ""),
-                "responseType": "error"
+                "responseType": "error",
+                "errorMessage": "\(error.localizedDescription)",
             ])
             throw error
         }
