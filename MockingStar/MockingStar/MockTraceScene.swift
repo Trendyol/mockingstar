@@ -10,10 +10,11 @@ import SwiftUI
 
 struct MockTraceScene: Scene {
     @AppStorage("isFloatingMockTraceViewEnabled") private var isFloatingMockTraceViewEnabled = false
+    private let viewModel = MockTraceOverlayViewModel()
 
     var body: some Scene {
         Window("Mock Trace", id: "mock-trace") {
-            MockTraceOverlayView()
+            MockTraceOverlayView(viewModel: viewModel)
                 .ultraThinMaterialWindow()
         }
         .floatingWindow(isFloatingMockTraceViewEnabled)

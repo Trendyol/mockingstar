@@ -10,11 +10,11 @@ import CommonKit
 import SwiftUI
 
 @Observable
-final class MockTraceOverlayViewModel {
+public final class MockTraceOverlayViewModel {
     private let logStreamHandler: LogStreamHandlerInterface
     private(set) var logs: [LogModel] = []
 
-    init(logStreamHandler: LogStreamHandlerInterface = LogStreamHandler.shared) {
+    public init(logStreamHandler: LogStreamHandlerInterface = LogStreamHandler.shared) {
         self.logStreamHandler = logStreamHandler
     }
 

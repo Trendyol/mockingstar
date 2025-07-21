@@ -10,11 +10,13 @@ import CommonKit
 import CommonViewsKit
 
 public struct MockTraceOverlayView: View {
-    private let viewModel = MockTraceOverlayViewModel()
+    private let viewModel: MockTraceOverlayViewModel
     @State private var isFollowing: Bool = false
     @AppStorage("isFloatingMockTraceViewEnabled") private var isFloatingMockTraceViewEnabled = false
 
-    public init() {}
+    public init(viewModel: MockTraceOverlayViewModel) {
+        self.viewModel = viewModel
+    }
 
     public var body: some View {
         VStack(spacing: 0) {
@@ -107,7 +109,8 @@ public struct MockTraceOverlayView: View {
                     .background(responseTypeColor(entry.metadata["responseType"].orEmpty))
                     .foregroundColor(.white)
                     .cornerRadius(4)
-                
+                    .help(entry.metadata["errorMessage"].orEmpty)
+
                 Spacer()
             }
             
