@@ -28,7 +28,9 @@ public struct ActionSelectableButton<MenuContent: View>: View {
                 action()
             } label: {
                 HStack {
-                    Image(systemName: icon)
+                    if !icon.isEmpty {
+                        Image(systemName: icon)
+                    }
                     Text(title)
                 }
                 .padding(.horizontal)
