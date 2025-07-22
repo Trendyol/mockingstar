@@ -42,11 +42,6 @@ struct MockingStarApp: App {
                     
                     try? Tips.configure([.datastoreLocation(.applicationDefault)])
                 }
-                .task {
-                    if !updaterController.updater.automaticallyChecksForUpdates {
-                        updaterController.updater.checkForUpdatesInBackground()
-                    }
-                }
         }
         .defaultSize(width: (NSScreen.main?.visibleFrame.size.width ?? 1000) / 1.5, height: (NSScreen.main?.visibleFrame.size.height ?? 600) / 1.5)
         .commands {

@@ -25,6 +25,7 @@ public struct PluginConfigView: View {
             }
 
             Spacer()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)

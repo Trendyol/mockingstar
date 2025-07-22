@@ -26,6 +26,12 @@ struct SidebarView: View {
                 SideBarWorkspaceView()
             }
 
+            if #available(macOS 15.0, *) {
+                if !Bundle.main.bundlePath.contains("/Application/") {
+                    TipView(MoveApplicationTip())
+                }
+            }
+
             Section("App") {
                 SideBarConfigsView(title: "Mock List", isSelected: NavigationStore.shared.path.isEmpty)
                     .onTapGesture {
@@ -180,4 +186,21 @@ struct BugReport: Tip {
     var image: Image? {
         Image(systemName: "ladybug.fill")
     }
+}
+
+@available(macOS 15.0, *)
+struct MoveApplicationTip: Tip {
+    var title: Text = Text("Please move Mocking Star to Applications folder")
+
+    var actions: [Action] {
+        Action(title: "Show in Finder") {
+            NSWorkspace.shared.selectFile(Bundle.main.bundlePath,
+                                          inFileViewerRootedAtPath: Bundle.main.bundleURL.deletingLastPathComponent().path())
+        }
+    }
+
+    var options: [any TipOption] = [
+        MaxDisplayDuration(20),
+        MaxDisplayCount(100)
+    ]
 }
