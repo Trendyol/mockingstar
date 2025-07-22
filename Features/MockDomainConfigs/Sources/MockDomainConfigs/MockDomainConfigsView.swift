@@ -177,22 +177,24 @@ public struct MockDomainConfigsView: View {
 
     public var body: some View {
         List {
-            mockConfiguration()
-                .listRowSeparator(.hidden)
-            Spacer().frame(height: 40)
-            executionSelection()
-                .listRowSeparator(.hidden)
-            Spacer().frame(height: 40)
-            domains()
-                .listRowSeparator(.hidden)
-            Spacer().frame(height: 40)
-            pathMatchingRatio()
-                .listRowSeparator(.hidden)
-            Spacer().frame(height: 40)
-            filters()
-                .listRowSeparator(.hidden)
+            Group {
+                mockConfiguration()
+                    .listRowSeparator(.hidden)
+                Spacer().frame(height: 40)
+                executionSelection()
+                    .listRowSeparator(.hidden)
+                Spacer().frame(height: 40)
+                domains()
+                    .listRowSeparator(.hidden)
+                Spacer().frame(height: 40)
+                pathMatchingRatio()
+                    .listRowSeparator(.hidden)
+                Spacer().frame(height: 40)
+                filters()
+                    .listRowSeparator(.hidden)
+            }
+            .contentMargins(20, for: .scrollContent)
         }
-        .contentMargins(20, for: .scrollContent)
         .toolbar {
             ToolbarItemGroup {
                 ToolBarButton(title: "Save", icon: "tray.and.arrow.down", backgroundColor: .blue) {
@@ -216,6 +218,14 @@ public struct MockDomainConfigsView: View {
             }
         }
         .task(id: mockDomain) { viewModel.mockDomainUpdated(mockDomain: mockDomain) }
+        .onChange(of: viewModel.appFilterConfigs.domains) { viewModel.checkUnsavedChanges() }
+        .onChange(of: viewModel.appFilterConfigs.headerExecuteStyle) { viewModel.checkUnsavedChanges() }
+        .onChange(of: viewModel.appFilterConfigs.queryExecuteStyle) { viewModel.checkUnsavedChanges() }
+        .onChange(of: viewModel.appFilterConfigs.pathMatchingRatio) { viewModel.checkUnsavedChanges() }
+        .onChange(of: viewModel.mocksFilters) { viewModel.checkUnsavedChanges() }
+        .modifier(ChangeConfirmationViewModifier(hasChange: $viewModel.shouldShowUnsavedIndicator) {
+            viewModel.saveChanges()
+        })
     }
 }
 

@@ -33,6 +33,7 @@ public struct MockHeaderConfigurations: View {
                 viewModel.withMutation(keyPath: \.headerConfigs) {
                     viewModel.headerConfigs.removeAll(where: { selections.contains($0.id) })
                     self.selected = nil
+                    viewModel.checkUnsavedChanges()
                 }
             }
         }, primaryAction: { selections in
@@ -137,6 +138,7 @@ public struct MockHeaderConfigurations: View {
                         viewModel.withMutation(keyPath: \.headerConfigs) {
                             viewModel.headerConfigs.removeAll(where: { selected == $0.id })
                             self.selected = nil
+                            viewModel.checkUnsavedChanges()
                         }
                     }
                 }
@@ -170,6 +172,9 @@ public struct MockHeaderConfigurations: View {
         .navigationBarBackButtonHidden(false)
         .navigationTitle("Header Configs")
         .task(id: mockDomain) { viewModel.mockDomainUpdated(mockDomain: mockDomain) }
+        .modifier(ChangeConfirmationViewModifier(hasChange: $viewModel.shouldShowUnsavedIndicator) {
+            viewModel.saveChanges()
+        })
     }
 
     @ViewBuilder
@@ -477,6 +482,7 @@ public struct MockHeaderConfigurations: View {
                 selected = config.id
             }
         }
+        viewModel.checkUnsavedChanges()
     }
 }
 

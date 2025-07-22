@@ -23,7 +23,8 @@ public final class MockDomainConfigsViewModel {
     var pathConfigs: [MockPathConfigModel] = []
     var queryConfigs: [MockQueryConfigModel] = []
     var headerConfigs: [MockHeaderConfigModel] = []
-    
+    var shouldShowUnsavedIndicator: Bool = false
+
     private(set) var allPaths: [String] = []
 
     private var configs: ConfigModel = ConfigModel()
@@ -103,10 +104,20 @@ public final class MockDomainConfigsViewModel {
             try fileManager.updateFileContent(path: url.path(), content: updatedConfigs)
             configs = updatedConfigs
             notificationManager.show(title: "All changes saved", color: .green)
+            shouldShowUnsavedIndicator = false
         } catch {
             logger.error("Save configs error: \(error)")
             notificationManager.show(title: "Save configs error: \(error)", color: .red)
         }
+    }
+
+    func checkUnsavedChanges() {
+        let updatedConfigs = ConfigModel(pathConfigs: pathConfigs.map { $0.asPathConfigModel() },
+                                         queryConfigs: queryConfigs.map { $0.asQueryConfigModel() },
+                                         headerConfigs: headerConfigs.map { $0.asHeaderConfigModel() },
+                                         mockFilterConfigs: mocksFilters.map { $0.asMockFilterConfigModel() },
+                                         appFilterConfigs: appFilterConfigs.asAppConfigModel())
+        shouldShowUnsavedIndicator = updatedConfigs != configs
     }
 
     func queryExecuteStyle(for path: String) -> QueryExecuteStyle {

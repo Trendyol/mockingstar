@@ -36,6 +36,7 @@ public struct MockPathConfigurations: View {
                 viewModel.withMutation(keyPath: \.pathConfigs) {
                     viewModel.pathConfigs.removeAll(where: { $0.id == selected })
                     self.selected = nil
+                    viewModel.checkUnsavedChanges()
                 }
             }
         }, primaryAction: { selections in
@@ -105,6 +106,7 @@ public struct MockPathConfigurations: View {
                         viewModel.withMutation(keyPath: \.pathConfigs) {
                             viewModel.pathConfigs.removeAll(where: { $0.id == selected })
                             self.selected = nil
+                            viewModel.checkUnsavedChanges()
                         }
                     }
                 }
@@ -142,6 +144,9 @@ public struct MockPathConfigurations: View {
             queryExecuteStyle = viewModel.appFilterConfigs.queryExecuteStyle
             headerExecuteStyle = viewModel.appFilterConfigs.headerExecuteStyle
         }
+        .modifier(ChangeConfirmationViewModifier(hasChange: $viewModel.shouldShowUnsavedIndicator) {
+            viewModel.saveChanges()
+        })
     }
 
     private func recommendedPaths() -> [String] {
@@ -205,6 +210,7 @@ public struct MockPathConfigurations: View {
                 selected = config.id
             }
         }
+        viewModel.checkUnsavedChanges()
     }
 }
 

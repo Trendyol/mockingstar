@@ -34,6 +34,7 @@ public struct MockQueryConfigurations: View {
                 viewModel.withMutation(keyPath: \.queryConfigs) {
                     viewModel.queryConfigs.removeAll(where: { $0.id == selected })
                     self.selected = nil
+                    viewModel.checkUnsavedChanges()
                 }
             }
         }, primaryAction: { selections in
@@ -139,6 +140,7 @@ public struct MockQueryConfigurations: View {
                         viewModel.withMutation(keyPath: \.queryConfigs) {
                             viewModel.queryConfigs.removeAll(where: { $0.id == selected })
                             self.selected = nil
+                            viewModel.checkUnsavedChanges()
                         }
                     }
                 }
@@ -172,6 +174,9 @@ public struct MockQueryConfigurations: View {
         .navigationBarBackButtonHidden(false)
         .navigationTitle("Query Configs")
         .task(id: mockDomain) { viewModel.mockDomainUpdated(mockDomain: mockDomain) }
+        .modifier(ChangeConfirmationViewModifier(hasChange: $viewModel.shouldShowUnsavedIndicator) {
+            viewModel.saveChanges()
+        })
     }
 
     @ViewBuilder
@@ -450,6 +455,7 @@ public struct MockQueryConfigurations: View {
                 selected = config.id
             }
         }
+        viewModel.checkUnsavedChanges()
     }
 }
 
