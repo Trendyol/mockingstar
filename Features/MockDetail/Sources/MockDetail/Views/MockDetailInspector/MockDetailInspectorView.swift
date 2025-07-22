@@ -34,8 +34,10 @@ struct MockDetailInspectorView: View {
                     }
                     Divider()
                     LabeledContent("Path", value: viewModel.mockModel.metaData.url.path())
+                        .textSelection(.enabled)
                     Divider()
                     LabeledContent("Query", value: viewModel.mockModel.metaData.url.query() ?? "")
+                        .textSelection(.enabled)
                 }
                 .padding(6)
             } label: {

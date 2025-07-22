@@ -274,7 +274,12 @@ extension MockDecider: MockDeciderInterface {
         var folderContents: [URL] = []
 
         do {
-            folderContents = try fileManager.folderContent(at: fileUrlBuilder.mockListFolderUrl(mocksFolderURL: urlForSearch, requestPath: url.path().encodedUrlPathValue, method: request.httpMethod.orEmpty.uppercased()))
+            var path = url.path().encodedUrlPathValue
+            if path.isEmpty {
+                path = url.host() ?? path
+            }
+
+            folderContents = try fileManager.folderContent(at: fileUrlBuilder.mockListFolderUrl(mocksFolderURL: urlForSearch, requestPath: path, method: request.httpMethod.orEmpty.uppercased()))
         } catch {
             logger.error("Folder contents error: \(error)", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")

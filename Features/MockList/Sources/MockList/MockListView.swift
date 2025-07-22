@@ -45,8 +45,13 @@ public struct MockListView: View {
 
                 TableColumn("Request", value: \.metaData.url.absoluteString) { mock in
                     VStack(alignment: .leading) {
-                        Text(mock.metaData.url.path())
-                            .help(mock.metaData.url.path())
+                        if !mock.metaData.url.path().isEmpty {
+                            Text(mock.metaData.url.path())
+                                .help(mock.metaData.url.path())
+                        } else {
+                            Text(mock.metaData.url.absoluteString)
+                                .help(mock.metaData.url.absoluteString)
+                        }
 
                         if let query = mock.metaData.url.query() {
                             Text(query)
