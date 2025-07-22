@@ -8,6 +8,7 @@ public protocol ServerInterface {
     var serverType: String { get }
 
     func startServer(onError: @escaping (Error) -> Void)
+    func startServer() async throws
     func stopServer()
     func registerMockHandler(_ handler: ServerMockHandlerInterface)
     func registerMockSearchHandler(_ handler: ServerMockSearchHandlerInterface)
@@ -52,7 +53,8 @@ public final class Server: ServerInterface {
         task = Task(priority: .high) {
             do {
 #if os(macOS)
-                serverActivity = ProcessInfo.processInfo.beginActivity(options: ProcessInfo.ActivityOptions.userInitiated, reason: "Mock Server")
+                serverActivity = ProcessInfo.processInfo.beginActivity(options: ProcessInfo.ActivityOptions.userInitiated,
+                                                                       reason: "Mock Server")
 #endif
                 await prepareServer()
                 try await server.start()
@@ -61,6 +63,29 @@ public final class Server: ServerInterface {
                 logger.critical("Server starting error: \(error)")
                 onError(error)
             }
+        }
+    }
+
+    public func startServer() async throws {
+        logger.debug("Server starting...")
+
+#if os(macOS)
+        if let serverActivity = serverActivity {
+            ProcessInfo.processInfo.endActivity(serverActivity)
+        }
+#endif
+
+        do {
+#if os(macOS)
+            serverActivity = ProcessInfo.processInfo.beginActivity(options: ProcessInfo.ActivityOptions.userInitiated,
+                                                                   reason: "Mock Server")
+#endif
+            await prepareServer()
+            try await server.start()
+        } catch {
+            guard !(error is CancellationError) else { return }
+            logger.critical("Server starting error: \(error)")
+            throw error
         }
     }
 

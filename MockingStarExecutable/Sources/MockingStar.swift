@@ -10,48 +10,41 @@ import Foundation
 import ArgumentParser
 
 @main
-struct MockingStar: ParsableCommand {
+struct MockingStar: AsyncParsableCommand {
     static var configuration = CommandConfiguration(
         abstract: "MockingStar powerful mock server",
         subcommands: [Start.self],
         defaultSubcommand: Start.self)
+}
 
-    struct Start: ParsableCommand {
-        static var configuration = CommandConfiguration(
-            commandName: "start",
-            abstract: "Start mock server")
+private struct Start: AsyncParsableCommand {
+    static var configuration = CommandConfiguration(
+        commandName: "start",
+        abstract: "Start Mocking Star")
 
-        @Option(name: .shortAndLong, help: "Logs folder")
-        var logsFolder: String? = nil
+    @Option(name: .shortAndLong, help: "Logs folder")
+    var logsFolder: String? = nil
 
-        @Option(name: .shortAndLong, help: "HTTP Server Port")
-        var port: UInt16 = 8008
+    @Option(name: .shortAndLong, help: "HTTP Server Port")
+    var port: UInt16 = 8008
 
-        @Argument(help: "Mocks folder path")
-        var folder: String
+    @Argument(help: "Mocks folder path")
+    var folder: String
 
-        func run() throws {
-            @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
-            workspaces = [Workspace(name: "Workspace", path: folder, bookmark: Data())]
+    func run() async throws {
+        @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
+        workspaces = [Workspace(name: "Workspace", path: folder, bookmark: Data())]
 
-            if let logsFolder, !logsFolder.isEmpty {
-                Logger.Constant.logsWriteFilePath = logsFolder
-            }
-            
-            let server = HTTPServer(port: port)
-            server.startServer()
-
-            RunLoop.main.run()
+        if let logsFolder, !logsFolder.isEmpty {
+            Logger.Constant.customLogFolderPath = logsFolder
         }
+
+        let server = HTTPServer(port: port)
+        try await server.startServer()
     }
+}
 
-    struct Stop: ParsableCommand {
-        static var configuration = CommandConfiguration(
-            commandName: "stop",
-            abstract: "Stop mock server")
-
-        func run() throws {
-
+            }
         }
     }
 }

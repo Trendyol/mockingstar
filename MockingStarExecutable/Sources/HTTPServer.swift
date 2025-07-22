@@ -21,10 +21,12 @@ final class HTTPServer {
         server.registerScenarioHandler(mockingStarCore)
     }
 
-    func startServer() {
-        server.startServer { error in
+    func startServer() async throws {
+        do {
+            try await server.startServer()
+        } catch {
             guard !(error is CancellationError) else { return }
-            fatalError(error.localizedDescription)
+            throw error
         }
     }
 
