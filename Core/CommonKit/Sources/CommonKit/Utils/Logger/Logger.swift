@@ -11,7 +11,7 @@ import Logging
 extension Logger {
     public enum Constant {
         static let subsystem = "com.trendyol.MockingStar"
-        public static var logsWriteFilePath: String = ""
+        public static var customLogFolderPath: String = ""
     }
 }
 
@@ -69,7 +69,7 @@ public final class Logger {
             logHandlers.append(ConsoleLogHandler())
 #endif
 
-            if !Constant.logsWriteFilePath.isEmpty {
+            if !Constant.customLogFolderPath.isEmpty {
                 logHandlers.append(LogFileLogHandler.shared)
             }
 

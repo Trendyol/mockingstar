@@ -14,12 +14,17 @@ final class LogFileLogHandler: LogHandler {
     private let fileHandle: FileHandle?
 
     private init() {
-        let fileURL = URL(filePath: Logger.Constant.logsWriteFilePath)
-        if FileManager.default.fileExists(atPath: fileURL.path()) {
-            try? FileManager.default.removeItem(at: fileURL)
-        }
+        let fileURL: URL
 
-        FileManager.default.createFile(atPath: fileURL.path(), contents: nil)
+        let customFolderExist = FileManager.default.fileOrDirectoryExists(atPath: Logger.Constant.customLogFolderPath)
+        if customFolderExist.isExist && customFolderExist.isDirectory {
+            fileURL = URL(filePath: Logger.Constant.customLogFolderPath).appending(path: "MockingStar.log")
+            FileManager.default.createFile(atPath: fileURL.path(), contents: nil)
+        } else if customFolderExist.isExist {
+            fileURL = URL(filePath: Logger.Constant.customLogFolderPath)
+        } else {
+            fatalError("Custom mocks folder not exist.")
+        }
 
         self.fileURL = fileURL
         self.fileHandle = try? FileHandle(forWritingTo: fileURL)
@@ -35,5 +40,6 @@ final class LogFileLogHandler: LogHandler {
 
         let data = "\(log.date.formatted(.iso8601)) \(log.severity.rawValue) \(log.message)".data(using: .utf8) ?? .init()
         fileHandle?.write(data)
+        fileHandle?.write("\n".data(using: .utf8) ?? .init())
     }
 }

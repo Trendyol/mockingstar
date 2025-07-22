@@ -22,7 +22,7 @@ public final class LogStreamHandler: LogHandler, LogStreamHandlerInterface {
     private let jsonDecoder = JSONDecoder()
 
     private init() {
-        fileURL = URL.cachesDirectory.appending(component: "logs.json")
+        fileURL = URL.cachesDirectory.appending(component: "mockingstarlogs.json")
     }
 
     public func log(level: Logging.Logger.Level, message: Logging.Logger.Message, metadata: Logging.Logger.Metadata?, source: String, file: String, function: String, line: UInt) {

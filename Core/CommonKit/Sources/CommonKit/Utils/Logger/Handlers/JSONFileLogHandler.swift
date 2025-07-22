@@ -16,7 +16,7 @@ final class JSONFileLogHandler: LogHandler {
     private let jsonEncoder = JSONEncoder()
 
     private init() {
-        let fileURL = URL.cachesDirectory.appending(component: "logs.json")
+        let fileURL = URL.cachesDirectory.appending(component: "mockingstarlogs.json")
         if FileManager.default.fileExists(atPath: fileURL.path()) {
             try? FileManager.default.removeItem(at: fileURL)
         }
