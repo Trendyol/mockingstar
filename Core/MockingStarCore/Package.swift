@@ -38,6 +38,7 @@ let package = Package(
             name: "MockingStarCoreTests",
             dependencies: [
                 "MockingStarCore",
+                "MockingStarCoreTestSupport",
                 .product(name: "CommonKitTestSupport", package: "CommonKit"),
             ]),
     ]
