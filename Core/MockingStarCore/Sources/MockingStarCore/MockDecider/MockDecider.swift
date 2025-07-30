@@ -316,6 +316,10 @@ extension MockDecider: MockDeciderInterface {
             folderContents.sort(by: { url1, url2 in
                 url1.absoluteString.contains(scenario)
             })
+        } else {
+            folderContents.sort { url1, url2 in
+                !url.hasScenario && url2.hasScenario
+            }
         }
 
         for url in folderContents {
