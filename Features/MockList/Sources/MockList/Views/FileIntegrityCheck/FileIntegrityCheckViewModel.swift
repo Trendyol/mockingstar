@@ -13,6 +13,7 @@ import SwiftUI
 enum MockViolation: Hashable, Identifiable {
     case wrongFilePath(MockModel)
     case duplicatedId(MockModel)
+    case longReadTime(MockModel, readTime: Double)
 
     var id: String {
         mock.fileURL?.path() ?? ""
@@ -20,15 +21,24 @@ enum MockViolation: Hashable, Identifiable {
 
     var mock: MockModel {
         switch self {
-        case .wrongFilePath(let mockModel), .duplicatedId(let mockModel):
+        case .wrongFilePath(let mockModel), .duplicatedId(let mockModel), .longReadTime(let mockModel, _):
             mockModel
         }
     }
 
     var mockId: String {
         switch self {
-        case .wrongFilePath(let mockModel), .duplicatedId(let mockModel):
+        case .wrongFilePath(let mockModel), .duplicatedId(let mockModel), .longReadTime(let mockModel, _):
             mockModel.id
+        }
+    }
+
+    var readTine: Double {
+        switch self {
+        case .longReadTime(_, let mockReadTine):
+            mockReadTine
+        default:
+            0
         }
     }
 
@@ -42,6 +52,13 @@ enum MockViolation: Hashable, Identifiable {
     var isDuplicatedId: Bool {
         switch self {
         case .duplicatedId: true
+        default: false
+        }
+    }
+
+    var isLongReadTime: Bool {
+        switch self {
+        case .longReadTime: true
         default: false
         }
     }
@@ -63,6 +80,7 @@ final class FileIntegrityCheckViewModel {
 
     var wrongPathMocks: [MockViolation] { violatedMocks.filter(\.isWrongPath)}
     var duplicatedIdMocks: [MockViolation] { violatedMocks.filter(\.isDuplicatedId)}
+    var longReadTimeMocks: [MockViolation] { violatedMocks.filter(\.isLongReadTime)}
 
     public init(fileManager: FileManagerInterface = FileManager.default,
                 mockDiscover: MockDiscoverInterface = MockDiscover()) {
@@ -82,6 +100,7 @@ final class FileIntegrityCheckViewModel {
                     violatedMocks = mocks.compactMap {
                         checkMockViolates(for: $0, allMocks: mocks)
                     }
+                    await violatedMocks.append(contentsOf: checkMockLoadTime(mocks: mocks))
                     isLoading = false
                 }
             }
@@ -100,6 +119,32 @@ final class FileIntegrityCheckViewModel {
         }
 
         return nil
+    }
+
+    private func checkMockLoadTime(mocks: [MockModel]) async -> [MockViolation] {
+        await withTaskGroup(of: MockViolation?.self, returning: [MockViolation?].self) { taskGroup in
+            for mock in mocks {
+                taskGroup.addTask { [weak self] in
+                    if let fileURL = mock.fileURL {
+                        let startDate = Date()
+                        let loadedMock: MockModel? = try? self?.fileManager.readJSONFile(at: fileURL)
+
+                        if loadedMock != nil, startDate.distance(to: Date()) > 0.5 {
+                            return MockViolation.longReadTime(mock, readTime: startDate.distance(to: Date()))
+                        }
+                    }
+                    return nil
+                }
+            }
+
+            var violations: [MockViolation] = []
+
+            for await result in taskGroup {
+                guard let result else { continue }
+                violations.append(result)
+            }
+            return violations
+        }.compactMap { $0 }
     }
 
     @MainActor
@@ -124,6 +169,7 @@ final class FileIntegrityCheckViewModel {
                 fixFilePath(for: mockModel)
             case .duplicatedId(let mockModel):
                 generateNewId(for: mockModel)
+            case .longReadTime: break
             }
         }
         isLoading = false

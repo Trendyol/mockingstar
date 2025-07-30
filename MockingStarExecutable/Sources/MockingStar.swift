@@ -31,7 +31,12 @@ private struct Start: AsyncParsableCommand {
     @Argument(help: "Mocks folder path")
     var folder: String
 
+    @Flag(name: .shortAndLong, help: "Cache mock responses in memory. Recommended for CI environment with immutable mocks.")
+    var mockCacheEnabled: Bool = true
+
     func run() async throws {
+        FeatureFlags.mockCacheEnabled = mockCacheEnabled
+
         @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
         workspaces = [Workspace(name: "Workspace", path: folder, bookmark: Data())]
 
@@ -73,7 +78,8 @@ private struct MockUsageAnalyzer: AsyncParsableCommand {
 
         var mockUsage: [String: Int] = [:]
 
-        for try await line in fileURL.lines where line.contains("Mock Found:") {
+        let logLines = try String(contentsOf: fileURL, encoding: .utf8).components(separatedBy: .newlines)
+        for line in logLines where line.contains("Mock Found:") {
             guard let id = line.components(separatedBy: " ").last else { continue }
             mockUsage[id] = mockUsage[id, default: 0] + 1
         }

@@ -33,6 +33,17 @@ public struct FileIntegrityCheckView: View {
                     }
                 }
             }
+
+            if !viewModel.longReadTimeMocks.isEmpty {
+                Section("Long Read Time (\(viewModel.duplicatedIdMocks.count))") {
+                    Label("Reading takes more than 0.5 seconds, This may cause performance issue, please check your mocks. ", systemImage: "externaldrive.trianglebadge.exclamationmark")
+                        .foregroundStyle(.red)
+
+                    ForEach(viewModel.longReadTimeMocks) { result in
+                        LabeledContent(result.mock.filePath, value: result.readTine.description)
+                    }
+                }
+            }
         }
         .overlay {
             if viewModel.isLoading { ProgressView() }
