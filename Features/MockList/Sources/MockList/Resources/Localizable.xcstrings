@@ -43,6 +43,9 @@
     "Last Updated" : {
 
     },
+    "Long Read Time (%lld)" : {
+
+    },
     "Method" : {
 
     },
@@ -68,6 +71,9 @@
 
     },
     "Open Mock Detail" : {
+
+    },
+    "Reading takes more than 0.5 seconds, This may cause performance issue, please check your mocks. " : {
 
     },
     "Reload Mocks" : {
