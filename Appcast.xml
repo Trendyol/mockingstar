@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 2.1.0</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed * Features/add memory cache and long read violation by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/61</h2><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/2.1.0-17...2.1.0-18</p>
+                ]]>
+            </description>
+            <pubDate>Çar, 30 Tem 2025 10:24:50 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/2.1.0-18/MockingStar-App.zip"
+            sparkle:version="18" sparkle:shortVersionString="2.1.0"
+            sparkle:edSignature="/3VKxNLj6TmDgV0gz3/OkpHwMu7+RWUSbwztGCTgLggWOCWeB5wK07RWiZ39grdNGBX4J0gFrAVjdnkfFTxyCw==" length="7654288"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 2.0.1</title>
             <description>
                 <![CDATA[
