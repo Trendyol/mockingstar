@@ -17,7 +17,7 @@ jobs:
 
     - uses: swift-actions/setup-swift@v2
       with:
-        swift-version: "5.10.1"
+        swift-version: "5"
 
     - name: Set env
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV

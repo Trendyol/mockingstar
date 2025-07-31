@@ -27,7 +27,7 @@ jobs:
 
     - uses: swift-actions/setup-swift@v2
       with:
-        swift-version: "5.10.1"
+        swift-version: "5"
 
     - name: Prepare Dependencies
       run: |
