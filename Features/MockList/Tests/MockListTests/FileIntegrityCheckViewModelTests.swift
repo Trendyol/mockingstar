@@ -28,6 +28,7 @@ final class FileIntegrityCheckViewModelTests: XCTestCase {
         fileManager = .init()
         mockDiscover = .init()
         mockDiscover.stubbedMockDiscoverResult = mockDiscoverResult
+        fileManager.stubbedReadJSONFileError = NSError(domain: "", code: -2)
 
         viewModel = .init(fileManager: fileManager,
                           mockDiscover: mockDiscover)
