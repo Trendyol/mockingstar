@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 2.1.0</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed <em> Features/dynamic body support by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/60 </em> Features/enhanced filter logic by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/59 <em> Bug fix on trace view by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/58 </em> Features/add memory cache and long read violation by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/61 * Fix linux swift version by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/62</h2><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/2.0.1-15...2.1.0-19</p>
+                ]]>
+            </description>
+            <pubDate>Per, 31 Tem 2025 11:28:26 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/2.1.0-19/MockingStar-App.zip"
+            sparkle:version="19" sparkle:shortVersionString="2.1.0"
+            sparkle:edSignature="4KajNKi7qmDEnIN4kOPXuEpbZrFIt+AAycj1U3+FAPuv9PXkn/4aYfOgyVAoeRZNCIUzLbof5wSB8023vZlGCQ==" length="7654248"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 2.0.1</title>
             <description>
                 <![CDATA[
