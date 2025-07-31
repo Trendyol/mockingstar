@@ -38,3 +38,16 @@ Mocking Star allows multiple applications to use the same mock folder. For examp
 
 > Warning:
 Linux CLI version does not support Plugins due to JavaScriptCore not available on Linux.
+
+**CLI Mock Usage Analysis**
+```
+YusufOzgul@macOS Debug % ./MockingStar help analyze-usage
+OVERVIEW: Analyze previous mock usage from logs file
+
+USAGE: ./MockingStar analyze-usage [--logs-folder <logs-folder>]
+
+OPTIONS:
+    -l, --logs-folder <logs-folder>
+                            Logs folder
+    -h, --help              Show help information.
+```
