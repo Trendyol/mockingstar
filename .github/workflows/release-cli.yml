@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - name: Check out Repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set env
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV

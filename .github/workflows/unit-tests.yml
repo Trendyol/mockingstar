@@ -12,7 +12,9 @@ jobs:
 
     steps:
     - name: Check out Repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
 
     - name: Run Xcode Unit Tests
       run: set -o pipefail && xcodebuild test -workspace MockingStar.xcworkspace -scheme MockingStar -testPlan TestPlan -skipMacroValidation | xcbeautify --renderer github-actions
@@ -23,7 +25,9 @@ jobs:
 
     steps:
     - name: Check out Repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
 
     - uses: swift-actions/setup-swift@v2
       with:
