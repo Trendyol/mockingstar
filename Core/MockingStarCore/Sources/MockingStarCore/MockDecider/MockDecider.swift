@@ -325,7 +325,7 @@ extension MockDecider: MockDeciderInterface {
             let mock: MockModel
 
             do {
-                mock = try fileManager.readJSONFile(at: url)
+                mock = try fileManager.readJSONFile(at: url, userInfo: [.lazyDecoding: true])
             } catch {
                 logger.critical("Mock can not read, will continue next mock. Error: \(error)", metadata: [
                     "traceUrl": .string(request.url?.absoluteString ?? "")
