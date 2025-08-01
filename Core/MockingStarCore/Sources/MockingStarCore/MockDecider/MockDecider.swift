@@ -51,7 +51,6 @@ final class MockDecider {
     private let configs: ConfigurationsInterface
     private let fileUrlBuilder: FileUrlBuilderInterface
     private let configsBuilder: ConfigsBuilderInterface
-    private let mockCache = NSCache<NSString, MockModel>()
     private let logger = Logger(category: "MockDecider")
 
     /// MockDecider initializer
@@ -71,7 +70,6 @@ final class MockDecider {
         self.configsBuilder = configsBuilder
         self.fileManager = fileManager
         self.configs = configs
-        mockCache.countLimit = 200
 
         logger.debug("Initialize with \(mockDomain)")
     }
@@ -272,18 +270,6 @@ extension MockDecider: MockDeciderInterface {
                                                                    headers: request.allHTTPHeaderFields ?? [:],
                                                                    headerConfigs: configs.configs.headerConfigs,
                                                                    appFilterConfigs: configs.configs.appFilterConfigs)
-
-        if FeatureFlags.mockCacheEnabled,
-           let mock = mockCache.object(forKey: (request.url?.path()).orEmpty as NSString),
-           try checkMock(request: request,
-                         mock: mock,
-                         flags: flags,
-                         pathConfigs: pathConfigs,
-                         queryConfigs: queryConfigs,
-                         headerConfigs: headerConfigs) {
-            return .useMock(mock: mock)
-        }
-
         var folderContents: [URL] = []
 
         do {
@@ -339,7 +325,7 @@ extension MockDecider: MockDeciderInterface {
             let mock: MockModel
 
             do {
-                mock = try fileManager.readJSONFile(at: url)
+                mock = try fileManager.readJSONFile(at: url, userInfo: [.lazyDecoding: true])
             } catch {
                 logger.critical("Mock can not read, will continue next mock. Error: \(error)", metadata: [
                     "traceUrl": .string(request.url?.absoluteString ?? "")
@@ -353,11 +339,6 @@ extension MockDecider: MockDeciderInterface {
                              pathConfigs: pathConfigs,
                              queryConfigs: queryConfigs,
                              headerConfigs: headerConfigs) {
-
-                if FeatureFlags.mockCacheEnabled {
-                    mockCache.setObject(mock, forKey: (request.url?.path()).orEmpty as NSString)
-                }
-
                 return .useMock(mock: mock)
             }
         }

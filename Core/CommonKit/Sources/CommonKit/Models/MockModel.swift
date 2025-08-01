@@ -56,14 +56,19 @@ public final class MockModel: Codable, Identifiable, NSCopying {
         let requestHeader: MockModelHeader = try container.decode(MockModelHeader.self, forKey: .requestHeader)
         let responseHeader: MockModelHeader = try container.decode(MockModelHeader.self, forKey: .responseHeader)
         let requestBody: MockModelBody = try container.decode(MockModelBody.self, forKey: .requestBody)
-        let responseBody: MockModelBody = try container.decode(MockModelBody.self, forKey: .responseBody)
 
         self.requestBody = requestBody.description
-        self.responseBody = responseBody.description
         self.responseHeader = responseHeader.description
         self.requestHeader = requestHeader.description
         metaData.requestBodyType = requestBody.type
-        metaData.responseBodyType = responseBody.type
+
+        if decoder.userInfo[.lazyDecoding] as? Bool != true {
+            let responseBody: MockModelBody = try container.decode(MockModelBody.self, forKey: .responseBody)
+            self.responseBody = responseBody.description
+            metaData.responseBodyType = responseBody.type
+        } else {
+            self.responseBody = ""
+        }
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -90,6 +95,24 @@ public final class MockModel: Codable, Identifiable, NSCopying {
                   requestBody: requestBody,
                   responseBody: responseBody,
                   fileURL: fileURL)
+    }
+}
+
+extension MockModel: LazyDecodingModel {
+    public func decode(from data: Data) throws {
+        guard responseBody.isEmpty else { return }
+        let mock = String(data: data, encoding: .utf8).orEmpty
+
+        if let responseBodyStart = mock.firstRange(of: "  \"responseBody\" : "),
+           let responseHeaderStart = mock.firstRange(of: "  \"responseHeader\""),
+           responseBodyStart.upperBound < responseHeaderStart.lowerBound {
+            responseBody = String(mock[responseBodyStart.upperBound...responseHeaderStart.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines).dropLast())
+        } else {
+            Logger(category: "MockModel").warning("Failed to lazy decode mock model, falling back to fully decoding. It may cause performance issues. Mock Id: \(metaData.id)")
+            let decodedMock = try JSONDecoder.shared.decode(MockModel.self, from: data)
+            responseBody = decodedMock.responseBody
+            metaData.responseBodyType = decodedMock.metaData.responseBodyType
+        }
     }
 }
 

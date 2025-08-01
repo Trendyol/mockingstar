@@ -31,12 +31,7 @@ private struct Start: AsyncParsableCommand {
     @Argument(help: "Mocks folder path")
     var folder: String
 
-    @Flag(name: .shortAndLong, help: "Cache mock responses in memory. Recommended for CI environment with immutable mocks.")
-    var mockCacheEnabled: Bool = true
-
     func run() async throws {
-        FeatureFlags.mockCacheEnabled = mockCacheEnabled
-
         @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
         workspaces = [Workspace(name: "Workspace", path: folder, bookmark: Data())]
 

@@ -68,6 +68,7 @@ public protocol FileManagerInterface {
     ///   - If reading or decoding the file encounters an error of type `DecodingError`, a `FileManagerError.wrongFileModelType` is thrown.
     ///   - If the file is not found at the specified URL, a `FileManagerError.fileNotFound` is thrown.
     func readJSONFile<T: Decodable>(at url: URL) throws -> T
+    func readJSONFile<T: Decodable>(at url: URL, userInfo: [CodingUserInfoKey: any Sendable]) throws -> T
 
     /// Reads the contents of a file at the specified URL and returns it as a string.
     ///
@@ -147,6 +148,24 @@ extension FileManager: FileManagerInterface {
         do {
             let data = try Data(contentsOf: url)
             return try JSONDecoder.shared.decode(T.self, from: data)
+        } catch where error is DecodingError {
+            throw FileManagerError.wrongFileModelType(error)
+        } catch {
+            throw FileManagerError.fileNotFound
+        }
+    }
+
+    public func readJSONFile<T: Decodable>(at url: URL, userInfo: [CodingUserInfoKey: any Sendable] = [:]) throws -> T {
+        do {
+            let data = try Data(contentsOf: url)
+            let file = try JSONDecoder.custom(userInfo).decode(T.self, from: data)
+
+            if let file = file as? LazyDecodingModel,
+               userInfo[.lazyDecoding] != nil {
+                try file.decode(from: data)
+            }
+
+            return file
         } catch where error is DecodingError {
             throw FileManagerError.wrongFileModelType(error)
         } catch {

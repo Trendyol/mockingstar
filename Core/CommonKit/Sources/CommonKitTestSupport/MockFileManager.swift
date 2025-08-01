@@ -81,6 +81,25 @@ public final class MockFileManager: FileManagerInterface {
         return stubbedReadJSONFileResult as! T
     }
 
+    public var invokedReadJSONFileWithUserInfo = false
+    public var invokedReadJSONFileWithUserInfoCount = 0
+    public var invokedReadJSONFileWithUserInfoParameters: (url: URL, Void)?
+    public var invokedReadJSONFileWithUserInfoParametersList: [(url: URL, Void)] = []
+    public var stubbedReadJSONFileWithUserInfoResult: Any!
+    public var stubbedReadJSONFileWithUserInfoError: Error? = nil
+    public func readJSONFile<T>(at url: URL, userInfo: [CodingUserInfoKey : any Sendable]) throws -> T where T : Decodable {
+        invokedReadJSONFileWithUserInfo = true
+        invokedReadJSONFileWithUserInfoCount += 1
+        invokedReadJSONFileWithUserInfoParameters = (url, ())
+        invokedReadJSONFileWithUserInfoParametersList.append((url, ()))
+
+        if let stubbedReadJSONFileWithUserInfoError {
+            throw stubbedReadJSONFileWithUserInfoError
+        }
+
+        return stubbedReadJSONFileResult as! T
+    }
+
     public var invokedReadFile = false
     public var invokedReadFileCount = 0
     public var invokedReadFileParameters: (url: URL, Void)?
