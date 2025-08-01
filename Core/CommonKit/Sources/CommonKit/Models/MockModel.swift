@@ -108,6 +108,7 @@ extension MockModel: LazyDecodingModel {
            responseBodyStart.upperBound < responseHeaderStart.lowerBound {
             responseBody = String(mock[responseBodyStart.upperBound...responseHeaderStart.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines).dropLast())
         } else {
+            Logger(category: "MockModel").warning("Failed to lazy decode mock model, falling back to fully decoding. It may cause performance issues. Mock Id: \(metaData.id)")
             let decodedMock = try JSONDecoder.shared.decode(MockModel.self, from: data)
             responseBody = decodedMock.responseBody
             metaData.responseBodyType = decodedMock.metaData.responseBodyType
