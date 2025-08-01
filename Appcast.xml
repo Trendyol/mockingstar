@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 2.1.1</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed * Features/lazy decoding by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/63</h2><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/2.1.0-19...2.1.1-20</p>
+                ]]>
+            </description>
+            <pubDate>Cum, 1 Ağu 2025 12:10:36 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/2.1.1-20/MockingStar-App.zip"
+            sparkle:version="20" sparkle:shortVersionString="2.1.1"
+            sparkle:edSignature="ugJ0aa63QXjpr63Sz6Kx0KUb0GgsNzynjeTZ9OXUpCMqivT6d0+/KIjmgprYo6VEddEbsTIfK8VHtBHnMJtCDg==" length="7662662"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 2.1.0</title>
             <description>
                 <![CDATA[
