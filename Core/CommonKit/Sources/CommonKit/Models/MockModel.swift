@@ -103,11 +103,13 @@ extension MockModel: LazyDecodingModel {
         guard responseBody.isEmpty else { return }
         let mock = String(data: data, encoding: .utf8).orEmpty
 
-        if let responseBodyStart = mock.firstRange(of: "  \"responseBody\" : "),
-           let responseHeaderStart = mock.firstRange(of: "  \"responseHeader\""),
-           responseBodyStart.upperBound < responseHeaderStart.lowerBound {
+        do {
+            guard let responseBodyStart = mock.firstRange(of: "  \"responseBody\" : "),
+                  let responseHeaderStart = mock.firstRange(of: "  \"responseHeader\""),
+                  responseBodyStart.upperBound < responseHeaderStart.lowerBound else { throw NSError(domain: "MockModel", code: -1) }
             responseBody = String(mock[responseBodyStart.upperBound...responseHeaderStart.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines).dropLast())
-        } else {
+            let _ = try JSONSerialization.jsonObject(with: responseBody.data(using: .utf8) ?? Data())
+        } catch {
             Logger(category: "MockModel").warning("Failed to lazy decode mock model, falling back to fully decoding. It may cause performance issues. Mock Id: \(metaData.id)")
             let decodedMock = try JSONDecoder.shared.decode(MockModel.self, from: data)
             responseBody = decodedMock.responseBody
