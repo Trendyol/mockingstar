@@ -27,6 +27,11 @@ jobs:
             cp MockingStarExecutable/.build/release/MockingStar ./.build/MockingStar 
             cd ./.build/ && zip -r MockingStar-CLI.zip MockingStar
 
+    - name: Notarize CLI
+      run: |
+        echo ${{ secrets.ASC_KEY }} | base64 -D > ./certs/ASCKEY.p8
+        xcrun notarytool submit ./.build/MockingStar-CLI.zip --issuer ${{ secrets.ASC_ISSUER_ID }} --key-id ${{ secrets.ASC_KEY_ID }} --key ./certs/ASCKEY.p8 --wait
+
     - name: Create a Release
       uses: ncipollo/release-action@v1
       with:
