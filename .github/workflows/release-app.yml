@@ -1,8 +1,8 @@
 name:  Release App
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [PipelineFix]
 
 jobs:
   release:
@@ -78,32 +78,4 @@ jobs:
     - name: Notarytool
       run: xcrun notarytool submit ./.build/appBuildOutput/MockingStar-App.zip --issuer ${{ secrets.ASC_ISSUER_ID }} --key-id ${{ secrets.ASC_KEY_ID }} --key ./certs/ASCKEY.p8 --wait
 
-    - name: Create Sparkle Update
-      run: |
-            MinimumVersion=$(plutil -extract LSMinimumSystemVersion raw -o - .build/appBuildOutput/MockingStar.app/Contents/Info.plist)
-            Signature=$(./.build/derivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update -f certs/Sparkle.key .build/appBuildOutput/MockingStar-App.zip)
-            Signature=$(echo "$Signature" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-
-            export RELEASE_VERSION="${{ env.RELEASE_VERSION }}"
-            export BUILD_NUMBER="${{ env.BUILD_NUMBER }}"
-            export RELEASE_VERSION_TAG="${{ github.event.release.tag_name }}"
-            export RELEASE_NOTES="${{ github.event.release.body }}"
-            export MinimumVersion="$MinimumVersion"
-            export Signature="$Signature"
-            
-            swift run --package-path ./SparkleActions
-
-            git commit -m 'Release version ${{ github.event.release.tag_name }}! 🎉' Appcast.xml
-            git branch Release/${{ github.event.release.tag_name }}
-            git push -u origin Release/${{ github.event.release.tag_name }}
-
-    - name: Create a Release
-      uses: ncipollo/release-action@v1
-      with:
-        tag: ${{ github.event.release.tag_name }}
-        name: MockingStar - Release ${{ github.event.release.tag_name }}
-        artifacts: '.build/appBuildOutput/MockingStar-App.zip'
-        allowUpdates: true
-        omitBodyDuringUpdate: true
-        makeLatest: false
           
