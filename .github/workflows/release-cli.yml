@@ -29,6 +29,7 @@ jobs:
 
     - name: Notarize CLI
       run: |
+        mkdir ./certs
         echo ${{ secrets.ASC_KEY }} | base64 -D > ./certs/ASCKEY.p8
         xcrun notarytool submit ./.build/MockingStar-CLI.zip --issuer ${{ secrets.ASC_ISSUER_ID }} --key-id ${{ secrets.ASC_KEY_ID }} --key ./certs/ASCKEY.p8 --wait
 
