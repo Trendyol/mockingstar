@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 2.1.1</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed * Fix pipelines by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/66</h2><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/2.1.1-21...2.1.1-22</p>
+                ]]>
+            </description>
+            <pubDate>Pzt, 11 Ağu 2025 10:28:19 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/2.1.1-22/MockingStar-App.zip"
+            sparkle:version="22" sparkle:shortVersionString="2.1.1"
+            sparkle:edSignature="XmKsz1QAnQBUnZhNPMqeX96JUi9zE7rM0dCXku68w/0vdQFpSFEcxzj9SdUu7dgf8BDckm0gchvGQB5B/SlqBw==" length="7663342"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 2.1.0</title>
             <description>
                 <![CDATA[
