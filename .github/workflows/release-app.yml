@@ -106,11 +106,4 @@ jobs:
         allowUpdates: true
         omitBodyDuringUpdate: true
         makeLatest: false
-    
-    - name: Clean Keychain And Files
-      if: always()
-      run: |
-          security delete-certificate -c "${{ secrets.CODESIGNING_IDENTITY }}"
-          rm -rf ./certs
-          rm ~/Library/MobileDevice/Provisioning\ Profiles/7a785103-ddb5-42f4-99b5-d7cdb5b6cae9.provisionprofile
           
