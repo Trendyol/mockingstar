@@ -38,7 +38,7 @@ final class HandleMock: HTTPHandler {
                                                   rawFlags: rawFlags)
 
             return .init(statusCode: .init(result.status, phrase: ""),
-                         headers: Dictionary(uniqueKeysWithValues: HeaderFilter.filter(result.headers).map { key, value in  (HTTPHeader(key), value.lowercased()) }),
+                         headers: Dictionary(uniqueKeysWithValues: HeaderFilter.filter(result.headers).map { key, value in  (HTTPHeader(key), value) }),
                          body: result.body)
         } catch {
             logger.error("Handle mock try error: \(error)")
