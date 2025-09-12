@@ -17,6 +17,9 @@ public struct MockPathConfigurations: View {
     @State private var queryExecuteStyle: QueryExecuteStyle = .ignoreAll
     @State private var headerExecuteStyle: HeaderExecuteStyle = .ignoreAll
     @State private var shouldShowInspectorView: Bool = true
+    @State private var filterStyle: FilterStyle = .contains
+    @State private var searchTerm: String = ""
+    @State private var isSearchActive: Bool = false
     @AppStorage("mockDomain") var mockDomain: String = ""
 
     public init(viewModel: MockDomainConfigsViewModel) {
@@ -24,7 +27,7 @@ public struct MockPathConfigurations: View {
     }
 
     public var body: some View {
-        Table(viewModel.pathConfigs, selection: $selected) {
+        Table(searchResults(), selection: $selected) {
             TableColumn("Path", value: \.path)
             TableColumn("Execute All Queries", value: \.queryExecuteStyle.title)
                 .width(max: 200)
@@ -129,6 +132,20 @@ public struct MockPathConfigurations: View {
                 }
             }
 
+            ToolbarItemGroup {
+                Button(action: { isSearchActive = true }, label: EmptyView.init)
+                    .keyboardShortcut("f")
+                    .hidden()
+
+                RichSearchBar(
+                    filterType: nil,
+                    filterStyle: $filterStyle,
+                    searchTerm: $searchTerm,
+                    placeHolderCount: .constant(0),
+                    isSearchActive: $isSearchActive
+                )
+            }
+
             ToolbarItem {
                 Button {
                     shouldShowInspectorView = !shouldShowInspectorView
@@ -211,6 +228,32 @@ public struct MockPathConfigurations: View {
             }
         }
         viewModel.checkUnsavedChanges()
+    }
+
+    private func searchResults() -> [MockPathConfigModel] {
+        guard !searchTerm.isEmpty else {
+            return viewModel.pathConfigs
+        }
+        let result = viewModel.pathConfigs.filter { config in
+            let fields = [config.path]
+
+            return fields.contains { filterField in
+                let filterField = filterField.lowercased()
+
+                return switch filterStyle {
+                case .contains: filterField.contains(searchTerm)
+                case .notContains: !filterField.contains(searchTerm)
+                case .startWith: filterField.starts(with: searchTerm)
+                case .endWith: filterField.hasSuffix(searchTerm)
+                case .equal: filterField == searchTerm
+                case .notEqual: filterField != searchTerm
+                }
+            }
+        }
+        if !result.contains(where: { $0.id == selected }) {
+            DispatchQueue.main.async { selected = nil }
+        }
+        return result
     }
 }
 
