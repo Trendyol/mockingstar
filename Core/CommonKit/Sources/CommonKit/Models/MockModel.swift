@@ -49,7 +49,7 @@ public final class MockModel: Codable, Identifiable, NSCopying {
         case requestBody
         case responseBody
 
-        static let alFieldsWithoutResponseBody: [CodingKeys] = [.metaData, .responseHeader, .requestHeader, .requestBody]
+        static let allFieldsWithoutResponseBody: [CodingKeys] = [.metaData, .responseHeader, .requestHeader, .requestBody]
     }
 
     public init(from decoder: Decoder) throws {
