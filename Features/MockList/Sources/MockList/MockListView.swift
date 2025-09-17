@@ -165,47 +165,12 @@ public struct MockListView: View {
                 }
                 .disabled(viewModel.selected.isEmpty)
 
-                HStack(spacing: .zero) {
-                    VStack(spacing: .zero) {
-                        Menu {
-                            ForEach(FilterType.allCases, id: \.self) { type in
-                                Button {
-                                    viewModel.filterType = type
-                                } label: {
-                                    Text(type.title)
-                                }
-                            }
-                        } label: {
-                            Text(viewModel.filterType.title)
-                                .font(.caption2)
-                        }
-
-                        Menu {
-                            ForEach(FilterStyle.allCases, id: \.self) { type in
-                                Button {
-                                    viewModel.filterStyle = type
-                                } label: {
-                                    Text(type.title)
-                                }
-                            }
-                        } label: {
-                            Text(viewModel.filterStyle.title)
-                                .font(.caption2)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.leading, 6)
-                    .padding(.vertical, 2)
-
-                    Divider()
-                        .padding(.trailing, 6)
-
-                    CustomSearchbar(text: $viewModel.searchTerm, isSearchActive: $isSearchActive, placeholderCount: $viewModel.mockListCount)
-                        .frame(width: 200)
-                }
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(viewModel.searchTerm.isEmpty ? Color.secondary : Color.accentColor, lineWidth: 1)
+                RichSearchBar(
+                    filterType: $viewModel.filterType,
+                    filterStyle: $viewModel.filterStyle,
+                    searchTerm: $viewModel.searchTerm,
+                    placeHolderCount: $viewModel.mockListCount,
+                    isSearchActive: $isSearchActive
                 )
             }
         }

@@ -17,6 +17,9 @@ public struct MockQueryConfigurations: View {
     @State private var key: String = ""
     @State private var value: String = ""
     @State private var shouldShowInspectorView: Bool = true
+    @State private var filterStyle: FilterStyle = .contains
+    @State private var searchTerm: String = ""
+    @State private var isSearchActive: Bool = false
     @AppStorage("mockDomain") var mockDomain: String = ""
 
     public init(viewModel: MockDomainConfigsViewModel) {
@@ -24,7 +27,7 @@ public struct MockQueryConfigurations: View {
     }
 
     public var body: some View {
-        Table(viewModel.queryConfigs, selection: $selected) {
+        Table(searchResults(), selection: $selected) {
             TableColumn("Key", value: \.key)
             TableColumn("Value", value: \.value)
             TableColumn("Path", value: \.path.description)
@@ -161,6 +164,20 @@ public struct MockQueryConfigurations: View {
                     value = ""
                     shouldShowInspectorView = true
                 }
+            }
+
+            ToolbarItemGroup {
+                Button(action: { isSearchActive = true }, label: EmptyView.init)
+                    .keyboardShortcut("f")
+                    .hidden()
+
+                RichSearchBar(
+                    filterType: nil,
+                    filterStyle: $filterStyle,
+                    searchTerm: $searchTerm,
+                    placeHolderCount: .constant(0),
+                    isSearchActive: $isSearchActive
+                )
             }
 
             ToolbarItem {
@@ -456,6 +473,32 @@ public struct MockQueryConfigurations: View {
             }
         }
         viewModel.checkUnsavedChanges()
+    }
+
+    private func searchResults() -> [MockQueryConfigModel] {
+        guard !searchTerm.isEmpty else {
+            return viewModel.queryConfigs
+        }
+        let result = viewModel.queryConfigs.filter { config in
+            let fields = [config.key, config.value, config.path.joined(separator: " ")]
+
+            return fields.contains { filterField in
+                let filterField = filterField.lowercased()
+
+                return switch filterStyle {
+                case .contains: filterField.contains(searchTerm)
+                case .notContains: !filterField.contains(searchTerm)
+                case .startWith: filterField.starts(with: searchTerm)
+                case .endWith: filterField.hasSuffix(searchTerm)
+                case .equal: filterField == searchTerm
+                case .notEqual: filterField != searchTerm
+                }
+            }
+        }
+        if !result.contains(where: { $0.id == selected }) {
+            DispatchQueue.main.async { selected = nil }
+        }
+        return result
     }
 }
 

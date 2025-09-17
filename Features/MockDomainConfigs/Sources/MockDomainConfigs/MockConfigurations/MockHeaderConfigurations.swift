@@ -5,6 +5,7 @@
 //  Created by Yusuf Özgül on 20.10.2023.
 //
 
+import CommonKit
 import CommonViewsKit
 import SwiftUI
 import TipKit
@@ -16,6 +17,9 @@ public struct MockHeaderConfigurations: View {
     @State private var key: String = ""
     @State private var value: String = ""
     @State private var shouldShowInspectorView: Bool = true
+    @State private var filterStyle: FilterStyle = .contains
+    @State private var searchTerm: String = ""
+    @State private var isSearchActive: Bool = false
     @AppStorage("mockDomain") var mockDomain: String = ""
 
     public init(viewModel: MockDomainConfigsViewModel) {
@@ -23,7 +27,7 @@ public struct MockHeaderConfigurations: View {
     }
 
     public var body: some View {
-        Table(viewModel.headerConfigs, selection: $selected) {
+        Table(searchResults(), selection: $selected) {
             TableColumn("Key", value: \.key)
             TableColumn("Value", value: \.value)
             TableColumn("Path", value: \.path.description)
@@ -159,6 +163,20 @@ public struct MockHeaderConfigurations: View {
                     value = ""
                     shouldShowInspectorView = true
                 }
+            }
+
+            ToolbarItemGroup {
+                Button(action: { isSearchActive = true }, label: EmptyView.init)
+                    .keyboardShortcut("f")
+                    .hidden()
+
+                RichSearchBar(
+                    filterType: nil,
+                    filterStyle: $filterStyle,
+                    searchTerm: $searchTerm,
+                    placeHolderCount: .constant(0),
+                    isSearchActive: $isSearchActive
+                )
             }
 
             ToolbarItem {
@@ -483,6 +501,32 @@ public struct MockHeaderConfigurations: View {
             }
         }
         viewModel.checkUnsavedChanges()
+    }
+
+    private func searchResults() -> [MockHeaderConfigModel] {
+        guard !searchTerm.isEmpty else {
+            return viewModel.headerConfigs
+        }
+        let result = viewModel.headerConfigs.filter { config in
+            let fields = [config.key, config.value, config.path.joined(separator: " ")]
+
+            return fields.contains { filterField in
+                let filterField = filterField.lowercased()
+
+                return switch filterStyle {
+                case .contains: filterField.contains(searchTerm)
+                case .notContains: !filterField.contains(searchTerm)
+                case .startWith: filterField.starts(with: searchTerm)
+                case .endWith: filterField.hasSuffix(searchTerm)
+                case .equal: filterField == searchTerm
+                case .notEqual: filterField != searchTerm
+                }
+            }
+        }
+        if !result.contains(where: { $0.id == selected }) {
+            DispatchQueue.main.async { selected = nil }
+        }
+        return result
     }
 }
 
