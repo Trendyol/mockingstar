@@ -42,12 +42,14 @@ public final class MockModel: Codable, Identifiable, NSCopying {
         self.fileURL = fileURL
     }
 
-    enum CodingKeys: CodingKey {
+    enum CodingKeys: String, CodingKey {
         case metaData
         case requestHeader
         case responseHeader
         case requestBody
         case responseBody
+
+        static let allFieldsWithoutResponseBody: [CodingKeys] = [.metaData, .responseHeader, .requestHeader, .requestBody]
     }
 
     public init(from decoder: Decoder) throws {
@@ -101,20 +103,50 @@ public final class MockModel: Codable, Identifiable, NSCopying {
 extension MockModel: LazyDecodingModel {
     public func decode(from data: Data) throws {
         guard responseBody.isEmpty else { return }
-        let mock = String(data: data, encoding: .utf8).orEmpty
 
         do {
-            guard let responseBodyStart = mock.firstRange(of: "  \"responseBody\" : "),
-                  let responseHeaderStart = mock.firstRange(of: "  \"responseHeader\""),
-                  responseBodyStart.upperBound < responseHeaderStart.lowerBound else { throw NSError(domain: "MockModel", code: -1) }
-            responseBody = String(mock[responseBodyStart.upperBound...responseHeaderStart.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines).dropLast())
+            try tryLazyDecode(data: data)
             let _ = try JSONSerialization.jsonObject(with: responseBody.data(using: .utf8) ?? Data())
+            metaData.responseBodyType = .json
         } catch {
-            Logger(category: "MockModel").warning("Failed to lazy decode mock model, falling back to fully decoding. It may cause performance issues. Mock Id: \(metaData.id)")
+            Logger(category: "MockModel").warning("Failed to lazy decode mock model, falling back to fully decoding. It may cause performance issues. Mock Id: \(metaData.id) \(error)")
             let decodedMock = try JSONDecoder.shared.decode(MockModel.self, from: data)
             responseBody = decodedMock.responseBody
             metaData.responseBodyType = decodedMock.metaData.responseBodyType
         }
+    }
+
+    private func tryLazyDecode(data: Data) throws {
+        let mock = String(data: data, encoding: .utf8).orEmpty
+        let fieldDefinitions = [" \"%@\" :", " \"%@\":"]
+
+        guard let responseBodyStart: Range = fieldDefinitions.firstMapped(transform: {
+            mock.firstRange(of: String(format: $0, CodingKeys.responseBody.rawValue))
+        }) else {
+            throw NSError(domain: "MockModel", code: -1)
+        }
+
+        let nextFields = CodingKeys.alFieldsWithoutResponseBody.flatMap { key in
+            fieldDefinitions.map { fieldDefinition in
+                (key, fieldDefinition)
+            }
+        }
+
+        let nextFieldStarts = nextFields.compactMap {
+            let range = mock.firstRange(of: String(format: $0.1, $0.0.rawValue))
+
+            guard let range else { return nil as Range<String.Index>? }
+            guard responseBodyStart.upperBound < range.lowerBound else { return nil as Range<String.Index>? }
+
+            return range
+        }
+
+        guard let nextFieldStart = nextFieldStarts.min(by: { $0.lowerBound < $1.lowerBound }) else {
+            throw NSError(domain: "MockModel", code: -2)
+        }
+
+        guard responseBodyStart.upperBound < nextFieldStart.lowerBound else { throw NSError(domain: "MockModel", code: -3) }
+        responseBody = String(mock[responseBodyStart.upperBound...nextFieldStart.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines).dropLast())
     }
 }
 

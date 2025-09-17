@@ -161,7 +161,7 @@ public final class MockDiscover: MockDiscoverInterface {
     /// - Returns: The loaded `MockModel`.
     /// - Throws: If any error occurs during the loading process, it is thrown.
     private func loadMock(fileURL: URL) throws -> MockModel {
-        let mock: MockModel = try mocks.first(where: { $0.fileURL == fileURL }) ?? (fileManager.readJSONFile(at: fileURL))
+        let mock: MockModel = try mocks.first(where: { $0.fileURL == fileURL }) ?? (fileManager.readJSONFile(at: fileURL, userInfo: [.lazyDecoding: true]))
         mock.fileURL = fileURL
         return mock
     }

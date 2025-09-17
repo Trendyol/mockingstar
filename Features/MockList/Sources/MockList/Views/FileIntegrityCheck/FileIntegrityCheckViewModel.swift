@@ -127,7 +127,7 @@ final class FileIntegrityCheckViewModel {
                 taskGroup.addTask { [weak self] in
                     if let fileURL = mock.fileURL {
                         let startDate = Date()
-                        let loadedMock: MockModel? = try? self?.fileManager.readJSONFile(at: fileURL)
+                        let loadedMock: MockModel? = try? self?.fileManager.readJSONFile(at: fileURL, userInfo: [.lazyDecoding: true])
 
                         if loadedMock != nil, startDate.distance(to: Date()) > 0.5 {
                             return MockViolation.longReadTime(mock, readTime: startDate.distance(to: Date()))

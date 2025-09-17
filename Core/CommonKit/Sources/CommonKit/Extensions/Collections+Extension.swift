@@ -12,4 +12,13 @@ public extension Collection {
     subscript (safe index: Index) -> Element? {
         return indices.contains(index) ? self[index] : nil
     }
+
+    func firstMapped<T>(transform: (Element) -> T?) -> T? {
+        for element in self {
+            if let result = transform(element) {
+                return result
+            }
+        }
+        return nil
+    }
 }
