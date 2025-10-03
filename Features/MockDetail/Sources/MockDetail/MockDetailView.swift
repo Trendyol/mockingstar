@@ -19,6 +19,7 @@ public struct MockDetailView: View {
     @AppStorage("SelectedShareStyle") private var shareStyle: ShareStyle = .curl
     @Environment(NavigationStore.self) private var navigationStore: NavigationStore
     @Environment(MockDomainDiscover.self) private var domainDiscover: MockDomainDiscover
+    @FocusState private var isEditorFocused: Bool
     private let inspectorViewModel: MockDetailInspectorViewModel
 
     public init(viewModel: MockDetailViewModel) {
@@ -30,6 +31,7 @@ public struct MockDetailView: View {
         VStack(spacing: .zero) {
             MockDetailEditorTypeButton(selectedEditorType: $viewModel.selectedEditorType)
             JsonEditorCache.shared.editor
+                .focused($isEditorFocused)
         }
         .navigationTitle(viewModel.mockModel.metaData.url.path())
         .toolbar {
@@ -156,7 +158,8 @@ public struct MockDetailView: View {
         .task(id: viewModel.mockModel.metaData) { viewModel.checkUnsavedChanges() }
         .task { viewModel.checkFilePath() }
         .background(.background)
-        .modifier(ChangeConfirmationViewModifier(hasChange: $viewModel.shouldShowUnsavedIndicator) {
+        .modifier(ChangeConfirmationViewModifier(hasChange: $viewModel.shouldShowUnsavedIndicator,
+                                                 backNavigationShortcutDisabled: .init(get: { isEditorFocused }, set: { _ in })) {
             viewModel.saveChanges()
         })
         .onReceive(NotificationCenter.default.publisher(for: .removeMock)) { _ in
