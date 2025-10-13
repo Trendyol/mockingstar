@@ -12,11 +12,12 @@ public struct ChangeConfirmationViewModifier: ViewModifier {
     @Environment(\.dismiss) var dismiss
     @State private var presentingConfirmationDialog: Bool = false
     @Binding private var hasChange: Bool
+    @Binding private var backNavigationShortcutDisabled: Bool
     private var saveChanges: () -> Void
-//    private let unsavedTip = UnsavedChangesTip()
 
-    public init(hasChange: Binding<Bool>, saveChanges: @escaping () -> Void) {
+    public init(hasChange: Binding<Bool>, backNavigationShortcutDisabled: Binding<Bool> = .constant(false), saveChanges: @escaping () -> Void) {
         self._hasChange = hasChange
+        self._backNavigationShortcutDisabled = backNavigationShortcutDisabled
         self.saveChanges = saveChanges
     }
 
@@ -30,38 +31,32 @@ public struct ChangeConfirmationViewModifier: ViewModifier {
             .navigationBarBackButtonHidden()
             .toolbar {
                 ToolbarItemGroup(placement: .navigation) {
-                    Button {
-                        if hasChange {
-                            presentingConfirmationDialog = true
-                        } else {
-                            withAnimation { dismiss() }
-                        }
-                    } label: {
-                        Label("Back", systemImage: "chevron.left")
-                            .padding(4)
+                    if backNavigationShortcutDisabled {
+                        backButton
+                    } else {
+                        backButton
+                        .keyboardShortcut(.leftArrow, modifiers: .command)
                     }
-                    .keyboardShortcut(.leftArrow, modifiers: .command)
 
                     if hasChange {
                         Label("Unsaved", systemImage: "smallcircle.filled.circle.fill")
                             .help("Unsaved Changes")
-//                            .popoverTip(unsavedTip)
                     }
                 }
             }
     }
+    
+    @ViewBuilder
+    private var backButton: some View {
+        Button {
+            if hasChange {
+                presentingConfirmationDialog = true
+            } else {
+                withAnimation { dismiss() }
+            }
+        } label: {
+            Label("Back", systemImage: "chevron.left")
+                .padding(4)
+        }
+    }
 }
-/// removed due to crash, can investigate later.
-//struct UnsavedChangesTip: Tip {
-//    var title: Text {
-//        Text("Unsaved Changes")
-//    }
-//
-//    var message: Text? {
-//        Text("You can save or discard them")
-//    }
-//
-//    var image: Image? {
-//        Image(systemName: "pencil.and.outline")
-//    }
-//}

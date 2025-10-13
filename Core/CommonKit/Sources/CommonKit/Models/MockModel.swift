@@ -126,7 +126,7 @@ extension MockModel: LazyDecodingModel {
             throw NSError(domain: "MockModel", code: -1)
         }
 
-        let nextFields = CodingKeys.alFieldsWithoutResponseBody.flatMap { key in
+        let nextFields = CodingKeys.allFieldsWithoutResponseBody.flatMap { key in
             fieldDefinitions.map { fieldDefinition in
                 (key, fieldDefinition)
             }
