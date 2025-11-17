@@ -17,6 +17,7 @@ final class MockImportViewModel {
     private let fileSaver: FileSaverActorInterface
     var mockImportStyle: MockImportStyle = .cURL
     var importInput: String = ""
+    var scenario: String = ""
     var importFailedMessage: String = ""
     var shouldShowImportDone: Bool = false
     var isLoading = false
@@ -54,12 +55,12 @@ final class MockImportViewModel {
 
         let importResult = try await mockingStarCore.importMock(url: url,
                                                               method: request.httpMethod ?? "GET",
-                                                              headers: request.allHTTPHeaderFields ?? [:],
-                                                              body: request.httpBody,
-                                                              flags: MockServerFlags(mockSource: .default,
-                                                                                   scenario: nil,
-                                                                                   domain: mockDomain,
-                                                                                   deviceId: ""))
+                                                                headers: request.allHTTPHeaderFields ?? [:],
+                                                                body: request.httpBody,
+                                                                flags: MockServerFlags(mockSource: .default,
+                                                                                       scenario: scenario.isEmpty ? nil : scenario,
+                                                                                       domain: mockDomain,
+                                                                                       deviceId: ""))
         switch importResult {
         case .alreadyMocked: throw MockImportError.alreadyMocked
         case .domainIgnoredByConfigs: throw MockImportError.domainIgnoredByConfigs

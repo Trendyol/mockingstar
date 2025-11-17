@@ -551,7 +551,7 @@ extension MockingStarCore: MockingStarCoreInterface {
         switch result {
         case .useMock:
             return .alreadyMocked
-        case .mockNotFound:
+        case .mockNotFound, .scenarioNotFound:
             logger.info("Mock not found, trying to request live server: \(request.url?.path() ?? .init())")
 
             let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
@@ -564,8 +564,6 @@ extension MockingStarCore: MockingStarCoreInterface {
             return .mocked
         case .ignoreDomain:
             return .domainIgnoredByConfigs
-        default:
-            return .unhandled
         }
     }
 }
