@@ -66,12 +66,25 @@ final class HandleMock: HTTPHandler {
             body = nil
         }
 
+        var rawFlags: [String: String] = Dictionary(uniqueKeysWithValues: request.headers.map { ($0.key.rawValue, $0.value) })
+
+        if let mockDomain = request.query["mockDomain"] {
+            rawFlags["mockDomain"] = mockDomain
+        }
+
+        if let mockDomain = request.query["deviceId"] {
+            rawFlags["deviceId"] = mockDomain
+        }
+
+        if let mockDomain = request.query["scenario"] {
+            rawFlags["scenario"] = mockDomain
+        }
+
         do {
             let mockRequest = MockServerRequestModel(method: method,
                                                      url: url,
                                                      header: headers,
                                                      body: body)
-            let rawFlags: [String: String] = Dictionary(uniqueKeysWithValues: request.headers.map { ($0.key.rawValue, $0.value) })
 
            return try await handleMock(mockRequest: mockRequest, rawFlags: rawFlags)
         } catch {
