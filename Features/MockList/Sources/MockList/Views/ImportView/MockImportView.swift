@@ -52,6 +52,17 @@ struct MockImportView: View {
             }
             .padding(10)
 
+            if viewModel.mockImportStyle == .cURL {
+                TextField(text: $viewModel.scenario, prompt: Text("Scenario (optional)"), label: EmptyView.init)
+                    .textFieldStyle(.plain)
+                    .padding(6)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(.tertiary, lineWidth: 1)
+                    }
+                    .padding([.horizontal, .bottom], 10)
+            }
+
             if !viewModel.importFailedMessage.isEmpty {
                 Text(viewModel.importFailedMessage)
                     .foregroundStyle(.red)
@@ -113,6 +124,7 @@ struct MockImportView: View {
         }
         .onChange(of: viewModel.mockImportStyle) {
             viewModel.importInput = ""
+            viewModel.scenario = ""
         }
     }
 }
