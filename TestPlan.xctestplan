@@ -14,30 +14,9 @@
   "testTargets" : [
     {
       "target" : {
-        "containerPath" : "container:..\/Features\/MockDomainConfigs",
-        "identifier" : "MockDomainConfigsTests",
-        "name" : "MockDomainConfigsTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:..\/Core\/CommonViewsKit",
-        "identifier" : "CommonViewsKitTests",
-        "name" : "CommonViewsKitTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:..\/Features\/Logs",
-        "identifier" : "LogsTests",
-        "name" : "LogsTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:..\/Core\/Editor",
-        "identifier" : "DiffEditorTests",
-        "name" : "DiffEditorTests"
+        "containerPath" : "container:MockingStar.xcodeproj",
+        "identifier" : "55B438392A6FE25D00E2A9DD",
+        "name" : "MockingStarTests"
       }
     },
     {
@@ -45,20 +24,6 @@
         "containerPath" : "container:..\/Core\/CommonKit",
         "identifier" : "CommonKitTests",
         "name" : "CommonKitTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:..\/Core\/PluginCore",
-        "identifier" : "PluginCoreTests",
-        "name" : "PluginCoreTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:..\/Core\/MockingStarCore",
-        "identifier" : "MockingStarCoreTests",
-        "name" : "MockingStarCoreTests"
       }
     },
     {
@@ -71,8 +36,22 @@
     {
       "target" : {
         "containerPath" : "container:..\/Core\/Editor",
-        "identifier" : "JSONEditorTests",
-        "name" : "JSONEditorTests"
+        "identifier" : "DiffEditorTests",
+        "name" : "DiffEditorTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/MockingStarCore",
+        "identifier" : "MockingStarCoreTests",
+        "name" : "MockingStarCoreTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/Editor",
+        "identifier" : "EditorTests",
+        "name" : "EditorTests"
       }
     },
     {
@@ -84,9 +63,16 @@
     },
     {
       "target" : {
-        "containerPath" : "container:..\/Features\/PluginConfigs",
-        "identifier" : "PluginConfigsTests",
-        "name" : "PluginConfigsTests"
+        "containerPath" : "container:..\/Core\/CommonViewsKit",
+        "identifier" : "CommonViewsKitTests",
+        "name" : "CommonViewsKitTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Features\/MockDomainConfigs",
+        "identifier" : "MockDomainConfigsTests",
+        "name" : "MockDomainConfigsTests"
       }
     },
     {
@@ -94,6 +80,27 @@
         "containerPath" : "container:..\/Core\/Server",
         "identifier" : "ServerTests",
         "name" : "ServerTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Features\/Logs",
+        "identifier" : "LogsTests",
+        "name" : "LogsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Features\/PluginConfigs",
+        "identifier" : "PluginConfigsTests",
+        "name" : "PluginConfigsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/PluginCore",
+        "identifier" : "PluginCoreTests",
+        "name" : "PluginCoreTests"
       }
     }
   ],

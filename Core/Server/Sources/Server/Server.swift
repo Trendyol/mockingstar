@@ -35,6 +35,7 @@ public final class Server: ServerInterface {
 
     func prepareServer() async {
         await server.appendRoute("POST /mock", to: HandleMock())
+        await server.appendRoute("GET /mock", to: HandleMock())
         await server.appendRoute("POST /search", to: HandleSearchMock())
         await server.appendRoute("/scenario", to: HandleScenario())
         await server.appendRoute("GET /hello") { _ in return .init(statusCode: .teapot) }
