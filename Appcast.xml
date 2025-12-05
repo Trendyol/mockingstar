@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 2.2.0</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed <em> Add Search function for configs </em> remove lowercase logic from headers <em> Add lazy decoding support for app </em> Fix conflicted keyboard shortcuts <em> Add scenario field during curl mock import </em> Features/handle mock with get request * Remove Transfer-Encoding header</h2>
+                ]]>
+            </description>
+            <pubDate>Cum, 5 Ara 2025 10:23:47 +0300</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/2.2.0-23/MockingStar-App.zip"
+            sparkle:version="23" sparkle:shortVersionString="2.2.0"
+            sparkle:edSignature="fh3R/ZGaTRWFlIIAKfJ2tMI8bkoWFWOKbvB6OydIj+kRinjrzpskdmfMsZ2ZRDNE6iintkec0RQAIyDXVcb/CA==" length="7701756"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 2.1.1</title>
             <description>
                 <![CDATA[
