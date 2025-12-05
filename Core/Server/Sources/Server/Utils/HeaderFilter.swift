@@ -10,7 +10,7 @@ import Foundation
 final class HeaderFilter {
     class func filter(_ headers: [String: String]) -> [String: String] {
         headers.filter { key, value in
-            !["Content-Encoding"].contains(key)
+            !["Content-Encoding", "Transfer-Encoding"].contains(key)
         }
     }
 }
