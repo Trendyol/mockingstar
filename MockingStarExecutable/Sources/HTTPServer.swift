@@ -19,6 +19,7 @@ final class HTTPServer {
         server.registerMockHandler(mockingStarCore)
         server.registerMockSearchHandler(mockingStarCore)
         server.registerScenarioHandler(mockingStarCore)
+        server.registerPartialMockHandler(mockingStarCore)
     }
 
     func startServer() async throws {

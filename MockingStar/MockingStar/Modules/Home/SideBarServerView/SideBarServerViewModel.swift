@@ -33,6 +33,7 @@ final class SideBarServerViewModel: ObservableObject {
             server.registerMockHandler(mockingStarCore)
             server.registerMockSearchHandler(mockingStarCore)
             server.registerScenarioHandler(mockingStarCore)
+            server.registerPartialMockHandler(mockingStarCore)
 
             let uiModel: ServerUIModel = .init(address: server.address,
                                                type: server.serverType,

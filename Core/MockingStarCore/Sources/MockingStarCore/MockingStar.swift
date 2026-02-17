@@ -22,6 +22,7 @@ public protocol MockingStarCoreInterface {
 public final class MockingStarCore {
     private let deciderActor = MockDeciderActor()
     private let scenariosActor = ScenarioDecidersActor()
+    private let partialMocksActor = PartialMockDecidersActor()
     private let saverActor = FileSaverActor()
     private let jsonEncoder = JSONEncoder.shared
     private let jsonDecoder = JSONDecoder.shared
@@ -48,7 +49,8 @@ public final class MockingStarCore {
 
             try await Task.sleep(for: .seconds(mock.metaData.responseTime))
 
-            let bodyData = mock.responseBody.data(using: .utf8) ?? .init()
+            var bodyData = mock.responseBody.data(using: .utf8) ?? .init()
+            bodyData = await applyPartialMocks(to: bodyData, request: request, flags: flags)
             return (status: mock.metaData.httpStatus,
                     body: bodyData,
                     headers: try mock.responseHeader.asDictionary())
@@ -61,7 +63,8 @@ public final class MockingStarCore {
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
 
-            let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
+            var liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
+            liveResult.body = await applyPartialMocks(to: liveResult.body, request: request, flags: flags)
             Task {
                 try await saveFileIfNeeded(request: request,
                                            flags: flags,
@@ -90,7 +93,8 @@ public final class MockingStarCore {
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
 
-            let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
+            var liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
+            liveResult.body = await applyPartialMocks(to: liveResult.body, request: request, flags: flags)
             Task {
                 try await saveFileIfNeeded(request: request,
                                            flags: flags,
@@ -527,14 +531,50 @@ extension MockingStarCore: ServerMockSearchHandlerInterface {
     }
 }
 
+// MARK: - Partial Mock Application
+extension MockingStarCore {
+    func applyPartialMocks(to bodyData: Data, request: URLRequest, flags: MockServerFlags) async -> Data {
+        let partialDecider = await partialMocksActor.decider(for: flags.domain)
+        let matching = await partialDecider.findMatchingPartialMocks(request: request, deviceId: flags.deviceId)
+        guard !matching.isEmpty else { return bodyData }
+
+        logger.info("Applying \(matching.count) partial mock(s) to response for \(request.httpMethod ?? "?") \(request.url?.path() ?? "?")", metadata: [
+            "traceUrl": .string(request.url?.absoluteString ?? "")
+        ])
+
+        let context = RequestContext(
+            domain: flags.domain,
+            method: request.httpMethod ?? "GET",
+            requestPath: request.url?.path() ?? ""
+        )
+
+        var result = bodyData
+        for pm in matching {
+            result = await partialDecider.applyModifications(to: result, modifications: pm.modifications, context: context)
+        }
+        return result
+    }
+}
+
 // MARK: - ScenarioHandlerInterface
 extension MockingStarCore: ScenarioHandlerInterface {
     public func addScenario(scenario: ScenarioModel) async throws {
         await scenariosActor.decider(for: scenario.mockDomain).addNewScenario(scenario)
     }
-    
+
     public func removeScenario(scenario: ScenarioModel) async throws {
         await scenariosActor.decider(for: scenario.mockDomain).removeScenarios(deviceId: scenario.deviceId)
+    }
+}
+
+// MARK: - PartialMockHandlerInterface
+extension MockingStarCore: PartialMockHandlerInterface {
+    public func addPartialMock(partialMock: PartialMockModel) async throws {
+        await partialMocksActor.decider(for: partialMock.mockDomain).addPartialMock(partialMock)
+    }
+
+    public func removePartialMock(partialMock: PartialMockModel) async throws {
+        await partialMocksActor.decider(for: partialMock.mockDomain).removePartialMocks(deviceId: partialMock.deviceId)
     }
 }
 
