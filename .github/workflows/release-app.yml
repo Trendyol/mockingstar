@@ -7,7 +7,7 @@ on:
 jobs:
   release:
     name: 'Release MockingStar App'
-    runs-on: macOS
+    runs-on: macos-26
     permissions:
       contents: write
 
