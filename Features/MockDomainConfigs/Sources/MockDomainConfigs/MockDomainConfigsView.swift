@@ -14,7 +14,8 @@ public struct MockDomainConfigsView: View {
     @Bindable var viewModel: MockDomainConfigsViewModel
     @AppStorage("mockDomain") var mockDomain: String = ""
     @Environment(NavigationStore.self) private var navigationStore: NavigationStore
-
+    @State var isHovering: Bool = false
+    
     public init(viewModel: MockDomainConfigsViewModel) {
         self.viewModel = viewModel
     }
@@ -28,13 +29,13 @@ public struct MockDomainConfigsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             HStack {
-                ToolBarButton(title: "Path Configurations", icon: "document.badge.gearshape", backgroundColor: .gray) {
+                ToolBarButton(title: "Path Configurations", icon: "document.badge.gearshape", backgroundColor: .secondary.opacity(0.3)) {
                     navigationStore.open(.configs_pathConfigs)
                 }
-                ToolBarButton(title: "Query Configurations", icon: "document.badge.gearshape", backgroundColor: .gray) {
+                ToolBarButton(title: "Query Configurations", icon: "document.badge.gearshape", backgroundColor: .secondary.opacity(0.3)) {
                     navigationStore.open(.configs_queryConfigs)
                 }
-                ToolBarButton(title: "Header Configurations", icon: "document.badge.gearshape", backgroundColor: .gray) {
+                ToolBarButton(title: "Header Configurations", icon: "document.badge.gearshape", backgroundColor: .secondary.opacity(0.3)) {
                     navigationStore.open(.configs_headerConfigs)
                 }
             }
@@ -154,12 +155,14 @@ public struct MockDomainConfigsView: View {
                 EnhancedMockFilterView(
                     filter: filter,
                     isLast: index == viewModel.mocksFilters.count - 1,
+                    isHovering: $isHovering,
                     onDelete: {
                         withAnimation {
                             viewModel.removeFilter(id: filter.id)
                         }
                     }
                 )
+                .moveDisabled(!isHovering)
             }
             .onMove { source, destination in
                 withAnimation {
@@ -167,7 +170,7 @@ public struct MockDomainConfigsView: View {
                 }
             }
 
-            ToolBarButton(title: "Add New Filter", icon: "camera.filters", backgroundColor: .gray) {
+            ToolBarButton(title: "Add New Filter", icon: "camera.filters", backgroundColor: .secondary.opacity(0.3)) {
                 withAnimation { viewModel.addNewFilter() }
             }
 
@@ -216,6 +219,7 @@ public struct MockDomainConfigsView: View {
                 .buttonBorderShape(.roundedRectangle)
                 .buttonStyle(.plain)
             }
+            .disableSharedBackground()
         }
         .task(id: mockDomain) { viewModel.mockDomainUpdated(mockDomain: mockDomain) }
         .onChange(of: viewModel.appFilterConfigs.domains) { viewModel.checkUnsavedChanges() }
@@ -258,12 +262,17 @@ struct MockDomainConfigsDomainView: View {
 
 struct EnhancedMockFilterView: View {
     @Bindable private var filter: MockFilterConfigs
+    @Binding var isHovering: Bool
     private var isLast: Bool
     private var onDelete: () -> Void
 
-    init(filter: MockFilterConfigs, isLast: Bool, onDelete: @escaping () -> Void) {
+    init(filter: MockFilterConfigs,
+         isLast: Bool,
+         isHovering: Binding<Bool>,
+         onDelete: @escaping () -> Void) {
         self.filter = filter
         self.isLast = isLast
+        self._isHovering = isHovering
         self.onDelete = onDelete
     }
 
@@ -271,8 +280,8 @@ struct EnhancedMockFilterView: View {
         VStack(spacing: .zero) {
             HStack(spacing: 8) {
                 Image(systemName: "line.3.horizontal")
-                    .foregroundColor(.secondary)
-                    .font(.caption)
+                    .font(.title)
+                    .onHover { isHovering = $0 }
 
                 Group {
                     Picker(selection: $filter.selectedLocation, content: {

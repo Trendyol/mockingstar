@@ -147,6 +147,7 @@ public struct MockHeaderConfigurations: View {
                     }
                 }
             }
+            .disableSharedBackground()
 
             ToolbarItem {
                 ToolBarButton(title: "Save", icon: "tray.and.arrow.down", backgroundColor: .blue) {
@@ -154,6 +155,7 @@ public struct MockHeaderConfigurations: View {
                 }
                 .keyboardShortcut("s")
             }
+            .disableSharedBackground()
             
             ToolbarItem {
                 ToolBarButton(title: "New", icon: "plus.circle", backgroundColor: .accentColor) {
@@ -164,6 +166,7 @@ public struct MockHeaderConfigurations: View {
                     shouldShowInspectorView = true
                 }
             }
+            .disableSharedBackground()
 
             ToolbarItemGroup {
                 Button(action: { isSearchActive = true }, label: EmptyView.init)
@@ -178,6 +181,7 @@ public struct MockHeaderConfigurations: View {
                     isSearchActive: $isSearchActive
                 )
             }
+            .disableSharedBackground()
 
             ToolbarItem {
                 Button {
@@ -186,6 +190,7 @@ public struct MockHeaderConfigurations: View {
                     Label("Hide Inspector", systemImage: "sidebar.trailing")
                 }
             }
+            .disableSharedBackground()
         }
         .navigationBarBackButtonHidden(false)
         .navigationTitle("Header Configs")

@@ -42,6 +42,7 @@ public struct PluginConfigView: View {
                 }
                 .keyboardShortcut("s")
             }
+            .disableSharedBackground()
         }
         .task(id: mockDomain) {  await viewModel.loadPlugins(for: mockDomain)}
         .task(id: viewModel.pluginConfigs) { viewModel.checkChanges() }
