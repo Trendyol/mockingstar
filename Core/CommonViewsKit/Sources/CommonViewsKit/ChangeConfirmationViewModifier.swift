@@ -41,6 +41,7 @@ public struct ChangeConfirmationViewModifier: ViewModifier {
                     if hasChange {
                         Label("Unsaved", systemImage: "smallcircle.filled.circle.fill")
                             .help("Unsaved Changes")
+                            .padding(.trailing, 8)
                     }
                 }
             }

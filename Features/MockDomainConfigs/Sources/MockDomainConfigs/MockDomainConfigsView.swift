@@ -29,13 +29,13 @@ public struct MockDomainConfigsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             HStack {
-                ToolBarButton(title: "Path Configurations", icon: "document.badge.gearshape", backgroundColor: .gray) {
+                ToolBarButton(title: "Path Configurations", icon: "document.badge.gearshape", backgroundColor: .secondary.opacity(0.3)) {
                     navigationStore.open(.configs_pathConfigs)
                 }
-                ToolBarButton(title: "Query Configurations", icon: "document.badge.gearshape", backgroundColor: .gray) {
+                ToolBarButton(title: "Query Configurations", icon: "document.badge.gearshape", backgroundColor: .secondary.opacity(0.3)) {
                     navigationStore.open(.configs_queryConfigs)
                 }
-                ToolBarButton(title: "Header Configurations", icon: "document.badge.gearshape", backgroundColor: .gray) {
+                ToolBarButton(title: "Header Configurations", icon: "document.badge.gearshape", backgroundColor: .secondary.opacity(0.3)) {
                     navigationStore.open(.configs_headerConfigs)
                 }
             }
@@ -170,7 +170,7 @@ public struct MockDomainConfigsView: View {
                 }
             }
 
-            ToolBarButton(title: "Add New Filter", icon: "camera.filters", backgroundColor: .gray) {
+            ToolBarButton(title: "Add New Filter", icon: "camera.filters", backgroundColor: .secondary.opacity(0.3)) {
                 withAnimation { viewModel.addNewFilter() }
             }
 
@@ -219,6 +219,7 @@ public struct MockDomainConfigsView: View {
                 .buttonBorderShape(.roundedRectangle)
                 .buttonStyle(.plain)
             }
+            .disableSharedBackground()
         }
         .task(id: mockDomain) { viewModel.mockDomainUpdated(mockDomain: mockDomain) }
         .onChange(of: viewModel.appFilterConfigs.domains) { viewModel.checkUnsavedChanges() }
@@ -279,7 +280,6 @@ struct EnhancedMockFilterView: View {
         VStack(spacing: .zero) {
             HStack(spacing: 8) {
                 Image(systemName: "line.3.horizontal")
-                    .foregroundColor(.secondary)
                     .font(.title)
                     .onHover { isHovering = $0 }
 

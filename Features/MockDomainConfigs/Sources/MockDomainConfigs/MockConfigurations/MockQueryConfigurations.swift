@@ -148,6 +148,7 @@ public struct MockQueryConfigurations: View {
                     }
                 }
             }
+            .disableSharedBackground()
 
             ToolbarItem {
                 ToolBarButton(title: "Save", icon: "tray.and.arrow.down", backgroundColor: .blue) {
@@ -155,6 +156,7 @@ public struct MockQueryConfigurations: View {
                 }
                 .keyboardShortcut("s")
             }
+            .disableSharedBackground()
 
             ToolbarItem {
                 ToolBarButton(title: "New", icon: "plus.circle", backgroundColor: .accentColor) {
@@ -165,6 +167,7 @@ public struct MockQueryConfigurations: View {
                     shouldShowInspectorView = true
                 }
             }
+            .disableSharedBackground()
 
             ToolbarItemGroup {
                 Button(action: { isSearchActive = true }, label: EmptyView.init)
@@ -179,6 +182,7 @@ public struct MockQueryConfigurations: View {
                     isSearchActive: $isSearchActive
                 )
             }
+            .disableSharedBackground()
 
             ToolbarItem {
                 Button {
@@ -187,6 +191,7 @@ public struct MockQueryConfigurations: View {
                     Label("Hide Inspector", systemImage: "sidebar.trailing")
                 }
             }
+            .disableSharedBackground()
         }
         .navigationBarBackButtonHidden(false)
         .navigationTitle("Query Configs")

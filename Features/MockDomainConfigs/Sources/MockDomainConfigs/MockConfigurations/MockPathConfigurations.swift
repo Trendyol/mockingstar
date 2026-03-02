@@ -114,6 +114,7 @@ public struct MockPathConfigurations: View {
                     }
                 }
             }
+            .disableSharedBackground()
 
             ToolbarItem {
                 ToolBarButton(title: "Save", icon: "tray.and.arrow.down", backgroundColor: .blue) {
@@ -121,6 +122,7 @@ public struct MockPathConfigurations: View {
                 }
                 .keyboardShortcut("s")
             }
+            .disableSharedBackground()
             
             ToolbarItem {
                 ToolBarButton(title: "New", icon: "plus.circle", backgroundColor: .accentColor) {
@@ -131,6 +133,7 @@ public struct MockPathConfigurations: View {
                     shouldShowInspectorView = true
                 }
             }
+            .disableSharedBackground()
 
             ToolbarItemGroup {
                 Button(action: { isSearchActive = true }, label: EmptyView.init)
@@ -145,6 +148,7 @@ public struct MockPathConfigurations: View {
                     isSearchActive: $isSearchActive
                 )
             }
+            .disableSharedBackground()
 
             ToolbarItem {
                 Button {
@@ -153,6 +157,7 @@ public struct MockPathConfigurations: View {
                     Label("Hide Inspector", systemImage: "sidebar.trailing")
                 }
             }
+            .disableSharedBackground()
         }
         .navigationBarBackButtonHidden(false)
         .navigationTitle("Path Configs")

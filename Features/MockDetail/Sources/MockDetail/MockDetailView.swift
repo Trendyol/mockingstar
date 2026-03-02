@@ -42,6 +42,7 @@ public struct MockDetailView: View {
                         .help(viewModel.editorValidationMessage ?? "")
                 }
             }
+            .disableSharedBackground()
 
             ToolbarItemGroup {
                 ToolBarButton(title: "Reload Mock", icon: "arrow.clockwise", backgroundColor: .gray) {
@@ -70,6 +71,7 @@ public struct MockDetailView: View {
                 }
                 .keyboardShortcut("s")
             }
+            .disableSharedBackground()
 
             ToolbarItem {
                 ControlGroup {
@@ -119,6 +121,7 @@ public struct MockDetailView: View {
                 }
                 .controlGroupStyle(.compactMenu)
             }
+            .disableSharedBackground()
 
             ToolbarItem {
                 Button {
@@ -127,6 +130,7 @@ public struct MockDetailView: View {
                     Label("Hide Inspector", systemImage: "sidebar.trailing")
                 }
             }
+            .disableSharedBackground()
         }
         .confirmationDialog("Mock Will be Deleted, Are you sure", isPresented: $viewModel.shouldShowDeleteConfirmationAlert) {
             Button("Delete", role: .destructive, action: { viewModel.removeMock() })
