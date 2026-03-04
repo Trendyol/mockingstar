@@ -7,12 +7,21 @@
 
 import SwiftUI
 
+struct RemoveSharedBackgroundWrapper<Content: ToolbarContent>: ToolbarContent {
+    let content: Content
+    
+    @ToolbarContentBuilder
+    var body: some ToolbarContent {
+        if #available(iOS 26, macOS 26, *) {
+            content.sharedBackgroundVisibility(.hidden)
+        } else {
+            content
+        }
+    }
+}
+
 public extension ToolbarContent {
     func disableSharedBackground() -> some ToolbarContent {
-        if #available(macOS 26.0, *) {
-            return self.sharedBackgroundVisibility(.hidden)
-        } else {
-            return self
-        }
+        RemoveSharedBackgroundWrapper(content: self)
     }
 }
