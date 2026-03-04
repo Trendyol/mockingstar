@@ -8,12 +8,11 @@
 import SwiftUI
 
 public extension ToolbarContent {
-    @ToolbarContentBuilder
     func disableSharedBackground() -> some ToolbarContent {
         if #available(macOS 26.0, *) {
-            self.sharedBackgroundVisibility(.hidden)
+            return self.sharedBackgroundVisibility(.hidden)
         } else {
-            self
+            return self
         }
     }
 }
