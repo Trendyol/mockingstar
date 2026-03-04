@@ -117,8 +117,8 @@ jobs:
             swift run --package-path ./SparkleActions
 
             git commit -m 'Release version ${{ env.RELEASE_TAG }}! 🎉' Appcast.xml
-            git branch Release/${{ env.RELEASE_TAG }}
-            git push -u origin Release/${{ env.RELEASE_TAG }}
+            git branch -f Release/${{ env.RELEASE_TAG }}
+            git push -u origin Release/${{ env.RELEASE_TAG }} --force
 
     - name: Create a Release
       if: github.event_name == 'release'
