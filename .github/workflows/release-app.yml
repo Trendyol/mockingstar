@@ -42,8 +42,8 @@ jobs:
             security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | tr -d '"')
             security default-keychain -s $KEYCHAIN_PATH
 
-            security import ./certs/MockingStarCert.p12 -k $KEYCHAIN_PATH -P ${{ secrets.CERT_PASS }} -T /usr/bin/codesign -T /usr/bin/security
-            security set-key-partition-list -S apple-tool:,apple: -k "${{ secrets.PASS }}" $KEYCHAIN_PATH >/dev/null
+            security import ./certs/MockingStarCert.p12 -k $KEYCHAIN_PATH -P ${{ secrets.CERT_PASS }} -T /usr/bin/codesign -T /usr/bin/security -T /usr/bin/productbuild -T /usr/bin/productsign
+            security set-key-partition-list -S apple-tool:,apple:,codesign: -k "${{ secrets.PASS }}" $KEYCHAIN_PATH >/dev/null
 
             echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
 
