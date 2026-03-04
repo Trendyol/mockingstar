@@ -3,6 +3,14 @@ name:  Release App
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g. 2.3.0)'
+        required: true
+      build:
+        description: 'Build number (e.g. 24)'
+        required: true
 
 jobs:
   release:
@@ -17,12 +25,20 @@ jobs:
 
     - name: Set env
       run: |
-            version_and_build=$(echo "${GITHUB_REF#refs/*/}" | awk -F '[-]' '{print $1 " " $2}')
-            version=$(echo $version_and_build | awk '{print $1}')
-            build=$(echo $version_and_build | awk '{print $2}')
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              version="${{ inputs.version }}"
+              build="${{ inputs.build }}"
+              tag="${version}-${build}"
+            else
+              version_and_build=$(echo "${GITHUB_REF#refs/*/}" | awk -F '[-]' '{print $1 " " $2}')
+              version=$(echo $version_and_build | awk '{print $1}')
+              build=$(echo $version_and_build | awk '{print $2}')
+              tag="${GITHUB_REF#refs/*/}"
+            fi
 
             echo "RELEASE_VERSION=$version" >> $GITHUB_ENV
             echo "BUILD_NUMBER=$build" >> $GITHUB_ENV
+            echo "RELEASE_TAG=$tag" >> $GITHUB_ENV
             
     - name: Configure git credentials
       uses: fregante/setup-git-user@v2
@@ -93,22 +109,23 @@ jobs:
 
             export RELEASE_VERSION="${{ env.RELEASE_VERSION }}"
             export BUILD_NUMBER="${{ env.BUILD_NUMBER }}"
-            export RELEASE_VERSION_TAG="${{ github.event.release.tag_name }}"
-            export RELEASE_NOTES="${{ github.event.release.body }}"
+            export RELEASE_VERSION_TAG="${{ env.RELEASE_TAG }}"
+            export RELEASE_NOTES="${{ github.event.release.body || '' }}"
             export MinimumVersion="$MinimumVersion"
             export Signature="$Signature"
             
             swift run --package-path ./SparkleActions
 
-            git commit -m 'Release version ${{ github.event.release.tag_name }}! 🎉' Appcast.xml
-            git branch Release/${{ github.event.release.tag_name }}
-            git push -u origin Release/${{ github.event.release.tag_name }}
+            git commit -m 'Release version ${{ env.RELEASE_TAG }}! 🎉' Appcast.xml
+            git branch Release/${{ env.RELEASE_TAG }}
+            git push -u origin Release/${{ env.RELEASE_TAG }}
 
     - name: Create a Release
+      if: github.event_name == 'release'
       uses: ncipollo/release-action@v1
       with:
-        tag: ${{ github.event.release.tag_name }}
-        name: MockingStar - Release ${{ github.event.release.tag_name }}
+        tag: ${{ env.RELEASE_TAG }}
+        name: MockingStar - Release ${{ env.RELEASE_TAG }}
         artifacts: '.build/appBuildOutput/MockingStar-App.zip'
         allowUpdates: true
         omitBodyDuringUpdate: true
