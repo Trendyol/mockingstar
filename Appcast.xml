@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 2.2.1</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed * Fix textfield focus problem on mock filters view by @Adem68 in https://github.com/Trendyol/mockingstar/pull/81</h2><h2>New Contributors * @Adem68 made their first contribution in https://github.com/Trendyol/mockingstar/pull/81</h2><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/2.2.0-23...2.2.1-24</p>
+                ]]>
+            </description>
+            <pubDate>Wed, 4 Mar 2026 12:15:23 +0000</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/2.2.1-24/MockingStar-App.zip"
+            sparkle:version="24" sparkle:shortVersionString="2.2.1"
+            sparkle:edSignature="mmRp4xy+2zsnjzR1c1XETp7IRZfa7X2dq/WaqVRqN+bBD6LnlPHgxDT9Eq9yAfRxmVck2vthnNOlZr6fsJjWDA==" length="7774497"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 2.2.0</title>
             <description>
                 <![CDATA[
