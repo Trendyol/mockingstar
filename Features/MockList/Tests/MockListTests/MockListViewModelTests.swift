@@ -51,7 +51,7 @@ final class MockListViewModelTests: XCTestCase {
 
         Task {
             while !viewModel.isLoading {
-                try? await Task.sleep(nanoseconds: 50_000_000)
+                try? await Task.sleep(nanoseconds: 100_000_000)
             }
 
             exp.fulfill()

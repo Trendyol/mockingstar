@@ -23,11 +23,40 @@ jobs:
     - name: Check out Repository
       uses: actions/checkout@v4
 
+    - name: Validate inputs
+      run: |
+            validate_version() {
+              if ! echo "$1" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+                echo "::error::Invalid version format: '$1'. Expected: X.Y.Z (e.g. 2.3.0)"
+                exit 1
+              fi
+            }
+            validate_build() {
+              if ! echo "$1" | grep -qE '^[0-9]+$'; then
+                echo "::error::Invalid build number: '$1'. Expected: numeric (e.g. 24)"
+                exit 1
+              fi
+            }
+
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              validate_version "$INPUT_VERSION"
+              validate_build "$INPUT_BUILD"
+            else
+              tag="${GITHUB_REF#refs/*/}"
+              version=$(echo "$tag" | cut -d'-' -f1)
+              build=$(echo "$tag" | cut -d'-' -f2)
+              validate_version "$version"
+              validate_build "$build"
+            fi
+      env:
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_BUILD: ${{ inputs.build }}
+
     - name: Set env
       run: |
             if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-              version="${{ inputs.version }}"
-              build="${{ inputs.build }}"
+              version="$INPUT_VERSION"
+              build="$INPUT_BUILD"
               tag="${version}-${build}"
             else
               version_and_build=$(echo "${GITHUB_REF#refs/*/}" | awk -F '[-]' '{print $1 " " $2}')
@@ -39,6 +68,9 @@ jobs:
             echo "RELEASE_VERSION=$version" >> $GITHUB_ENV
             echo "BUILD_NUMBER=$build" >> $GITHUB_ENV
             echo "RELEASE_TAG=$tag" >> $GITHUB_ENV
+      env:
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_BUILD: ${{ inputs.build }}
             
     - name: Configure git credentials
       uses: fregante/setup-git-user@v2
@@ -68,8 +100,8 @@ jobs:
 
     - name: Update App Version
       run: |
-            sed -i "" "s/MARKETING_VERSION = .*/MARKETING_VERSION = ${{ env.RELEASE_VERSION }};/g" "./MockingStar/MockingStar.xcodeproj/project.pbxproj"
-            sed -i "" "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = ${{ env.BUILD_NUMBER }};/g" "./MockingStar/MockingStar.xcodeproj/project.pbxproj"
+            sed -i "" "s/MARKETING_VERSION = .*/MARKETING_VERSION = $RELEASE_VERSION;/g" "./MockingStar/MockingStar.xcodeproj/project.pbxproj"
+            sed -i "" "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $BUILD_NUMBER;/g" "./MockingStar/MockingStar.xcodeproj/project.pbxproj"
 
     - name: Build Mocking Star
       run: |
@@ -89,7 +121,7 @@ jobs:
       run: |
             sed -i '' 's/TEAMID/${{ secrets.TEAM_ID }}/g' ExportOptions.plist
             sed -i '' 's/DEVID_CERT/${{ secrets.CODESIGNING_IDENTITY }}/g' ExportOptions.plist
-            
+
             set -o pipefail && xcodebuild -exportArchive \
                 -archivePath ./.build/archive.xcarchive \
                 -exportPath ./.build/appBuildOutput \
@@ -107,18 +139,20 @@ jobs:
             Signature=$(./.build/derivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update -f certs/Sparkle.key .build/appBuildOutput/MockingStar-App.zip)
             Signature=$(echo "$Signature" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
-            export RELEASE_VERSION="${{ env.RELEASE_VERSION }}"
-            export BUILD_NUMBER="${{ env.BUILD_NUMBER }}"
-            export RELEASE_VERSION_TAG="${{ env.RELEASE_TAG }}"
-            export RELEASE_NOTES="${{ github.event.release.body || '' }}"
+            export RELEASE_VERSION="$RELEASE_VERSION"
+            export BUILD_NUMBER="$BUILD_NUMBER"
+            export RELEASE_VERSION_TAG="$RELEASE_TAG"
+            export RELEASE_NOTES="$RELEASE_BODY"
             export MinimumVersion="$MinimumVersion"
             export Signature="$Signature"
-            
+
             swift run --package-path ./SparkleActions
 
-            git commit -m 'Release version ${{ env.RELEASE_TAG }}! 🎉' Appcast.xml
-            git branch -f Release/${{ env.RELEASE_TAG }}
-            git push -u origin Release/${{ env.RELEASE_TAG }} --force
+            git commit -m "Release version $RELEASE_TAG! 🎉" Appcast.xml
+            git branch -f "Release/$RELEASE_TAG"
+            git push -u origin "Release/$RELEASE_TAG" --force
+      env:
+        RELEASE_BODY: ${{ github.event.release.body || '' }}
 
     - name: Create a Release
       if: github.event_name == 'release'
