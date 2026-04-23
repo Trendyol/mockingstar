@@ -20,6 +20,7 @@ let package = Package(
         .package(path: "../Server"),
         .package(path: "../CommonKit"),
         .package(path: "../PluginCore"),
+        .package(url: "https://github.com/objecthub/swift-dynamicjson", from: "1.0.0"),
     ],
     targets: [
         .target(
@@ -27,6 +28,7 @@ let package = Package(
             dependencies: [
                 "Server",
                 "CommonKit",
+                .product(name: "DynamicJSON", package: "swift-dynamicjson"),
                 .product(name: "PluginCore", package: "PluginCore", condition: .when(platforms: [.macOS])),
                 .product(name: "PluginCoreLinux", package: "PluginCore", condition: .when(platforms: [.linux])),
             ]

@@ -13,6 +13,7 @@ public protocol ServerInterface {
     func registerMockHandler(_ handler: ServerMockHandlerInterface)
     func registerMockSearchHandler(_ handler: ServerMockSearchHandlerInterface)
     func registerScenarioHandler(_ handler: ScenarioHandlerInterface)
+    func registerPartialMockHandler(_ handler: PartialMockHandlerInterface)
 }
 
 public final class Server: ServerInterface {
@@ -38,6 +39,7 @@ public final class Server: ServerInterface {
         await server.appendRoute("GET /mock", to: HandleMock())
         await server.appendRoute("POST /search", to: HandleSearchMock())
         await server.appendRoute("/scenario", to: HandleScenario())
+        await server.appendRoute("/partial-mock", to: HandlePartialMock())
         await server.appendRoute("GET /hello") { _ in return .init(statusCode: .teapot) }
     }
 
@@ -120,5 +122,10 @@ public final class Server: ServerInterface {
     public func registerScenarioHandler(_ handler: ScenarioHandlerInterface) {
         logger.debug("Server register handler \(String(describing: handler))")
         HandleScenario.handler = handler
+    }
+
+    public func registerPartialMockHandler(_ handler: PartialMockHandlerInterface) {
+        logger.debug("Server register handler \(String(describing: handler))")
+        HandlePartialMock.handler = handler
     }
 }

@@ -23,6 +23,7 @@ The latest binary can also be found on the releases page or clone and compile in
 
 - **Mocking Requests**: Easily mock requests and test different cases with scenarios.
 - **Modifying Requests**: Modify intercepted requests to test different edge cases, allowing you to assess your application's performance under different conditions.
+- **Partial Mocking**: Apply targeted modifications to response JSON using RFC 9535 JSONPath queries and RFC 6902 JSON Patch operations. Supports template variable resolution (`{domain}`, `{method}`, `{requestPath}`, `{jsonPath}`), wildcard URL/method matching, and all six RFC 6902 operation types (add, remove, replace, move, copy, test).
 - **Debugging Support**: Use Mocking Star to debug your network requests on your mac.
 - **UI Testing**: Integrate Mocking Star into your UI tests, creating a reliable and controlled testing environment to validate your mobile application's functionality.
 - **Plugins**: Write your own plugins and extend functionality.
@@ -47,6 +48,7 @@ Our UI tests are executed approximately 20k times every day, and Mocking Star ha
 Mocking Star relies on these amazing open-source libraries:
 
 - [AnyCodable](https://github.com/yusufozgul/AnyCodable) - Flexible type for encoding and decoding of JSON
+- [DynamicJSON](https://github.com/objecthub/swift-dynamicjson) - RFC 9535 JSONPath and RFC 6902 JSON Patch support
 - [FileMonitor](https://github.com/aus-der-Technik/FileMonitor) - File monitoring utility
 - [FlyingFox](https://github.com/swhitty/FlyingFox) - Lightweight HTTP server
 - [Sparkle](https://github.com/sparkle-project/Sparkle) - Software update framework
