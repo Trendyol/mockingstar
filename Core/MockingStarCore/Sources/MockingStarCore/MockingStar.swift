@@ -32,7 +32,41 @@ public final class MockingStarCore {
         logger.debug("Initialize")
     }
 
+    /// Resolves a request into a response, routing it through any enabled modifiers matched for
+    /// the request's path/method/scenario before falling back to the original mock/live resolution.
+    ///
+    /// Fails closed: if the modifier chain throws (JS syntax/runtime error, nested `chain.proceed`
+    /// failure, etc.), the request is rejected with a 500 rather than silently falling back to
+    /// ``originalHandle(request:flags:)``, since a matched-but-broken modifier should not be bypassed.
     func handle(request: URLRequest, flags: MockServerFlags) async throws -> (status: Int, body: Data, headers: [String: String]) {
+        let store = await ModifierStoreActor.shared.store(for: flags.domain)
+        let modifiers = (try? store.list()) ?? []
+        let matchedModifiers = ModifierMatcher().match(modifiers: modifiers,
+                                                       path: request.url?.path() ?? "",
+                                                       method: request.httpMethod ?? "",
+                                                       scenario: flags.scenario)
+
+        guard !matchedModifiers.isEmpty else {
+            return try await originalHandle(request: request, flags: flags)
+        }
+
+        let chain = ModifierChain(modifiers: matchedModifiers) { chainRequest in
+            let result = try await self.originalHandle(request: chainRequest, flags: flags)
+            return HTTPResult(status: result.status, body: result.body, headers: result.headers)
+        }
+
+        do {
+            let result = try await chain.proceed(request)
+            return (status: result.status, body: result.body, headers: result.headers)
+        } catch {
+            logger.error("Modifier chain failed, failing closed: \(error)", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
+            return (status: 500, body: Data(), headers: [:])
+        }
+    }
+
+    private func originalHandle(request: URLRequest, flags: MockServerFlags) async throws -> (status: Int, body: Data, headers: [String: String]) {
         let decider = try await deciderActor.decider(for: flags.domain)
         let result = try await decider.decideMock(request: request, flags: flags)
 
@@ -535,6 +569,37 @@ extension MockingStarCore: ScenarioHandlerInterface {
     
     public func removeScenario(scenario: ScenarioModel) async throws {
         await scenariosActor.decider(for: scenario.mockDomain).removeScenarios(deviceId: scenario.deviceId)
+    }
+}
+
+// MARK: - ServerModifierHandlerInterface
+extension MockingStarCore: ServerModifierHandlerInterface {
+    public func listModifiers(domain: String) async throws -> [ModifierModel] {
+        try await ModifierStoreActor.shared.store(for: domain).list()
+    }
+
+    public func getModifier(domain: String, id: String) async throws -> ModifierModel? {
+        try await ModifierStoreActor.shared.store(for: domain).get(id: id)
+    }
+
+    public func createModifier(domain: String, model: ModifierModel) async throws {
+        do {
+            try await ModifierStoreActor.shared.store(for: domain).create(model)
+        } catch ModifierStoreError.alreadyExists(let id) {
+            throw ServerModifierError.alreadyExists(id)
+        }
+    }
+
+    public func updateModifier(domain: String, model: ModifierModel) async throws {
+        try await ModifierStoreActor.shared.store(for: domain).update(model)
+    }
+
+    public func deleteModifier(domain: String, id: String) async throws {
+        try await ModifierStoreActor.shared.store(for: domain).delete(id: id)
+    }
+
+    public func bulkUpdate(domain: String?, update: ModifierBulkUpdate) async throws {
+        try await ModifierStoreActor.shared.setEnabledForAll(enabled: update.enabled, domain: domain)
     }
 }
 
