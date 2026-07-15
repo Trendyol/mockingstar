@@ -1,0 +1,483 @@
+openapi: 3.1.0
+info:
+  title: MockingStar Server API
+  description: >
+    MockingStar, HTTP isteklerini mock'lamak, network debug etmek ve UI testleri
+    için kullanılan bir request mocking server'ıdır. Bu API, MockingStar'ın
+    macOS uygulaması veya CLI'ı (MockingStarExecutable) tarafından localhost
+    üzerinde sunulur.
+  version: "1.0.0"
+  license:
+    name: MIT
+    url: https://github.com/Trendyol/mockingstar/blob/main/LICENSE
+externalDocs:
+  description: MockingStar Documentation
+  url: https://trendyol.github.io/mockingstar/documentation/mockingstar/documentation
+servers:
+  # Relative URL so Swagger UI "Try it out" always hits the same host/port
+  # that is serving /docs (avoids localhost vs 127.0.0.1 CORS mismatches).
+  - url: /
+    description: Bu MockingStar instance (docs'u sunan host)
+tags:
+  - name: Mock
+    description: İstekleri mock'lama veya live backend'e proxy'leme
+  - name: Search
+    description: Proxy yapmadan var olan bir mock'u arama
+  - name: Scenario
+    description: Cihaz/senaryo bazlı mock seçimi yönetimi
+  - name: Modifiers
+    description: >
+      Mock/live response'ları JS transformer kodu ile kısmen değiştiren
+      (partial patch) modifier'ların CRUD ve toplu enable/disable yönetimi
+  - name: Health
+    description: Server canlılık kontrolü
+security: []  # MockingStar is an unauthenticated localhost-only dev server by design; no auth scheme applies.
+
+paths:
+  /mock:
+    post:
+      tags: [Mock]
+      summary: İsteği mock'la veya live backend'e ilet
+      description: >
+        Client, intercept ettiği HTTP isteğini bu endpoint'e POST eder.
+        MockingStar, path/method/scenario eşleşen bir mock bulursa onu döner;
+        bulamazsa (ve disableLiveEnvironment=true değilse) isteği gerçek
+        backend'e iletir, sonucu kaydeder ve aynen döner.
+      parameters:
+        - $ref: '#/components/parameters/MockDomainHeader'
+        - $ref: '#/components/parameters/DeviceIdHeader'
+        - $ref: '#/components/parameters/ScenarioHeader'
+        - $ref: '#/components/parameters/DisableLiveEnvironmentHeader'
+        - $ref: '#/components/parameters/DisableMockResponseHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockRequestBody'
+            examples:
+              githubSearch:
+                summary: GitHub repository search isteği
+                value:
+                  url: "https://api.github.com/search/repositories?q=MockingStar"
+                  method: "GET"
+                  header:
+                    Platform: "iphone"
+                    OSVersion: "17.0.1"
+                    Content-Type: "application/json"
+                  body: "TW9ja2luZ1N0YXI="
+      responses:
+        "200":
+          $ref: '#/components/responses/PassthroughResponse'
+        "404":
+          $ref: '#/components/responses/MockNotFound'
+        "501":
+          $ref: '#/components/responses/HandlerNotRegistered'
+    get:
+      tags: [Mock]
+      summary: İsteği mock'la veya live backend'e ilet (query param varyantı)
+      description: >
+        POST /mock ile aynı davranış, ancak body yerine query parametreleri
+        kullanılır. Header'lar key=value,key2=value2 formatında URL-encoded
+        tek bir header query param'ında taşınır.
+      parameters:
+        - $ref: '#/components/parameters/MockDomainHeader'
+        - $ref: '#/components/parameters/DeviceIdHeader'
+        - $ref: '#/components/parameters/ScenarioHeader'
+        - $ref: '#/components/parameters/DisableLiveEnvironmentHeader'
+        - $ref: '#/components/parameters/DisableMockResponseHeader'
+        - name: method
+          in: query
+          required: true
+          schema: { type: string, example: "GET" }
+          description: HTTP method (GET, POST, vb.)
+        - name: url
+          in: query
+          required: true
+          schema: { type: string, format: uri }
+          description: URL-encoded hedef URL.
+        - name: header
+          in: query
+          required: false
+          schema: { type: string, example: "Authorization=Bearer%20token,Content-Type=application/json" }
+          description: "URL-encoded, virgülle ayrılmış key=value header listesi."
+        - name: body
+          in: query
+          required: false
+          schema: { type: string, format: byte }
+          description: Base64 encoded request body.
+        - name: mockDomain
+          in: query
+          required: false
+          schema: { type: string }
+          description: mockDomain header'ının query param alternatifi (GET varyantında ayrıca query'den de okunur).
+        - name: deviceId
+          in: query
+          required: false
+          schema: { type: string }
+          description: deviceId header'ının query param alternatifi.
+        - name: scenario
+          in: query
+          required: false
+          schema: { type: string }
+          description: scenario header'ının query param alternatifi.
+      responses:
+        "200":
+          $ref: '#/components/responses/PassthroughResponse'
+        "400":
+          description: "method veya url query parametresi eksik/geçersiz."
+        "404":
+          $ref: '#/components/responses/MockNotFound'
+        "501":
+          $ref: '#/components/responses/HandlerNotRegistered'
+
+  /search:
+    post:
+      tags: [Search]
+      summary: Var olan bir mock'u proxy yapmadan ara
+      description: >
+        /mock'un aksine, bu endpoint live backend'e hiç gitmez — sadece
+        MockingStar'ın diskte kayıtlı mock'ları arasında path/method/scenario
+        eşleşmesi arar.
+      parameters:
+        - $ref: '#/components/parameters/MockDomainHeader'
+        - $ref: '#/components/parameters/DeviceIdHeader'
+        - $ref: '#/components/parameters/DisableLiveEnvironmentHeader'
+        - $ref: '#/components/parameters/DisableMockResponseHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequestBody'
+            examples:
+              default:
+                value:
+                  method: "GET"
+                  path: "/search/repositories"
+                  scenario: "EmptyResponse"
+      responses:
+        "200":
+          $ref: '#/components/responses/PassthroughResponse'
+        "404":
+          $ref: '#/components/responses/MockNotFound'
+        "501":
+          $ref: '#/components/responses/HandlerNotRegistered'
+
+  /scenario:
+    put:
+      tags: [Scenario]
+      summary: Cihaz/path bazlı bir senaryo ata
+      description: >
+        Belirtilen deviceId + path + method kombinasyonu için bundan sonra
+        hangi senaryonun kullanılacağını ayarlar. İlgili senaryo mock'u yoksa,
+        MockingStar live isteği atıp sonucu o senaryo adıyla kaydeder.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioModel'
+            examples:
+              default:
+                value:
+                  deviceId: "123"
+                  path: "/search/repositories"
+                  method: "GET"
+                  scenario: "EmptyResponse"
+                  mockDomain: "Dev"
+      responses:
+        "202":
+          description: Senaryo başarıyla kaydedildi.
+        "501":
+          $ref: '#/components/responses/HandlerNotRegistered'
+    delete:
+      tags: [Scenario]
+      summary: Cihaz/path bazlı bir senaryo ataması sil
+      description: PUT ile aynı body — belirtilen kombinasyon için senaryo ataması kaldırılır.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioModel'
+      responses:
+        "202":
+          description: Senaryo başarıyla silindi.
+        "501":
+          $ref: '#/components/responses/HandlerNotRegistered'
+
+  /modifiers:
+    get:
+      tags: [Modifiers]
+      summary: Domain için tanımlı tüm modifier'ları listele
+      description: >
+        Belirtilen domain'in `Modifiers` klasöründeki tüm `.js` modifier
+        dosyalarını parse edip döner.
+      parameters:
+        - $ref: '#/components/parameters/DomainQuery'
+      responses:
+        "200":
+          description: Modifier listesi.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Modifier'
+        "501":
+          $ref: '#/components/responses/HandlerNotRegistered'
+    post:
+      tags: [Modifiers]
+      summary: Yeni bir modifier oluştur
+      description: >
+        Aynı `id`'ye sahip bir modifier zaten varsa `409` döner; dosya
+        oluşturmaz/üzerine yazmaz.
+      parameters:
+        - $ref: '#/components/parameters/DomainQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Modifier'
+      responses:
+        "201":
+          description: Modifier oluşturuldu.
+        "409":
+          description: Aynı `id`'ye sahip bir modifier zaten var.
+        "501":
+          $ref: '#/components/responses/HandlerNotRegistered'
+    put:
+      tags: [Modifiers]
+      summary: Toplu enable/disable
+      description: >
+        `domain` query param'ı verilirse sadece o domain'deki modifier'lar
+        güncellenir; verilmezse diskteki `Domains/*/Modifiers` altındaki tüm
+        domain'lere uygulanır.
+      parameters:
+        - $ref: '#/components/parameters/DomainQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModifierBulkUpdate'
+      responses:
+        "202":
+          description: Modifier'lar başarıyla güncellendi.
+        "501":
+          $ref: '#/components/responses/HandlerNotRegistered'
+
+  /modifiers/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+        description: Modifier'ın (dosya adının uzantısız hali) benzersiz kimliği.
+    get:
+      tags: [Modifiers]
+      summary: Id ile tek bir modifier getir
+      parameters:
+        - $ref: '#/components/parameters/DomainQuery'
+      responses:
+        "200":
+          description: Modifier bulundu.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Modifier'
+        "404":
+          description: Belirtilen id ile modifier bulunamadı.
+        "501":
+          $ref: '#/components/responses/HandlerNotRegistered'
+    put:
+      tags: [Modifiers]
+      summary: Var olan bir modifier'ı güncelle
+      parameters:
+        - $ref: '#/components/parameters/DomainQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Modifier'
+      responses:
+        "202":
+          description: Modifier başarıyla güncellendi.
+        "501":
+          $ref: '#/components/responses/HandlerNotRegistered'
+    delete:
+      tags: [Modifiers]
+      summary: Bir modifier'ı sil
+      parameters:
+        - $ref: '#/components/parameters/DomainQuery'
+      responses:
+        "202":
+          description: Modifier başarıyla silindi.
+        "501":
+          $ref: '#/components/responses/HandlerNotRegistered'
+
+  /hello:
+    get:
+      tags: [Health]
+      summary: Server canlılık kontrolü
+      description: >
+        Parametre almaz, her zaman 418 döner (kasıtlı "I'm a teapot" — server'ın
+        ayakta olup olmadığını kontrol etmek için kullanılır, gerçek bir hata değildir).
+      responses:
+        "418":
+          description: Server ayakta ve istek kabul ediyor.
+
+components:
+  parameters:
+    MockDomainHeader:
+      name: mockDomain
+      in: header
+      required: false
+      schema: { type: string, default: "Dev" }
+      description: Mock'ları takım/proje bazlı ayırmak için domain adı.
+    DeviceIdHeader:
+      name: deviceId
+      in: header
+      required: false
+      schema: { type: string }
+      description: Aynı anda birden fazla client/simulator/emulator'ı ayırt etmek için.
+    ScenarioHeader:
+      name: scenario
+      in: header
+      required: false
+      schema: { type: string }
+      description: Aynı endpoint için farklı response senaryosu seçimi.
+    DisableLiveEnvironmentHeader:
+      name: disableLiveEnvironment
+      in: header
+      required: false
+      schema: { type: boolean, default: false }
+      description: >
+        true ise sadece mock kullanılır; mock bulunamazsa live'a hiç gidilmez,
+        404 döner. CI/CD ortamlarında canlıya sızmayı engellemek için kullanılır.
+    DisableMockResponseHeader:
+      name: disableMockResponse
+      in: header
+      required: false
+      schema: { type: boolean, default: false }
+      description: >
+        true ise mock hiç kullanılmaz, her zaman live backend'e gidilir.
+    DomainQuery:
+      name: domain
+      in: query
+      required: false
+      schema: { type: string, default: "Dev" }
+      description: >
+        Modifier'ların ait olduğu domain. `PUT /modifiers` bulk update'inde
+        bu parametre verilmezse işlem tüm domain'lere uygulanır.
+
+  schemas:
+    MockRequestBody:
+      type: object
+      required: [url, method]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Mock'lanacak veya proxy'lenecek hedef URL.
+        method:
+          type: string
+          description: HTTP method.
+          example: "GET"
+        header:
+          type: object
+          additionalProperties: { type: string }
+          description: Orijinal istekteki header'lar (opsiyonel).
+        body:
+          type: string
+          format: byte
+          description: Base64 encoded request body (opsiyonel).
+    SearchRequestBody:
+      type: object
+      required: [method, path, scenario]
+      properties:
+        method:
+          type: string
+          example: "GET"
+        path:
+          type: string
+          example: "/search/repositories"
+        scenario:
+          type: string
+          description: Boş string olabilir (senaryo belirtilmemiş anlamına gelir).
+    ScenarioModel:
+      type: object
+      required: [deviceId, path, scenario, mockDomain]
+      properties:
+        deviceId:
+          type: string
+        path:
+          type: string
+        method:
+          type: [string, "null"]
+          description: Opsiyonel — null ise tüm method'lar için geçerli olur.
+        scenario:
+          type: string
+        mockDomain:
+          type: string
+    Modifier:
+      type: object
+      required: [id, path, method, enabled, priority, transformerCode]
+      properties:
+        id:
+          type: string
+          description: Modifier dosya adının uzantısız hali, benzersiz kimlik.
+        path:
+          type: string
+          description: Modifier'ın eşleşeceği istek path'i.
+        method:
+          type: string
+          description: Modifier'ın eşleşeceği HTTP method'u.
+          example: "GET"
+        scenario:
+          type: [string, "null"]
+          description: Eşleşme için gereken senaryo adı; null ise senaryo'dan bağımsız eşleşir.
+        enabled:
+          type: boolean
+          description: false ise modifier eşleşse bile hiç çalıştırılmaz.
+        priority:
+          type: integer
+          description: Aynı path/method/scenario için birden fazla modifier eşleşirse çalışma sırası (küçük önce).
+        sampleMockRequestId:
+          type: [string, "null"]
+          description: Modifier düzenleme UI'ında örnek göstermek için referans alınan mock id'si (opsiyonel).
+        transformerCode:
+          type: string
+          description: >
+            `function transformer(req, chain) { ... }` içeren JS kaynak kodu
+            (metadata `var` tanımlarıyla birlikte, dosyanın tamamı).
+    ModifierBulkUpdate:
+      type: object
+      required: [enabled]
+      properties:
+        enabled:
+          type: boolean
+          description: Toplu olarak set edilecek enabled değeri.
+
+  responses:
+    PassthroughResponse:
+      description: >
+        Mock'lanmış veya live backend'den gelen response, olduğu gibi.
+        Şema, hangi API'nin mock'landığına bağlıdır — burada sabit değildir.
+      content:
+        "*/*":
+          schema:
+            type: object
+            additionalProperties: true
+    MockNotFound:
+      description: Mock bulunamadı ve disableLiveEnvironment=true olduğu için live'a gidilmedi.
+      content:
+        text/plain:
+          schema: { type: string }
+    HandlerNotRegistered:
+      description: >
+        Server içi hata — ilgili handler henüz register edilmemiş
+        (uygulama başlatma sırasında oluşabilecek geçici bir durum).

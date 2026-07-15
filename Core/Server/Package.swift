@@ -23,6 +23,9 @@ let package = Package(
             dependencies: [
                 "CommonKit",
                 "FlyingFox",
+            ],
+            resources: [
+                .copy("Resources/OpenAPI"),
             ]),
         .testTarget(
             name: "ServerTests",

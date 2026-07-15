@@ -13,6 +13,7 @@ public protocol ServerInterface {
     func registerMockHandler(_ handler: ServerMockHandlerInterface)
     func registerMockSearchHandler(_ handler: ServerMockSearchHandlerInterface)
     func registerScenarioHandler(_ handler: ScenarioHandlerInterface)
+    func registerModifierHandler(_ handler: ServerModifierHandlerInterface)
 }
 
 public final class Server: ServerInterface {
@@ -34,11 +35,31 @@ public final class Server: ServerInterface {
     }
 
     func prepareServer() async {
-        await server.appendRoute("POST /mock", to: HandleMock())
-        await server.appendRoute("GET /mock", to: HandleMock())
-        await server.appendRoute("POST /search", to: HandleSearchMock())
-        await server.appendRoute("/scenario", to: HandleScenario())
-        await server.appendRoute("GET /hello") { _ in return .init(statusCode: .teapot) }
+        // CORS: Swagger "Try it out" often runs cross-origin (localhost vs 127.0.0.1,
+        // or IDE embedded browsers). Preflight + response headers keep fetch working.
+        await server.appendRoute("OPTIONS *", to: CORSHandler(wrapping: ClosureHTTPHandler { _ in
+            CORSHeaders.preflightResponse()
+        }))
+
+        await server.appendRoute("POST /mock", to: CORSHandler(wrapping: HandleMock()))
+        await server.appendRoute("GET /mock", to: CORSHandler(wrapping: HandleMock()))
+        await server.appendRoute("POST /search", to: CORSHandler(wrapping: HandleSearchMock()))
+        await server.appendRoute("/scenario", to: CORSHandler(wrapping: HandleScenario()))
+        await server.appendRoute("GET /modifiers", to: CORSHandler(wrapping: HandleModifier()))
+        await server.appendRoute("GET /modifiers/*", to: CORSHandler(wrapping: HandleModifier()))
+        await server.appendRoute("POST /modifiers", to: CORSHandler(wrapping: HandleModifier()))
+        await server.appendRoute("PUT /modifiers", to: CORSHandler(wrapping: HandleModifier()))
+        await server.appendRoute("PUT /modifiers/*", to: CORSHandler(wrapping: HandleModifier()))
+        await server.appendRoute("DELETE /modifiers/*", to: CORSHandler(wrapping: HandleModifier()))
+        await server.appendRoute("GET /hello", to: CORSHandler(wrapping: ClosureHTTPHandler { _ in
+            .init(statusCode: .teapot)
+        }))
+        await server.appendRoute("GET /openapi.yaml", to: CORSHandler(wrapping: HandleDocs()))
+        await server.appendRoute("GET /docs", to: CORSHandler(wrapping: .redirect(to: "/docs/index.html")))
+        await server.appendRoute(
+            "GET /docs/*",
+            to: CORSHandler(wrapping: .directory(for: .module, subPath: "OpenAPI/swagger-ui", serverPath: "docs"))
+        )
     }
 
     public func startServer(onError: @escaping (Error) -> Void) {
@@ -120,5 +141,10 @@ public final class Server: ServerInterface {
     public func registerScenarioHandler(_ handler: ScenarioHandlerInterface) {
         logger.debug("Server register handler \(String(describing: handler))")
         HandleScenario.handler = handler
+    }
+
+    public func registerModifierHandler(_ handler: ServerModifierHandlerInterface) {
+        logger.debug("Server register handler \(String(describing: handler))")
+        HandleModifier.handler = handler
     }
 }
