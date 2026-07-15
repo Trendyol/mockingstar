@@ -36,4 +36,14 @@ final class FileUrlBuilderTests: XCTestCase {
         let url = try builder.configsFolderUrl(for: "LocalDevelopment")
         XCTAssertEqual(url, URL(filePath: "/MockServer/Domains/LocalDevelopment/Configs"))
     }
+
+    func test_modifierFolderUrl_ReturnsModifiersFolderUrl() throws {
+        let url = try builder.modifierFolderUrl(for: "LocalDevelopment")
+        XCTAssertEqual(url, URL(filePath: "/MockServer/Domains/LocalDevelopment/Modifiers"))
+    }
+
+    func test_modifierFileUrl_ReturnsJsFileUrl() throws {
+        let url = try builder.modifierFileUrl(for: "LocalDevelopment", id: "test-modifier")
+        XCTAssertEqual(url, URL(filePath: "/MockServer/Domains/LocalDevelopment/Modifiers/test-modifier.js"))
+    }
 }

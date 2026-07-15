@@ -62,6 +62,22 @@ public final class MockFileManager: FileManagerInterface {
         invokedWriteParametersList.append((url, fileName, model, ()))
     }
 
+    public var invokedWriteContent = false
+    public var invokedWriteContentCount = 0
+    public var invokedWriteContentParameters: (content: String, url: URL, Void)?
+    public var invokedWriteContentParametersList: [(content: String, url: URL, Void)] = []
+    public var stubbedWriteContentError: Error? = nil
+    public func write(_ content: String, to url: URL) throws {
+        invokedWriteContent = true
+        invokedWriteContentCount += 1
+        invokedWriteContentParameters = (content, url, ())
+        invokedWriteContentParametersList.append((content, url, ()))
+
+        if let stubbedWriteContentError {
+            throw stubbedWriteContentError
+        }
+    }
+
     public var invokedReadJSONFile = false
     public var invokedReadJSONFileCount = 0
     public var invokedReadJSONFileParameters: (url: URL, Void)?
