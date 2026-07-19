@@ -83,6 +83,32 @@ final class HandleMockTests: XCTestCase {
         XCTAssertEqual(response.statusCode.code, 501)
     }
 
+    func test_handleRequest_POST_WithRawStringBodyFallback() async throws {
+        // Given
+        let url = URL(string: "https://api.example.com/users")!
+        let bodyContentString = "{\"address\": \"Al Karama الكرامة دبي\"}"
+        
+        let jsonStr = """
+        {
+          "method": "POST",
+          "url": "https://api.example.com/users",
+          "body": "\(bodyContentString.replacingOccurrences(of: "\"", with: "\\\""))"
+        }
+        """
+        let bodyData = Data(jsonStr.utf8)
+
+        mockHandler.stubbedResult = (status: 201, body: Data(), headers: [:])
+
+        let request = HTTPRequest.make(method: .POST, path: "/mock", body: bodyData)
+
+        // When
+        let response = try await sut.handleRequest(request)
+
+        // Then
+        XCTAssertEqual(response.statusCode.code, 201)
+        XCTAssertEqual(mockHandler.invokedHandleParameters?.body, Data(bodyContentString.utf8))
+    }
+
     // MARK: - GET Request Tests
 
     func test_handleRequest_GET_Success() async throws {
