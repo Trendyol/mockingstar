@@ -137,4 +137,32 @@ private struct MockServerRequestModel: Codable {
         case header
         case body
     }
+
+    init(method: String, url: URL, header: [String: String]?, body: Data?) {
+        self.method = method
+        self.url = url
+        self.header = header
+        self.body = body
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        method = try container.decode(String.self, forKey: .method)
+        url = try container.decode(URL.self, forKey: .url)
+        header = try container.decodeIfPresent([String: String].self, forKey: .header)
+        
+        if let bodyString = try? container.decodeIfPresent(String.self, forKey: .body) {
+            if let data = Data(base64Encoded: bodyString) {
+                body = data
+            } else if let data = Data(base64Encoded: bodyString.padding(toLength: ((bodyString.count + 3) / 4) * 4, withPad: "=", startingAt: 0)) {
+                body = data
+            } else {
+                body = bodyString.data(using: .utf8)
+            }
+        } else if let bodyData = try? container.decodeIfPresent(Data.self, forKey: .body) {
+            body = bodyData
+        } else {
+            body = nil
+        }
+    }
 }
