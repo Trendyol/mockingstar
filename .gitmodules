@@ -1,0 +1,3 @@
+[submodule "Core/PluginCore/Vendor/QuickJS"]
+	path = Core/PluginCore/Vendor/QuickJS
+	url = https://github.com/bellard/quickjs.git
