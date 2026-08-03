@@ -20,8 +20,6 @@ let package = Package(
             name: "MockingStar",
             dependencies: [
                 "CommonKit",
-                .product(name: "PluginCore", package: "PluginCore", condition: .when(platforms: [.macOS])),
-                .product(name: "PluginCoreLinux", package: "PluginCore", condition: .when(platforms: [.linux])),
                 "MockingStarCore",
                 "Server",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),

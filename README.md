@@ -53,7 +53,7 @@ Mocking Star relies on these amazing open-source libraries:
 - [Swift Argument Parser](https://github.com/apple/swift-argument-parser) - Command-line argument parsing
 - [Swift Log](https://github.com/apple/swift-log) - Logging API for Swift
 - [Swift Syntax](https://github.com/apple/swift-syntax) - Swift syntax parsing
-- [SwiftyJS](https://github.com/yusufozgul/SwiftyJS) - JavaScript evaluation in Swift
+- [QuickJS](https://bellard.org/quickjs/) - Embedded JavaScript runtime (vendored under `Core/PluginCore`)
 
 ## License
 

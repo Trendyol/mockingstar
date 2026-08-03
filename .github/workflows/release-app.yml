@@ -22,6 +22,8 @@ jobs:
     steps:
     - name: Check out Repository
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Validate inputs
       run: |
@@ -171,4 +173,3 @@ jobs:
           security delete-keychain ${{ env.KEYCHAIN_PATH }} || true
           rm -rf ./certs
           rm -f ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/7a785103-ddb5-42f4-99b5-d7cdb5b6cae9.provisionprofile
-          

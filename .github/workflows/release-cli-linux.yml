@@ -14,6 +14,8 @@ jobs:
     steps:
     - name: Check out Repository
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - uses: swift-actions/setup-swift@v2
       with:

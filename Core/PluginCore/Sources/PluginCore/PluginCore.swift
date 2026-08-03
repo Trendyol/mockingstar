@@ -3,7 +3,6 @@
 
 import CommonKit
 import Foundation
-import JavaScriptCore
 
 public protocol PluginInterface {
     func configAvailablePlugins() -> [ConfigurablePluginModel]
@@ -127,10 +126,10 @@ public final class Plugin {
             let commonPluginURL: URL = try fileUrlBuilder.commonPluginFolderUrl().appending(path: type.fileName)
 
             if fileManager.fileExist(atPath: pluginURL.path()) {
-                logger.info("\(mockDomain) has no \(type.rawValue) plugin")
+                logger.info("\(mockDomain) has \(type.rawValue) plugin")
                 fileURL = pluginURL
             } else if fileManager.fileExist(atPath: commonPluginURL.path()) {
-                logger.info("Project has no plugin")
+                logger.info("Using common \(type.rawValue) plugin")
                 fileURL = commonPluginURL
             } else {
                 return
@@ -153,15 +152,14 @@ public final class Plugin {
     ///
     /// All plugin configurable but plugin JavaScript file must define `config` variable and it shouldn't empty array.
     public func configAvailablePlugins() -> [ConfigurablePluginModel] {
-        let plugin = ConfigurablePluginJSBridge()
-
         return plugins.compactMap { type, code in
-            plugin.loadFrom(jsCode: code, resetContext: true)
-
-            if let configs = try? plugin.config, !configs.isEmpty {
-                return .init(pluginType: type, configs: configs)
+            guard let plugin = try? PluginJavaScriptBridge(),
+                   (try? plugin.loadFrom(jsCode: code)) != nil,
+                   let configs = try? plugin.config,
+                   !configs.isEmpty else {
+                return nil
             }
-            return nil
+            return .init(pluginType: type, configs: configs)
         }
     }
 }
@@ -173,9 +171,8 @@ extension Plugin: PluginInterface {
     public func requestReloaderPlugin(request: URLRequestModel) throws -> URLRequestModel {
         guard let pluginCode = plugins[.requestReloader] else { return request }
 
-        let plugin = RequestReloaderPluginJSBridge()
-        plugin.loadFrom(jsCode: pluginCode)
-        plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
+        let plugin = try RequestReloaderPluginJSBridge()
+        try plugin.loadFrom(jsCode: pluginCode)
 
         if let configs = storage[.requestReloader]?.wrappedValue {
             try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
@@ -190,9 +187,8 @@ extension Plugin: PluginInterface {
     public func liveRequestPlugin(request: URLRequestModel) throws -> URLRequestModel {
         guard let pluginCode = plugins[.liveRequestUpdater] else { return request }
 
-        let plugin = LiveRequestPluginJSBridge()
-        plugin.loadFrom(jsCode: pluginCode)
-        plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
+        let plugin = try LiveRequestPluginJSBridge()
+        try plugin.loadFrom(jsCode: pluginCode)
 
         if let configs = storage[.liveRequestUpdater]?.wrappedValue {
             try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
@@ -207,9 +203,8 @@ extension Plugin: PluginInterface {
     public func mockErrorPlugin(message: String) throws -> String {
         guard let pluginCode = plugins[.mockError] else { return .init() }
 
-        let plugin = MockErrorPluginJSBridge()
-        plugin.loadFrom(jsCode: pluginCode)
-        plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
+        let plugin = try MockErrorPluginJSBridge()
+        try plugin.loadFrom(jsCode: pluginCode)
 
         if let configs = storage[.mockError]?.wrappedValue {
             try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
@@ -224,9 +219,8 @@ extension Plugin: PluginInterface {
     public func mockDetailMessagePlugin(mock: MockModel) throws -> String {
         guard let pluginCode = plugins[.mockDetailMessages] else { return .init() }
 
-        let plugin = MockDetailHelperPluginJSBridge()
-        plugin.loadFrom(jsCode: pluginCode)
-        plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
+        let plugin = try MockDetailHelperPluginJSBridge()
+        try plugin.loadFrom(jsCode: pluginCode)
 
         if let configs = storage[.mockDetailMessages]?.wrappedValue {
             try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
@@ -246,9 +240,8 @@ extension Plugin: PluginInterface {
     public func asyncMockDetailMessagePlugin(mock: MockModel) async throws -> String {
         guard let pluginCode = plugins[.mockDetailMessages] else { return .init() }
 
-        let plugin = MockDetailHelperPluginJSBridge()
-        plugin.loadFrom(jsCode: pluginCode)
-        plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
+        let plugin = try MockDetailHelperPluginJSBridge()
+        try plugin.loadFrom(jsCode: pluginCode)
 
         if let configs = storage[.mockDetailMessages]?.wrappedValue {
             try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
