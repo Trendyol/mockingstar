@@ -18,10 +18,15 @@ public struct MockListView: View {
     @AppStorage("isFirstOpen") private var isFirstOpen: Bool = true
     @State private var isSearchActive: Bool = false
     @State private var shouldShowMockImportView: Bool = false
+    private let onCreateModifier: (ModifierCreationSeed) -> Void
     private let deeplinkStore = DeeplinkStore.shared
     
-    public init(viewModel: MockListViewModel) {
+    public init(
+        viewModel: MockListViewModel,
+        onCreateModifier: @escaping (ModifierCreationSeed) -> Void = { _ in }
+    ) {
         self.viewModel = viewModel
+        self.onCreateModifier = onCreateModifier
     }
     
     public var body: some View {
@@ -129,17 +134,7 @@ public struct MockListView: View {
         GeometryReader { geometryProxy in
             Table(viewModel.mockListUIModel, selection: $viewModel.selected, sortOrder: $viewModel.sortOrder, columnCustomization: $columnCustomization) {
                 TableColumn("Method", value: \.metaData.method) { mock in
-                    HStack {
-                        Spacer()
-                        Text(mock.metaData.method)
-                            .foregroundStyle(.white)
-                            .font(.callout.monospaced())
-                        Spacer()
-                    }
-                    .padding(.vertical, 5)
-                    .padding(.horizontal, 2)
-                    .background(MethodColor.method(name: mock.metaData.method).color)
-                    .clipShape(.rect(cornerRadius: 6))
+                    HTTPMethodBadge(method: mock.metaData.method)
                 }
                 .width(min: 50, ideal: 60, max: 70)
                 .customizationID("Method")
@@ -209,6 +204,11 @@ public struct MockListView: View {
                                 navigationStore.path.append(.mock(mock))
                             }
                         }
+                    }
+                    Button("Create Modifier") {
+                        guard let id = selections.first,
+                              let mock = viewModel.mock(id: id) else { return }
+                        onCreateModifier(ModifierCreationSeed(mock: mock))
                     }
                     Divider()
                 }

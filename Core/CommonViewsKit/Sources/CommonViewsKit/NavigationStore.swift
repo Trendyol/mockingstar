@@ -17,12 +17,16 @@ public enum Route: Hashable, Equatable {
     case pluginConfiguration(plugin: String)
     case logs
     case fileIntegrityCheck
+    case modifiers
+    case modifier(id: String, previewSeed: ModifierCreationSeed? = nil)
 }
 
 @Observable
 public final class NavigationStore {
     @ObservationIgnored public static let shared = NavigationStore()
     public var path: [Route] = []
+
+    public init() {}
 
     public func open(_ route: Route, animated: Bool = true) {
         guard Thread.isMainThread else {
@@ -49,6 +53,21 @@ public final class NavigationStore {
             }
         } else {
             path = path.dropLast()
+        }
+    }
+
+    public func replaceLast(with route: Route, animated: Bool = false) {
+        guard !path.isEmpty else {
+            open(route, animated: animated)
+            return
+        }
+        let replace = {
+            self.path[self.path.index(before: self.path.endIndex)] = route
+        }
+        if animated {
+            withAnimation { replace() }
+        } else {
+            replace()
         }
     }
 
