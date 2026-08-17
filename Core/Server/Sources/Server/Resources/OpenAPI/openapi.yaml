@@ -28,7 +28,8 @@ tags:
   - name: Modifiers
     description: >
       Mock/live response'ları JS transformer kodu ile kısmen değiştiren
-      (partial patch) modifier'ların CRUD ve toplu enable/disable yönetimi
+      (partial patch) modifier'ların CRUD ve cihaz bazlı aktif set yönetimi.
+      Aktif set process belleğindedir ve restart sonrası sıfırlanır.
   - name: Health
     description: Server canlılık kontrolü
 security: []  # MockingStar is an unauthenticated localhost-only dev server by design; no auth scheme applies.
@@ -213,9 +214,11 @@ paths:
       summary: Domain için tanımlı tüm modifier'ları listele
       description: >
         Belirtilen domain'in `Modifiers` klasöründeki tüm `.js` modifier
-        dosyalarını parse edip döner.
+        dosyalarını parse edip döner. `enabled` alanı, `deviceId` header'ına
+        göre o cihazın aktif setinde olup olmadığını gösterir.
       parameters:
         - $ref: '#/components/parameters/DomainQuery'
+        - $ref: '#/components/parameters/DeviceIdHeader'
       responses:
         "200":
           description: Modifier listesi.
@@ -231,8 +234,8 @@ paths:
       tags: [Modifiers]
       summary: Yeni bir modifier oluştur
       description: >
-        Aynı `id`'ye sahip bir modifier zaten varsa `409` döner; dosya
-        oluşturmaz/üzerine yazmaz.
+        `id` dosya adını belirler ve diskte `{id}.js` olarak saklanır. Aynı
+        `id` varsa `409` döner. JavaScript dosyasına `id`/`enabled` yazılmaz.
       parameters:
         - $ref: '#/components/parameters/DomainQuery'
       requestBody:
@@ -240,32 +243,48 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Modifier'
+              $ref: '#/components/schemas/ModifierWriteRequest'
+            example:
+              id: "discount"
+              path: "/cart"
+              method: "GET"
+              scenario: null
+              order: 1
+              sampleMockRequestId: null
+              transformerCode: "function transformer(req, chain) { return chain.proceed(req) }"
       responses:
         "201":
           description: Modifier oluşturuldu.
+        "400":
+          description: Geçersiz id veya payload.
         "409":
           description: Aynı `id`'ye sahip bir modifier zaten var.
         "501":
           $ref: '#/components/responses/HandlerNotRegistered'
     put:
       tags: [Modifiers]
-      summary: Toplu enable/disable
+      summary: Cihaz için aktif modifier id setini değiştir
       description: >
-        `domain` query param'ı verilirse sadece o domain'deki modifier'lar
-        güncellenir; verilmezse diskteki `Domains/*/Modifiers` altındaki tüm
-        domain'lere uygulanır.
+        Body ham bir string dizisidir (ör. `["discount","latency"]`). Verilen
+        `deviceId` için aktif set atomik olarak değiştirilir. Eksik `deviceId`
+        default instance demektir. Eksik `domain` `Dev` kabul edilir. Bilinmeyen
+        id varsa tüm güncelleme reddedilir (`400`). Restart sonrası set boştur.
       parameters:
         - $ref: '#/components/parameters/DomainQuery'
+        - $ref: '#/components/parameters/DeviceIdHeader'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModifierBulkUpdate'
+              type: array
+              items: { type: string }
+            example: ["discount", "latency"]
       responses:
         "202":
-          description: Modifier'lar başarıyla güncellendi.
+          description: Aktif set başarıyla güncellendi.
+        "400":
+          description: Bilinmeyen/duplicate/geçersiz id veya bozuk JSON.
         "501":
           $ref: '#/components/responses/HandlerNotRegistered'
 
@@ -281,6 +300,7 @@ paths:
       summary: Id ile tek bir modifier getir
       parameters:
         - $ref: '#/components/parameters/DomainQuery'
+        - $ref: '#/components/parameters/DeviceIdHeader'
       responses:
         "200":
           description: Modifier bulundu.
@@ -295,6 +315,10 @@ paths:
     put:
       tags: [Modifiers]
       summary: Var olan bir modifier'ı güncelle
+      description: >
+        Path `{id}` mevcut dosyayı tanımlar. Body'de farklı bir `id` gönderilirse
+        rename istenir; hedef id zaten varsa `409` döner. Dosya canonical
+        metadata + transformer olarak yeniden yazılır.
       parameters:
         - $ref: '#/components/parameters/DomainQuery'
       requestBody:
@@ -302,20 +326,86 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Modifier'
+              $ref: '#/components/schemas/ModifierWriteRequest'
       responses:
         "202":
           description: Modifier başarıyla güncellendi.
+        "400":
+          description: Geçersiz id veya payload.
+        "404":
+          description: Modifier bulunamadı.
+        "409":
+          description: Rename hedef id zaten mevcut.
         "501":
           $ref: '#/components/responses/HandlerNotRegistered'
     delete:
       tags: [Modifiers]
       summary: Bir modifier'ı sil
+      description: Dosyayı siler ve domain içindeki tüm cihaz aktif setlerinden id'yi temizler.
       parameters:
         - $ref: '#/components/parameters/DomainQuery'
       responses:
         "202":
           description: Modifier başarıyla silindi.
+        "404":
+          description: Modifier bulunamadı.
+        "501":
+          $ref: '#/components/responses/HandlerNotRegistered'
+
+  /modifiers/preview:
+    post:
+      tags: [Modifiers]
+      summary: Preview an unsaved modifier draft
+      description: >
+        Unsaved draft ile preview çalıştırır. HTTP `200` başarılı preview
+        anlamına gelir; dönüştürülmüş status body'deki `status` alanındadır.
+        Hata durumunda `400`/`404`/`409`/`422`/`502` ve
+        `ModifierAPIErrorResponse` döner (`execution_failed`, `invalid_request`,
+        `not_found`, `conflict`, `live_proxy_failed`).
+      parameters:
+        - $ref: '#/components/parameters/DomainQuery'
+        - $ref: '#/components/parameters/DeviceIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModifierPreviewRequest'
+            example:
+              currentModifierId: discount
+              modifier:
+                id: discount-v2
+                path: /cart
+                method: GET
+                scenario: checkout
+                order: 1
+                sampleMockRequestId: mock-123
+                transformerCode: "function transformer(req, chain) { return chain.proceed(req) }"
+              request:
+                url: https://example.com/cart
+                method: GET
+                scenario: checkout
+                headers:
+                  Accept: application/json
+                bodyBase64: ""
+              source: mock
+      responses:
+        "200":
+          description: Preview completed; status is wrapped in the body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModifierPreviewResponse'
+        "400":
+          $ref: '#/components/responses/ModifierPreviewError'
+        "404":
+          $ref: '#/components/responses/ModifierPreviewError'
+        "409":
+          $ref: '#/components/responses/ModifierPreviewError'
+        "422":
+          $ref: '#/components/responses/ModifierPreviewError'
+        "502":
+          $ref: '#/components/responses/ModifierPreviewError'
         "501":
           $ref: '#/components/responses/HandlerNotRegistered'
 
@@ -371,8 +461,7 @@ components:
       required: false
       schema: { type: string, default: "Dev" }
       description: >
-        Modifier'ların ait olduğu domain. `PUT /modifiers` bulk update'inde
-        bu parametre verilmezse işlem tüm domain'lere uygulanır.
+        Modifier'ların ait olduğu domain. Verilmezse `Dev` kullanılır.
 
   schemas:
     MockRequestBody:
@@ -425,11 +514,11 @@ components:
           type: string
     Modifier:
       type: object
-      required: [id, path, method, enabled, priority, transformerCode]
+      required: [id, path, method, enabled, order, transformerCode]
       properties:
         id:
           type: string
-          description: Modifier dosya adının uzantısız hali, benzersiz kimlik.
+          description: Dosya adının uzantısız hali; JS içine yazılmaz, API yanıtında türetilir.
         path:
           type: string
           description: Modifier'ın eşleşeceği istek path'i.
@@ -442,25 +531,103 @@ components:
           description: Eşleşme için gereken senaryo adı; null ise senaryo'dan bağımsız eşleşir.
         enabled:
           type: boolean
-          description: false ise modifier eşleşse bile hiç çalıştırılmaz.
-        priority:
+          description: >
+            İstek yapan `deviceId` için aktif sette olup olmadığı. Diskte tutulmaz.
+        order:
           type: integer
-          description: Aynı path/method/scenario için birden fazla modifier eşleşirse çalışma sırası (küçük önce).
+          minimum: 1
+          description: >
+            Aynı path/method/scenario için çalışma sırası. Küçük olan dışarıda/önce
+            çalışır (1, 2, 3...).
         sampleMockRequestId:
           type: [string, "null"]
           description: Modifier düzenleme UI'ında örnek göstermek için referans alınan mock id'si (opsiyonel).
         transformerCode:
           type: string
           description: >
-            `function transformer(req, chain) { ... }` içeren JS kaynak kodu
-            (metadata `var` tanımlarıyla birlikte, dosyanın tamamı).
-    ModifierBulkUpdate:
+            `function transformer(req, chain) { ... }` JS kaynak kodu. API yanıtında
+            metadata satırları olmadan transformer gövdesi döner.
+    ModifierWriteRequest:
       type: object
-      required: [enabled]
+      required: [path, method, order, transformerCode]
       properties:
-        enabled:
-          type: boolean
-          description: Toplu olarak set edilecek enabled değeri.
+        id:
+          type: string
+          description: >
+            Create için zorunlu. Update'te opsiyonel; path `{id}` ile farklı bir
+            değer gönderilirse rename istenir.
+        path:
+          type: string
+        method:
+          type: string
+        scenario:
+          type: [string, "null"]
+        order:
+          type: integer
+          minimum: 1
+          default: 1
+        sampleMockRequestId:
+          type: [string, "null"]
+        transformerCode:
+          type: string
+    ModifierPreviewHTTPRequest:
+      type: object
+      required: [url, method, headers, bodyBase64]
+      properties:
+        url:
+          type: string
+          format: uri
+        method:
+          type: string
+        scenario:
+          type: string
+          nullable: true
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        bodyBase64:
+          type: string
+          format: byte
+    ModifierPreviewRequest:
+      type: object
+      required: [currentModifierId, modifier, request, source]
+      properties:
+        currentModifierId:
+          type: string
+        modifier:
+          $ref: '#/components/schemas/ModifierWriteRequest'
+        request:
+          $ref: '#/components/schemas/ModifierPreviewHTTPRequest'
+        source:
+          type: string
+          enum: [mock, live]
+    ModifierPreviewResponse:
+      type: object
+      required: [status, headers, bodyBase64]
+      properties:
+        status:
+          type: integer
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        bodyBase64:
+          type: string
+          format: byte
+    ModifierAPIErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: >
+            Machine-readable error code. Examples: `invalid_request`,
+            `not_found`, `conflict`, `execution_failed`, `live_proxy_failed`,
+            `internal_error`.
+          example: execution_failed
+        message:
+          type: string
 
   responses:
     PassthroughResponse:
@@ -477,6 +644,15 @@ components:
       content:
         text/plain:
           schema: { type: string }
+    ModifierPreviewError:
+      description: Modifier preview failed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ModifierAPIErrorResponse'
+          example:
+            code: execution_failed
+            message: Transformer threw an error
     HandlerNotRegistered:
       description: >
         Server içi hata — ilgili handler henüz register edilmemiş
