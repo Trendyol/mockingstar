@@ -10,17 +10,15 @@ final class ModifierChainTests: XCTestCase {
         return request
     }
 
-    private func orderAppendingModifier(id: String, priority: Int) -> ModifierModel {
+    private func orderAppendingModifier(id: String, order: Int) -> ModifierModel {
         let code = """
-        var id = "\(id)"; var path = "/x"; var method = "GET"; var scenario = null;
-        var enabled = true; var priority = \(priority); var sampleMockRequestId = null;
         function transformer(req, chain) {
           var res = chain.proceed(req);
           res.body.order = (res.body.order || []).concat(["\(id)"]);
           return res;
         }
         """
-        return try! ModifierParser().parse(jsCode: code)
+        return ModifierModel(id: id, path: "/x", method: "GET", enabled: true, order: order, transformerCode: code)
     }
 
     func test_chain_ZeroModifiers_CallsTerminal() async throws {
@@ -35,10 +33,12 @@ final class ModifierChainTests: XCTestCase {
     }
 
     func test_chain_ThreeModifiers_UnwindsOuterLast() async throws {
+        // Lower order is outermost: a(1) enters first, c(3) is closest to terminal.
+        // Post-proceed response transforms unwind c -> b -> a.
         let modifiers = [
-            orderAppendingModifier(id: "a", priority: 0),
-            orderAppendingModifier(id: "b", priority: 1),
-            orderAppendingModifier(id: "c", priority: 2),
+            orderAppendingModifier(id: "a", order: 1),
+            orderAppendingModifier(id: "b", order: 2),
+            orderAppendingModifier(id: "c", order: 3),
         ]
 
         let chain = ModifierChain(modifiers: modifiers) { _ in
@@ -53,22 +53,20 @@ final class ModifierChainTests: XCTestCase {
     }
 
     func test_chain_InnerModifierThrows_OuterCannotHideFailure() async throws {
-        let outerCode = """
-        var id = "outer"; var path = "/x"; var method = "GET"; var scenario = null;
-        var enabled = true; var priority = 0; var sampleMockRequestId = null;
-        function transformer(req, chain) {
-          var res = chain.proceed(req);
-          res.status = 201;
-          return res;
-        }
-        """
-        let innerCode = """
-        var id = "inner"; var path = "/x"; var method = "GET"; var scenario = null;
-        var enabled = true; var priority = 1; var sampleMockRequestId = null;
-        function transformer(req, chain) { throw new Error("boom"); }
-        """
-        let outer = try ModifierParser().parse(jsCode: outerCode)
-        let inner = try ModifierParser().parse(jsCode: innerCode)
+        let outer = ModifierModel(
+            id: "outer", path: "/x", method: "GET", order: 1,
+            transformerCode: """
+            function transformer(req, chain) {
+              var res = chain.proceed(req);
+              res.status = 201;
+              return res;
+            }
+            """
+        )
+        let inner = ModifierModel(
+            id: "inner", path: "/x", method: "GET", order: 2,
+            transformerCode: "function transformer(req, chain) { throw new Error(\"boom\"); }"
+        )
 
         let chain = ModifierChain(modifiers: [outer, inner]) { _ in
             HTTPResult(status: 200, body: Data(), headers: [:])
@@ -76,7 +74,6 @@ final class ModifierChainTests: XCTestCase {
 
         do {
             let result = try await chain.proceed(request())
-            // The outer transformer must not be able to hide the inner failure behind a 201.
             XCTAssertNotEqual(result.status, 201)
             XCTAssertEqual(result.status, 500)
         } catch {
@@ -85,12 +82,10 @@ final class ModifierChainTests: XCTestCase {
     }
 
     func test_chain_ModifierThrows_PropagatesError() async throws {
-        let code = """
-        var id = "m"; var path = "/x"; var method = "GET"; var scenario = null;
-        var enabled = true; var priority = 0; var sampleMockRequestId = null;
-        function transformer(req, chain) { throw new Error("boom"); }
-        """
-        let modifier = try ModifierParser().parse(jsCode: code)
+        let modifier = ModifierModel(
+            id: "m", path: "/x", method: "GET", order: 1,
+            transformerCode: "function transformer(req, chain) { throw new Error(\"boom\"); }"
+        )
 
         let chain = ModifierChain(modifiers: [modifier]) { _ in
             HTTPResult(status: 200, body: Data(), headers: [:])
@@ -102,5 +97,28 @@ final class ModifierChainTests: XCTestCase {
         } catch {
             // Fail-closed: Core is expected to map any thrown error to HTTP 500.
         }
+    }
+
+    func test_chain_SingleModifier_CanReturnWithoutProceed() async throws {
+        let modifier = ModifierModel(
+            id: "mock", path: "/x", method: "GET", order: 1,
+            transformerCode: """
+            function transformer(req, chain) {
+              return { status: 200, body: { mocked: true }, headers: {} };
+            }
+            """
+        )
+
+        var terminalCalled = false
+        let chain = ModifierChain(modifiers: [modifier]) { _ in
+            terminalCalled = true
+            return HTTPResult(status: 500, body: Data(), headers: [:])
+        }
+
+        let result = try await chain.proceed(request())
+        XCTAssertFalse(terminalCalled)
+        XCTAssertEqual(result.status, 200)
+        let json = try JSONSerialization.jsonObject(with: result.body) as! [String: Any]
+        XCTAssertEqual(json["mocked"] as? Bool, true)
     }
 }

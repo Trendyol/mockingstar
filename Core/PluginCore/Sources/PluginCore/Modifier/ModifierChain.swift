@@ -5,13 +5,19 @@ enum ModifierChainError: Error {
     case chainDeallocated
 }
 
+public enum ModifierExecutionMode: String, Sendable {
+    case runtime
+    case preview
+}
+
 /// Orchestrates an ordered list of already-matched modifiers around a terminal handler.
 ///
-/// Modifiers are expected to be pre-sorted (priority asc, then id asc) by the caller
+/// Modifiers are expected to be pre-sorted (order asc, then id asc) by the caller
 /// (see `ModifierMatcher`). Index 0 is the outermost transformer; when the index reaches
 /// `modifiers.count`, `proceed` invokes `terminal` — the existing mock/live resolution.
 public final class ModifierChain {
     private let modifiers: [ModifierModel]
+    private let executionMode: ModifierExecutionMode
     private let terminal: (URLRequest) async throws -> HTTPResult
     private let executor = ModifierExecutor()
     private let logger = Logger(category: "ModifierChain")
@@ -19,8 +25,10 @@ public final class ModifierChain {
     private var index = 0
 
     public init(modifiers: [ModifierModel],
+                executionMode: ModifierExecutionMode = .runtime,
                 terminal: @escaping (URLRequest) async throws -> HTTPResult) {
         self.modifiers = modifiers
+        self.executionMode = executionMode
         self.terminal = terminal
     }
 
@@ -33,7 +41,11 @@ public final class ModifierChain {
 
         let modifier = modifiers[currentIndex]
 
-        return try executor.execute(modifier: modifier, request: request) { [weak self] innerRequest in
+        return try executor.execute(
+            modifier: modifier,
+            request: request,
+            executionMode: executionMode
+        ) { [weak self] innerRequest in
             guard let self else {
                 throw ModifierChainError.chainDeallocated
             }
@@ -45,7 +57,7 @@ public final class ModifierChain {
                 do {
                     outcome = .success(try await self.proceed(innerRequest))
                 } catch {
-                    self.logger.error("Modifier chain proceed failed: \(error)")
+                    self.logger.error("modifier chain proceed failed: \(error)")
                     outcome = .failure(error)
                 }
                 semaphore.signal()

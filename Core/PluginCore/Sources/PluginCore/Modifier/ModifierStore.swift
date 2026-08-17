@@ -4,11 +4,13 @@ import CommonKit
 public enum ModifierStoreError: LocalizedError {
     case alreadyExists(String)
     case notFound(String)
+    case invalidId(String)
 
     public var errorDescription: String? {
         switch self {
-        case .alreadyExists(let id): return "Modifier '\(id)' already exists"
+        case .alreadyExists(let id): return "modifier '\(id)' already exists"
         case .notFound(let id): return "modifier '\(id)' not found"
+        case .invalidId(let id): return "modifier id '\(id)' is invalid"
         }
     }
 }
@@ -17,10 +19,10 @@ public protocol ModifierStoreInterface {
     var domain: String { get }
     func list() throws -> [ModifierModel]
     func get(id: String) throws -> ModifierModel?
+    func get(ids: [String]) throws -> [ModifierModel]
     func create(_ model: ModifierModel) throws
-    func update(_ model: ModifierModel) throws
+    func update(currentId: String, with model: ModifierModel) throws
     func delete(id: String) throws
-    func setEnabledForAll(_ enabled: Bool) throws
 }
 
 public final class ModifierStore: ModifierStoreInterface {
@@ -43,8 +45,9 @@ public final class ModifierStore: ModifierStoreInterface {
         guard fileManager.fileOrDirectoryExists(atPath: folder.path()).isExist else { return [] }
         let files = try fileManager.folderContent(at: folder).filter { $0.pathExtension == "js" }
         return files.compactMap { url in
+            let filenameId = url.deletingPathExtension().lastPathComponent
             do {
-                return try parser.parse(jsCode: try fileManager.readFile(at: url))
+                return try parser.parse(jsCode: try fileManager.readFile(at: url), filenameId: filenameId)
             } catch {
                 logger.error("Modifier parse failed at \(url): \(error)")
                 return nil
@@ -53,46 +56,94 @@ public final class ModifierStore: ModifierStoreInterface {
     }
 
     public func get(id: String) throws -> ModifierModel? {
-        try list().first { $0.id == id }
+        try validateId(id)
+        let url = try fileUrlBuilder.modifierFileUrl(for: domain, id: id)
+        guard fileManager.fileExist(atPath: url.path()) else { return nil }
+        return try parser.parse(jsCode: try fileManager.readFile(at: url), filenameId: id)
+    }
+
+    /// Loads only the requested modifier files by filename. Missing IDs are omitted.
+    public func get(ids: [String]) throws -> [ModifierModel] {
+        var result: [ModifierModel] = []
+        result.reserveCapacity(ids.count)
+        for id in ids {
+            if let model = try get(id: id) {
+                result.append(model)
+            }
+        }
+        return result
     }
 
     public func create(_ model: ModifierModel) throws {
+        try validateId(model.id)
         let url = try fileUrlBuilder.modifierFileUrl(for: domain, id: model.id)
         guard !fileManager.fileExist(atPath: url.path()) else {
             throw ModifierStoreError.alreadyExists(model.id)
         }
-        try fileManager.write(model.transformerCode, to: url)
-        logger.info("Modifier created for domain \(domain), id \(model.id)")
+        try fileManager.write(parser.serialize(model), to: url)
+        logger.info("Modifier created", metadata: [
+            "modifierId": .string(model.id),
+            "domain": .string(domain)
+        ])
     }
 
-    public func update(_ model: ModifierModel) throws {
-        let url = try fileUrlBuilder.modifierFileUrl(for: domain, id: model.id)
-        try fileManager.write(model.transformerCode, to: url)
-        logger.info("Modifier updated for domain \(domain), id \(model.id), enabled \(model.enabled)")
+    public func update(currentId: String, with model: ModifierModel) throws {
+        try validateId(currentId)
+        try validateId(model.id)
+
+        let currentURL = try fileUrlBuilder.modifierFileUrl(for: domain, id: currentId)
+        guard fileManager.fileExist(atPath: currentURL.path()) else {
+            throw ModifierStoreError.notFound(currentId)
+        }
+
+        if currentId == model.id {
+            try fileManager.write(parser.serialize(model), to: currentURL)
+            logger.info("modifier updated", metadata: [
+                "modifierId": .string(model.id),
+                "domain": .string(domain)
+            ])
+            return
+        }
+
+        let targetURL = try fileUrlBuilder.modifierFileUrl(for: domain, id: model.id)
+        guard !fileManager.fileExist(atPath: targetURL.path()) else {
+            throw ModifierStoreError.alreadyExists(model.id)
+        }
+
+        let originalContent = try fileManager.readFile(at: currentURL)
+        do {
+            try fileManager.write(parser.serialize(model), to: currentURL)
+            try fileManager.moveFile(from: currentURL.path(), to: targetURL.path())
+        } catch {
+            if fileManager.fileExist(atPath: targetURL.path()) {
+                try? fileManager.moveFile(from: targetURL.path(), to: currentURL.path())
+            }
+            if fileManager.fileExist(atPath: currentURL.path()) {
+                try? fileManager.write(originalContent, to: currentURL)
+            }
+            throw error
+        }
     }
 
     public func delete(id: String) throws {
+        try validateId(id)
         let url = try fileUrlBuilder.modifierFileUrl(for: domain, id: id)
+        guard fileManager.fileExist(atPath: url.path()) else {
+            throw ModifierStoreError.notFound(id)
+        }
         try fileManager.removeFile(at: url.path())
-        logger.info("Modifier deleted for domain \(domain), id \(id)")
+        logger.info("modifier deleted", metadata: [
+            "modifierId": .string(id),
+            "domain": .string(domain)
+        ])
     }
 
-    public func setEnabledForAll(_ enabled: Bool) throws {
-        for model in try list() where model.enabled != enabled {
-            var updated = model
-            updated.enabled = enabled
-            let body = extractTransformerBody(from: model.transformerCode)
-            updated.transformerCode = parser.serialize(updated, transformerBody: body)
-            try update(updated)
+    private func validateId(_ id: String) throws {
+        do {
+            try ModifierParser.validateModifierId(id)
+        } catch {
+            throw ModifierStoreError.invalidId(id)
         }
-        logger.info("Modifier bulk enabled \(enabled) for domain \(domain)")
-    }
-
-    private func extractTransformerBody(from code: String) -> String {
-        if let range = code.range(of: "function transformer") {
-            return String(code[range.lowerBound...])
-        }
-        return code
     }
 }
 
@@ -105,21 +156,5 @@ public actor ModifierStoreActor {
         let created = ModifierStore(domain: domain)
         stores[domain] = created
         return created
-    }
-
-    /// When `domain` is nil, enumerate Domains/*/Modifiers on disk and apply to each domain.
-    public func setEnabledForAll(enabled: Bool, domain: String?) async throws {
-        if let domain {
-            try store(for: domain).setEnabledForAll(enabled)
-            return
-        }
-        let builder = FileUrlBuilder()
-        let domainsRoot = try builder.domainsFolderUrl()
-        let fileManager = FileManager.default
-        let domainDirectories = (try? fileManager.folderContent(at: domainsRoot)) ?? []
-        for directory in domainDirectories {
-            let name = directory.lastPathComponent
-            try store(for: name).setEnabledForAll(enabled)
-        }
     }
 }

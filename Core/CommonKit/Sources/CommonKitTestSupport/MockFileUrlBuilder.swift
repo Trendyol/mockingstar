@@ -139,11 +139,15 @@ public final class MockFileUrlBuilder: FileUrlBuilderInterface {
     public var invokedModifierFileUrlParameters: (mockDomain: String, id: String, Void)?
     public var invokedModifierFileUrlParametersList: [(mockDomain: String, id: String, Void)] = []
     public var stubbedModifierFileUrlResult: URL!
+    public var modifierFileUrlHandler: ((String, String) throws -> URL)?
     public func modifierFileUrl(for mockDomain: String, id: String) throws -> URL {
         invokedModifierFileUrl = true
         invokedModifierFileUrlCount += 1
         invokedModifierFileUrlParameters = (mockDomain, id, ())
         invokedModifierFileUrlParametersList.append((mockDomain, id, ()))
+        if let modifierFileUrlHandler {
+            return try modifierFileUrlHandler(mockDomain, id)
+        }
         return stubbedModifierFileUrlResult
     }
 

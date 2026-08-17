@@ -12,17 +12,18 @@ final class ModifierExecutorTests: XCTestCase {
         return request
     }
 
+    private func model(code: String, id: String = "m") -> ModifierModel {
+        ModifierModel(id: id, path: "/x", method: "GET", order: 1, transformerCode: code)
+    }
+
     func test_execute_MutatesJSONResponseBody() throws {
-        let code = """
-        var id = "m"; var path = "/x"; var method = "GET"; var scenario = null;
-        var enabled = true; var priority = 0; var sampleMockRequestId = null;
+        let model = model(code: """
         function transformer(req, chain) {
           var res = chain.proceed(req);
           res.body.injected = true;
           return res;
         }
-        """
-        let model = try ModifierParser().parse(jsCode: code)
+        """)
 
         let result = try executor.execute(modifier: model, request: request()) { _ in
             let body = try! JSONSerialization.data(withJSONObject: ["name": "a"])
@@ -36,16 +37,13 @@ final class ModifierExecutorTests: XCTestCase {
     }
 
     func test_execute_PassesThroughStatusAndHeaders() throws {
-        let code = """
-        var id = "m"; var path = "/x"; var method = "GET"; var scenario = null;
-        var enabled = true; var priority = 0; var sampleMockRequestId = null;
+        let model = model(code: """
         function transformer(req, chain) {
           var res = chain.proceed(req);
           res.status = 201;
           return res;
         }
-        """
-        let model = try ModifierParser().parse(jsCode: code)
+        """)
 
         let result = try executor.execute(modifier: model, request: request()) { _ in
             HTTPResult(status: 200, body: Data("{}".utf8), headers: ["X-Test": "1"])
@@ -55,13 +53,26 @@ final class ModifierExecutorTests: XCTestCase {
         XCTAssertEqual(result.headers["X-Test"], "1")
     }
 
+    func test_execute_MutatesRequestBeforeProceed() throws {
+        let model = model(code: """
+        function transformer(req, chain) {
+          req.url = "https://example.com/mutated";
+          return chain.proceed(req);
+        }
+        """)
+
+        var receivedURL: String?
+        let result = try executor.execute(modifier: model, request: request()) { req in
+            receivedURL = req.url?.absoluteString
+            return HTTPResult(status: 200, body: Data("{}".utf8), headers: [:])
+        }
+
+        XCTAssertEqual(result.status, 200)
+        XCTAssertEqual(receivedURL, "https://example.com/mutated")
+    }
+
     func test_execute_JSException_Throws() throws {
-        let code = """
-        var id = "m"; var path = "/x"; var method = "GET"; var scenario = null;
-        var enabled = true; var priority = 0; var sampleMockRequestId = null;
-        function transformer(req, chain) { throw new Error("boom"); }
-        """
-        let model = try ModifierParser().parse(jsCode: code)
+        let model = model(code: "function transformer(req, chain) { throw new Error(\"boom\"); }")
 
         XCTAssertThrowsError(try executor.execute(modifier: model, request: request()) { _ in
             HTTPResult(status: 200, body: Data(), headers: [:])
@@ -73,11 +84,7 @@ final class ModifierExecutorTests: XCTestCase {
     }
 
     func test_execute_MissingTransformer_Throws() throws {
-        let code = """
-        var id = "m"; var path = "/x"; var method = "GET"; var scenario = null;
-        var enabled = true; var priority = 0; var sampleMockRequestId = null;
-        """
-        let model = try ModifierParser().parse(jsCode: code)
+        let model = model(code: "var unused = 1")
 
         XCTAssertThrowsError(try executor.execute(modifier: model, request: request()) { _ in
             HTTPResult(status: 200, body: Data(), headers: [:])
@@ -86,5 +93,17 @@ final class ModifierExecutorTests: XCTestCase {
                 return XCTFail("unexpected \(error)")
             }
         }
+    }
+
+    func test_execute_LogsModifierIdAndRequestPath() throws {
+        let model = model(code: """
+        function transformer(req, chain) { return chain.proceed(req); }
+        """, id: "discount")
+
+        let result = try executor.execute(modifier: model, request: request(url: "https://example.com/cart")) { _ in
+            HTTPResult(status: 200, body: Data("{}".utf8), headers: [:])
+        }
+
+        XCTAssertEqual(result.status, 200)
     }
 }

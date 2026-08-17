@@ -1,14 +1,16 @@
-import CommonKit
 import Foundation
+import CommonKit
 
 public enum ModifierStoreError: LocalizedError {
     case alreadyExists(String)
     case notFound(String)
+    case invalidId(String)
 
     public var errorDescription: String? {
         switch self {
-        case .alreadyExists(let id): return "Modifier '\(id)' already exists"
+        case .alreadyExists(let id): return "modifier '\(id)' already exists"
         case .notFound(let id): return "modifier '\(id)' not found"
+        case .invalidId(let id): return "modifier id '\(id)' is invalid"
         }
     }
 }
@@ -17,10 +19,10 @@ public protocol ModifierStoreInterface {
     var domain: String { get }
     func list() throws -> [ModifierModel]
     func get(id: String) throws -> ModifierModel?
+    func get(ids: [String]) throws -> [ModifierModel]
     func create(_ model: ModifierModel) throws
-    func update(_ model: ModifierModel) throws
+    func update(currentId: String, with model: ModifierModel) throws
     func delete(id: String) throws
-    func setEnabledForAll(_ enabled: Bool) throws
 }
 
 public final class ModifierStore: ModifierStoreInterface {
@@ -40,13 +42,15 @@ public final class ModifierStore: ModifierStoreInterface {
         nil
     }
 
+    public func get(ids: [String]) throws -> [ModifierModel] {
+        []
+    }
+
     public func create(_ model: ModifierModel) throws {}
 
-    public func update(_ model: ModifierModel) throws {}
+    public func update(currentId: String, with model: ModifierModel) throws {}
 
     public func delete(id: String) throws {}
-
-    public func setEnabledForAll(_ enabled: Bool) throws {}
 }
 
 public actor ModifierStoreActor {
@@ -59,6 +63,4 @@ public actor ModifierStoreActor {
         stores[domain] = created
         return created
     }
-
-    public func setEnabledForAll(enabled: Bool, domain: String?) async throws {}
 }
