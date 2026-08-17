@@ -16,11 +16,16 @@ public final class MockURLSession: URLSessionInterface {
     public var invokedDataParameters: (request: URLRequest, Void)?
     public var invokedDataParametersList: [(request: URLRequest, Void)] = []
     public var stubbedDataResult: (Data, URLResponse)!
-    public func data(for request: URLRequest) throws -> (Data, URLResponse) {
+    public var stubbedDataError: Error?
+
+    public func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         invokedData = true
         invokedDataCount += 1
         invokedDataParameters = (request, ())
         invokedDataParametersList.append((request, ()))
+        if let stubbedDataError {
+            throw stubbedDataError
+        }
         return stubbedDataResult
     }
 }

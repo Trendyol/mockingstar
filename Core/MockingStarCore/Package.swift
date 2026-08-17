@@ -39,6 +39,7 @@ let package = Package(
             dependencies: [
                 "MockingStarCore",
                 "MockingStarCoreTestSupport",
+                "Server",
                 .product(name: "CommonKitTestSupport", package: "CommonKit"),
             ]),
     ]
