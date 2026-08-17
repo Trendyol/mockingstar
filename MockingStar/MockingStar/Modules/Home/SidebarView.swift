@@ -38,6 +38,16 @@ struct SidebarView: View {
                         NavigationStore.shared.path.removeAll()
                     }
 
+                SideBarConfigsView(title: "Modifiers", isSelected: {
+                    switch NavigationStore.shared.path.last {
+                    case .modifiers, .modifier: return true
+                    default: return false
+                    }
+                }())
+                    .onTapGesture {
+                        NavigationStore.shared.path = [.modifiers]
+                    }
+
                 DisclosureGroup(isExpanded: $isConfigsExpanded) {
                     SideBarConfigsView(title: "Path Configs", isSelected: NavigationStore.shared.path.last == .configs_pathConfigs)
                         .onTapGesture { NavigationStore.shared.path.append(.configs_pathConfigs) }
