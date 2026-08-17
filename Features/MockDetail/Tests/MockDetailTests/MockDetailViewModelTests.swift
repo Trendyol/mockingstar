@@ -387,6 +387,18 @@ final class MockDetailViewModelTests: XCTestCase {
                        """)
         XCTAssertEqual(viewModel.shouldShowAlert, true)
     }
+
+    func test_editorSession_ContentChangeUpdatesSelectedMockField() {
+        viewModel.selectedEditorType = .responseBody
+        viewModel.editorSession.content.content = "{\"changed\":true}"
+
+        let expectation = XCTestExpectation(description: "editor callback")
+        DispatchQueue.main.async {
+            XCTAssertEqual(self.viewModel.mockModel.responseBody, "{\"changed\":true}")
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 1)
+    }
 }
 
 private enum MockError: LocalizedError {

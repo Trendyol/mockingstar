@@ -98,6 +98,12 @@
 				monaco.editor.setModelLanguage(monacoEditor.getModel(), language);
 			}
 		}
+
+		function setReadOnly(readOnly) {
+			if (monacoEditor) {
+				monacoEditor.updateOptions({ readOnly: readOnly });
+			}
+		}
 	</script>
 </body>
 
