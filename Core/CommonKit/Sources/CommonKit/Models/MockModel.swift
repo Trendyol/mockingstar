@@ -283,34 +283,11 @@ public extension MockModel {
     ///
     /// `request path` + `request scenario (if contains) ` + `mock id`
     var fileName: String {
-        var fileName = cleanPath.replacingOccurrences(of: "/", with: "+") + "_"
-
-        if !metaData.scenario.isEmpty {
-            fileName += metaData.scenario + "_"
-        }
-
-        fileName += metaData.id
-        fileName += ".json"
-
-        if fileName.count > 256 {
-            logger.warning("File name length is out of limit. Trying to reduce...")
-            fileName = shortFilename
-        }
-
-        return fileName
-    }
-
-    private var shortFilename: String {
-        var fileName = ""
-
-        if !metaData.scenario.isEmpty {
-            fileName += metaData.scenario + "_"
-        }
-
-        fileName += metaData.id
-        fileName += ".json"
-
-        return fileName
+        MockFileLocation.fileName(
+            url: metaData.url,
+            scenario: metaData.scenario,
+            id: metaData.id
+        )
     }
 
     ///  Mock detail file should be proper path, it's important for find and return mocks.
@@ -318,7 +295,7 @@ public extension MockModel {
     /// Mock Detail File path rule:
     /// `request path` + `request HTTP method`
     var folderPath: String {
-        cleanPath + "/" + metaData.method.uppercased()
+        MockFileLocation.folderPath(url: metaData.url, method: metaData.method)
     }
 
     ///  Mock detail file should be proper path, it's important for find and return mocks.
@@ -327,15 +304,12 @@ public extension MockModel {
     ///
     /// ``folderPath``  + ``fileName``
     var filePath: String {
-        folderPath + "/" + fileName
-    }
-
-    private var cleanPath: String {
-        if metaData.url.path().isEmpty || metaData.url.path() == "/" {
-            return (metaData.url.host() ?? metaData.url.absoluteString)
-        }
-
-        return metaData.url.path().encodedUrlPathValue
+        MockFileLocation.filePath(
+            url: metaData.url,
+            method: metaData.method,
+            scenario: metaData.scenario,
+            id: metaData.id
+        )
     }
 }
 
@@ -394,7 +368,7 @@ public extension MockModelHeaderString {
 }
 
 public enum MockModelBodyType {
-    case null, json, html, xml, graphql, text
+    case null, json, html, xml, graphql, text, javascript
 }
 
 public enum MockModelBodyValidationError: Error, LocalizedError {
@@ -416,7 +390,7 @@ public extension MockModelBodyType {
         switch self {
         case .json:
             try jsonValidator(body)
-        case .null, .text, .html, .xml, .graphql:
+        case .null, .text, .html, .xml, .graphql, .javascript:
             break
         }
     }
