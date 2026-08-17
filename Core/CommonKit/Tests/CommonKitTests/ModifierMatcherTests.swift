@@ -5,9 +5,9 @@ final class ModifierMatcherTests: XCTestCase {
     private let matcher = ModifierMatcher()
 
     private func mod(id: String, path: String = "/users", method: String = "GET",
-                     scenario: String? = nil, enabled: Bool = true, priority: Int = 0) -> ModifierModel {
+                     scenario: String? = nil, order: Int = 1) -> ModifierModel {
         ModifierModel(id: id, path: path, method: method, scenario: scenario,
-                      enabled: enabled, priority: priority, transformerCode: "//")
+                      enabled: true, order: order, transformerCode: "//")
     }
 
     func test_match_FiltersByExactPathAndMethod() {
@@ -33,17 +33,26 @@ final class ModifierMatcherTests: XCTestCase {
         XCTAssertTrue(matcher.match(modifiers: mods, path: "/users", method: "GET", scenario: nil).isEmpty)
     }
 
-    func test_match_SkipsDisabled() {
-        let mods = [mod(id: "off", enabled: false)]
-        XCTAssertTrue(matcher.match(modifiers: mods, path: "/users", method: "GET", scenario: nil).isEmpty)
-    }
-
-    func test_match_SortsByPriorityThenId() {
+    func test_match_SortsByOrderThenId() {
         let mods = [
-            mod(id: "b", priority: 1),
-            mod(id: "a", priority: 1),
-            mod(id: "z", priority: 0),
+            mod(id: "b", order: 2),
+            mod(id: "a", order: 2),
+            mod(id: "z", order: 1),
         ]
         XCTAssertEqual(matcher.match(modifiers: mods, path: "/users", method: "GET", scenario: nil).map(\.id), ["z", "a", "b"])
+    }
+
+    func test_match_DoesNotFilterByEnabledFlag() {
+        // Activation is owned by the per-device set; matcher receives only active definitions.
+        let mods = [mod(id: "on").withEnabled(false)]
+        XCTAssertEqual(matcher.match(modifiers: mods, path: "/users", method: "GET", scenario: nil).map(\.id), ["on"])
+    }
+}
+
+private extension ModifierModel {
+    func withEnabled(_ enabled: Bool) -> ModifierModel {
+        ModifierModel(id: id, path: path, method: method, scenario: scenario,
+                      enabled: enabled, order: order, sampleMockRequestId: sampleMockRequestId,
+                      transformerCode: transformerCode)
     }
 }
