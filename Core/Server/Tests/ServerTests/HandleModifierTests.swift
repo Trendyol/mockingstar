@@ -185,7 +185,10 @@ final class HandleModifierTests: XCTestCase {
     // MARK: - PUT /modifiers (active IDs)
 
     func test_handleRequest_PUTActiveIds_ReplacesDeviceSet() async throws {
-        let body = try jsonEncoder.encode(["discount", "latency"])
+        let body = try jsonEncoder.encode([
+            ModifierActivation(id: "discount", source: .mock),
+            ModifierActivation(id: "latency", source: .live)
+        ])
         let request = HTTPRequest.make(method: .PUT,
                                        path: "/modifiers?domain=Dev",
                                        body: body,
@@ -196,11 +199,14 @@ final class HandleModifierTests: XCTestCase {
         XCTAssertEqual(response.statusCode.code, 202)
         XCTAssertEqual(mockHandler.invokedSetActiveParameters?.domain, "Dev")
         XCTAssertEqual(mockHandler.invokedSetActiveParameters?.deviceId, "device-a")
-        XCTAssertEqual(mockHandler.invokedSetActiveParameters?.ids, ["discount", "latency"])
+        XCTAssertEqual(mockHandler.invokedSetActiveParameters?.activations, [
+            ModifierActivation(id: "discount", source: .mock),
+            ModifierActivation(id: "latency", source: .live)
+        ])
     }
 
     func test_handleRequest_PUTActiveIds_DefaultDomainAndDevice() async throws {
-        let body = try jsonEncoder.encode(["discount"])
+        let body = try jsonEncoder.encode([ModifierActivation(id: "discount", source: .mock)])
         let request = HTTPRequest.make(method: .PUT, path: "/modifiers", body: body)
 
         let response = try await sut.handleRequest(request)
@@ -212,7 +218,7 @@ final class HandleModifierTests: XCTestCase {
 
     func test_handleRequest_PUTActiveIds_UnknownIds_Returns400() async throws {
         mockHandler.stubbedSetActiveError = ServerModifierError.unknownIds(["missing"])
-        let body = try jsonEncoder.encode(["missing"])
+        let body = try jsonEncoder.encode([ModifierActivation(id: "missing", source: .live)])
         let request = HTTPRequest.make(method: .PUT, path: "/modifiers", body: body)
         let response = try await sut.handleRequest(request)
         XCTAssertEqual(response.statusCode.code, 400)
@@ -332,7 +338,7 @@ private final class MockModifierHandler: ServerModifierHandlerInterface {
     var invokedDeleteParameters: (domain: String, id: String)?
 
     var stubbedSetActiveError: Error?
-    var invokedSetActiveParameters: (domain: String, deviceId: String, ids: [String])?
+    var invokedSetActiveParameters: (domain: String, deviceId: String, activations: [ModifierActivation])?
 
     var stubbedPreviewResult = ModifierPreviewResponse(
         status: 200,
@@ -370,8 +376,8 @@ private final class MockModifierHandler: ServerModifierHandlerInterface {
         invokedDeleteParameters = (domain, id)
     }
 
-    func setActiveModifiers(domain: String, deviceId: String, ids: [String]) async throws {
-        invokedSetActiveParameters = (domain, deviceId, ids)
+    func setActiveModifiers(domain: String, deviceId: String, activations: [ModifierActivation]) async throws {
+        invokedSetActiveParameters = (domain, deviceId, activations)
         if let stubbedSetActiveError { throw stubbedSetActiveError }
     }
 

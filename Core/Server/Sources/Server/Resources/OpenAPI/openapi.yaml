@@ -263,12 +263,20 @@ paths:
           $ref: '#/components/responses/HandlerNotRegistered'
     put:
       tags: [Modifiers]
-      summary: Cihaz için aktif modifier id setini değiştir
+      summary: Cihaz için aktif modifier setini (id + source) değiştir
       description: >
-        Body ham bir string dizisidir (ör. `["discount","latency"]`). Verilen
-        `deviceId` için aktif set atomik olarak değiştirilir. Eksik `deviceId`
-        default instance demektir. Eksik `domain` `Dev` kabul edilir. Bilinmeyen
-        id varsa tüm güncelleme reddedilir (`400`). Restart sonrası set boştur.
+        Body bir `{ id, source }` nesne dizisidir (ör.
+        `[{"id":"discount","source":"mock"},{"id":"latency","source":"live"}]`).
+        Her giriş modifier'ı verilen `deviceId` için aktive eder; `source` ise o
+        modifier eşleştiğinde sarmalanan terminalin **stored mock** (`mock`) mı
+        yoksa **live** (`live`) mı okuyacağını belirler. Bir istekte birden fazla
+        aktif modifier eşleşirse ve en az biri `live` isterse zincir terminali
+        live olur; hepsi `mock` ise stored mock kullanılır. `disableLiveEnvironment=true`
+        (`onlyMock`) güvenlik gereği daima mock terminaline zorlar. Boş dizi (`[]`)
+        cihazın setini temizler. Verilen `deviceId` için aktif set atomik olarak
+        değiştirilir. Eksik `deviceId` default instance demektir. Eksik `domain`
+        `Dev` kabul edilir. Bilinmeyen id varsa tüm güncelleme reddedilir (`400`).
+        Restart sonrası set boştur.
       parameters:
         - $ref: '#/components/parameters/DomainQuery'
         - $ref: '#/components/parameters/DeviceIdHeader'
@@ -278,8 +286,13 @@ paths:
           application/json:
             schema:
               type: array
-              items: { type: string }
-            example: ["discount", "latency"]
+              items:
+                $ref: '#/components/schemas/ModifierActivation'
+            example:
+              - id: discount
+                source: mock
+              - id: latency
+                source: live
       responses:
         "202":
           description: Aktif set başarıyla güncellendi.
@@ -533,6 +546,14 @@ components:
           type: boolean
           description: >
             İstek yapan `deviceId` için aktif sette olup olmadığı. Diskte tutulmaz.
+            `source != null` ile aynı anlama gelir.
+        source:
+          type: [string, "null"]
+          enum: [mock, live, null]
+          description: >
+            İstek yapan `deviceId` için aktivasyon kaynağı. `null` ise modifier
+            pasiftir. Aktifken sarmalanan terminalin stored mock (`mock`) mı yoksa
+            live (`live`) mı okunacağını belirler. Diskte tutulmaz.
         order:
           type: integer
           minimum: 1
@@ -547,6 +568,20 @@ components:
           description: >
             `function transformer(req, chain) { ... }` JS kaynak kodu. API yanıtında
             metadata satırları olmadan transformer gövdesi döner.
+    ModifierActivation:
+      type: object
+      required: [id, source]
+      properties:
+        id:
+          type: string
+          description: Aktive edilecek modifier'ın id'si.
+        source:
+          type: string
+          enum: [mock, live]
+          description: >
+            Bu modifier eşleştiğinde sarmalanan terminalin stored mock (`mock`) mı
+            yoksa live (`live`) mı okunacağı. Eşleşenler arasında en az bir `live`
+            varsa zincir terminali live olur.
     ModifierWriteRequest:
       type: object
       required: [path, method, order, transformerCode]

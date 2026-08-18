@@ -15,7 +15,7 @@ public protocol ServerModifierHandlerInterface: AnyObject {
     func createModifier(domain: String, model: ModifierModel) async throws
     func updateModifier(domain: String, currentId: String, model: ModifierModel) async throws
     func deleteModifier(domain: String, id: String) async throws
-    func setActiveModifiers(domain: String, deviceId: String, ids: [String]) async throws
+    func setActiveModifiers(domain: String, deviceId: String, activations: [ModifierActivation]) async throws
     func previewModifier(
         domain: String,
         deviceId: String,
@@ -151,9 +151,9 @@ final class HandleModifier: HTTPHandler {
 
     private func handleSetActive(handler: ServerModifierHandlerInterface, domain: String, deviceId: String, request: HTTPRequest) async throws -> HTTPResponse {
         let bodyData = try await request.bodyData
-        let ids = try jsonDecoder.decode([String].self, from: bodyData)
-        logger.info("Setting active modifiers, domain \(domain), deviceId \(deviceId), count \(ids.count)")
-        try await handler.setActiveModifiers(domain: domain, deviceId: deviceId, ids: ids)
+        let activations = try jsonDecoder.decode([ModifierActivation].self, from: bodyData)
+        logger.info("Setting active modifiers, domain \(domain), deviceId \(deviceId), count \(activations.count)")
+        try await handler.setActiveModifiers(domain: domain, deviceId: deviceId, activations: activations)
         return .init(statusCode: .accepted)
     }
 
