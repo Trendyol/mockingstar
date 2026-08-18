@@ -29,5 +29,9 @@ public final class EditorSession {
         content.content = value
     }
 
+    public func revealLine(_ line: Int) {
+        webView.runJS("revealLine(\(line))")
+    }
+
     static let prewarmed = EditorSession()
 }
