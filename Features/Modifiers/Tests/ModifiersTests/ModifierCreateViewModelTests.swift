@@ -49,11 +49,20 @@ final class ModifierCreateViewModelTests: XCTestCase {
 
         XCTAssertEqual(api.invokedCreate?.id, "cart-modifier")
         XCTAssertEqual(api.invokedCreate?.sampleMockRequestId, "mock-1")
-        XCTAssertTrue(api.invokedCreate?.transformerCode.contains("chain.proceed") == true)
+        XCTAssertEqual(
+            api.invokedCreate?.transformerCode,
+            """
+            function transformer(req, chain) {
+              var res = chain.proceed(req);
+
+              return res;
+            }
+            """
+        )
         XCTAssertEqual(result?.id, "cart-modifier")
         XCTAssertEqual(result?.seed.url, "https://real.example/cart?x=1")
         XCTAssertEqual(result?.seed.requestHeadersJSON, "{\"Accept\":\"application/json\"}")
         XCTAssertEqual(result?.seed.requestBody, "{\"id\":1}")
-        XCTAssertNil(api.invokedSetActiveIds)
+        XCTAssertNil(api.invokedSetActiveActivations)
     }
 }

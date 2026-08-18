@@ -18,6 +18,12 @@ struct ModifierResponsePane: View {
                 if viewModel.previewIsStale {
                     Text("Stale").foregroundStyle(.orange)
                 }
+                if viewModel.previewStatus != nil && !viewModel.hasPreviewOriginal {
+                    Text("No original")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .help("The transformer did not call chain.proceed, so there is no original response to diff against.")
+                }
                 Spacer()
                 Button("Copy") { viewModel.copyPreviewResponse() }
                     .disabled(viewModel.previewStatus == nil)
@@ -38,7 +44,7 @@ struct ModifierResponsePane: View {
                         description: Text("Edit the request and JavaScript, then choose Run.")
                     )
                 } else {
-                    EditorView(session: viewModel.responseEditorSession)
+                    MonacoDiffView(session: viewModel.diffEditorSession)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

@@ -85,11 +85,6 @@ public struct ModifierDetailView: View {
         .navigationTitle(viewModel.currentId)
         .toolbar {
             ToolbarItemGroup {
-                Toggle("Active", isOn: Binding(
-                    get: { viewModel.enabled },
-                    set: { _ in Task { await viewModel.toggleEnabled(domain: mockDomain) } }
-                ))
-
                 ToolBarButton(
                     title: "Save",
                     icon: "tray.and.arrow.down",
@@ -226,6 +221,7 @@ private struct ModifierAskClaudeSheet: View {
 /// Matches Mock Detail inspector: always-open GroupBox sections instead of DisclosureGroups.
 private struct ModifierDetailInspectorPane: View {
     @Bindable var viewModel: ModifierDetailViewModel
+    @AppStorage("mockDomain") private var mockDomain: String = "Dev"
 
     var body: some View {
         List {
@@ -302,8 +298,10 @@ private struct ModifierDetailInspectorPane: View {
             GroupBox {
                 VStack(alignment: .leading, spacing: 0) {
                     LabeledContent("Source") {
-                        ModifierSourcePicker(source: $viewModel.previewInput.source)
-                            .frame(maxWidth: 180)
+                        ModifierSourcePicker(selection: viewModel.activeSource) { newSource in
+                            Task { await viewModel.setSource(newSource, domain: mockDomain) }
+                        }
+                        .frame(maxWidth: 240)
                     }
                     Divider().padding(.vertical, 6)
 
@@ -377,13 +375,15 @@ private struct ModifierDetailInspectorPane: View {
     }
 }
 
-/// Form-safe Mock/Live control. System `.segmented` picks get clipped inside
+/// Form-safe Off/Mock/Live control. System `.segmented` picks get clipped inside
 /// grouped form rows and look crooked on macOS.
 private struct ModifierSourcePicker: View {
-    @Binding var source: ModifierPreviewSource
+    let selection: ModifierPreviewSource?
+    let onChange: (ModifierPreviewSource?) -> Void
 
     var body: some View {
         HStack(spacing: 2) {
+            chip(title: "Off", value: nil)
             chip(title: "Mock", value: .mock)
             chip(title: "Live", value: .live)
         }
@@ -391,10 +391,10 @@ private struct ModifierSourcePicker: View {
         .background(Color.secondary.opacity(0.2), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
-    private func chip(title: String, value: ModifierPreviewSource) -> some View {
-        let selected = source == value
+    private func chip(title: String, value: ModifierPreviewSource?) -> some View {
+        let selected = selection == value
         return Button {
-            source = value
+            onChange(value)
         } label: {
             Text(title)
                 .font(.callout.weight(.medium))

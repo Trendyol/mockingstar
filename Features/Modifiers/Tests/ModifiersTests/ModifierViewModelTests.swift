@@ -44,21 +44,39 @@ final class ModifierListViewModelTests: XCTestCase {
         XCTAssertFalse(sut.isLoading)
     }
 
-    func test_toggleEnabled_SendsFullActiveSet() async {
+    func test_setSource_SendsFullActivationSetPreservingExistingSources() async {
         api.stubbedList = [
-            ModifierModel(id: "a", path: "/a", method: "GET", enabled: true, order: 1, transformerCode: "x"),
+            ModifierModel(id: "a", path: "/a", method: "GET", enabled: true, source: .live, order: 1, transformerCode: "x"),
             ModifierModel(id: "b", path: "/b", method: "GET", enabled: false, order: 2, transformerCode: "x")
         ]
         await sut.load(domain: "Dev")
         let inactive = try! XCTUnwrap(sut.modifiers.first(where: { $0.id == "b" }))
         api.stubbedList = [
-            ModifierModel(id: "a", path: "/a", method: "GET", enabled: true, order: 1, transformerCode: "x"),
-            ModifierModel(id: "b", path: "/b", method: "GET", enabled: true, order: 2, transformerCode: "x")
+            ModifierModel(id: "a", path: "/a", method: "GET", enabled: true, source: .live, order: 1, transformerCode: "x"),
+            ModifierModel(id: "b", path: "/b", method: "GET", enabled: true, source: .mock, order: 2, transformerCode: "x")
         ]
 
-        await sut.toggleEnabled(inactive, domain: "Dev")
+        await sut.setSource(inactive, source: .mock, domain: "Dev")
 
-        XCTAssertEqual(api.invokedSetActiveIds, ["a", "b"])
+        XCTAssertEqual(api.invokedSetActiveActivations, [
+            ModifierActivation(id: "a", source: .live),
+            ModifierActivation(id: "b", source: .mock)
+        ])
+    }
+
+    func test_setSource_OffRemovesModifierFromActivationSet() async {
+        api.stubbedList = [
+            ModifierModel(id: "a", path: "/a", method: "GET", enabled: true, source: .live, order: 1, transformerCode: "x"),
+            ModifierModel(id: "b", path: "/b", method: "GET", enabled: true, source: .mock, order: 2, transformerCode: "x")
+        ]
+        await sut.load(domain: "Dev")
+        let active = try! XCTUnwrap(sut.modifiers.first(where: { $0.id == "b" }))
+
+        await sut.setSource(active, source: nil, domain: "Dev")
+
+        XCTAssertEqual(api.invokedSetActiveActivations, [
+            ModifierActivation(id: "a", source: .live)
+        ])
     }
 
     func test_load_ServerUnavailable_ShowsError() async {
@@ -268,6 +286,79 @@ final class ModifierDetailViewModelTests: XCTestCase {
         XCTAssertEqual(sut.draft.id, "discount-v2")
     }
 
+    func test_load_AppliesActivationSourceToPreview() async {
+        let suiteName = "modifier.preview.test.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        ModifierPreviewInputStore.save(
+            .init(
+                source: .mock,
+                url: "https://stored.example/cart",
+                method: "GET",
+                scenario: "",
+                headersJSON: "{}",
+                body: ""
+            ),
+            domain: "Dev",
+            id: "discount",
+            defaults: defaults
+        )
+        sut = ModifierDetailViewModel(
+            modifierId: "discount",
+            apiClient: api,
+            notificationManager: MockNotificationManager(),
+            navigationStore: navigationStore,
+            defaults: defaults
+        )
+        api.stubbedGet = ModifierModel(
+            id: "discount",
+            path: "/cart",
+            method: "GET",
+            enabled: true,
+            source: .live,
+            transformerCode: "function transformer(req, chain) { return chain.proceed(req) }"
+        )
+
+        await sut.load(domain: "Dev")
+
+        XCTAssertEqual(sut.previewInput.source, .live)
+        XCTAssertEqual(sut.activeSource, .live)
+        XCTAssertEqual(sut.previewInput.url, "https://stored.example/cart")
+    }
+
+    func test_setSource_ActivatesModifierAndPreviewTogether() async {
+        api.stubbedGet = sampleModifier()
+        api.stubbedList = [
+            ModifierModel(id: "latency", path: "/x", method: "GET", enabled: true, source: .mock, transformerCode: "x"),
+            sampleModifier()
+        ]
+        await sut.load(domain: "Dev")
+
+        await sut.setSource(.live, domain: "Dev")
+
+        XCTAssertEqual(sut.previewInput.source, .live)
+        XCTAssertEqual(sut.activeSource, .live)
+        XCTAssertEqual(api.invokedSetActiveActivations, [
+            ModifierActivation(id: "discount", source: .live),
+            ModifierActivation(id: "latency", source: .mock)
+        ])
+    }
+
+    func test_setSource_OffClearsActivationWithoutChangingPreviewTerminal() async {
+        api.stubbedGet = sampleModifier().with(enabled: true, source: .live)
+        api.stubbedList = [
+            sampleModifier().with(enabled: true, source: .live)
+        ]
+        await sut.load(domain: "Dev")
+        XCTAssertEqual(sut.previewInput.source, .live)
+
+        await sut.setSource(nil, domain: "Dev")
+
+        XCTAssertNil(sut.activeSource)
+        XCTAssertEqual(sut.previewInput.source, .live)
+        XCTAssertEqual(api.invokedSetActiveActivations, [])
+    }
+
     func test_load_WithCreationSeed_KeepsMockURLAndHeaders() async {
         let seed = ModifierCreationSeed(
             mockId: "mock-1",
@@ -375,13 +466,14 @@ final class ModifierDetailViewModelTests: XCTestCase {
 }
 
 private extension ModifierModel {
-    func with(enabled: Bool) -> ModifierModel {
+    func with(enabled: Bool, source: ModifierPreviewSource? = nil) -> ModifierModel {
         ModifierModel(
             id: id,
             path: path,
             method: method,
             scenario: scenario,
             enabled: enabled,
+            source: source,
             order: order,
             sampleMockRequestId: sampleMockRequestId,
             transformerCode: transformerCode
@@ -401,7 +493,7 @@ final class MockModifierAPIClient: ModifierAPIClientInterface {
     var invokedPreview: ModifierPreviewRequest?
     var previewHandler: ((ModifierPreviewRequest) async throws -> ModifierPreviewResponse)?
     var invokedCreate: ModifierWriteRequest?
-    var invokedSetActiveIds: [String]?
+    var invokedSetActiveActivations: [ModifierActivation]?
     var invokedUpdate: (id: String, request: ModifierWriteRequest)?
 
     func listModifiers(domain: String) async throws -> [ModifierModel] {
@@ -428,9 +520,9 @@ final class MockModifierAPIClient: ModifierAPIClientInterface {
         if let stubbedError { throw stubbedError }
     }
 
-    func setActiveModifiers(domain: String, ids: [String]) async throws {
+    func setActiveModifiers(domain: String, activations: [ModifierActivation]) async throws {
         if let stubbedError { throw stubbedError }
-        invokedSetActiveIds = ids
+        invokedSetActiveActivations = activations
     }
 
     func previewModifier(

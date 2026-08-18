@@ -29,7 +29,7 @@ enum ModifierClaudePromptBuilder {
         let js = currentJavaScript.trimmingCharacters(in: .whitespacesAndNewlines)
         let sample = schemaSample(sampleResponse)
         let currentBlock = js.isEmpty
-            ? "function transformer(req, chain) {\n  return chain.proceed(req);\n}"
+            ? "function transformer(req, chain) {\n  var res = chain.proceed(req);\n\n  return res;\n}"
             : js
 
         return """

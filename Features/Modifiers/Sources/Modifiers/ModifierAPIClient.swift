@@ -31,7 +31,7 @@ public protocol ModifierAPIClientInterface {
     func createModifier(domain: String, request: ModifierWriteRequest) async throws
     func updateModifier(domain: String, id: String, request: ModifierWriteRequest) async throws
     func deleteModifier(domain: String, id: String) async throws
-    func setActiveModifiers(domain: String, ids: [String]) async throws
+    func setActiveModifiers(domain: String, activations: [ModifierActivation]) async throws
     func previewModifier(domain: String, request: ModifierPreviewRequest) async throws -> ModifierPreviewResponse
 }
 
@@ -79,9 +79,9 @@ public final class ModifierAPIClient: ModifierAPIClientInterface {
         _ = try await perform(request, expected: [202])
     }
 
-    public func setActiveModifiers(domain: String, ids: [String]) async throws {
+    public func setActiveModifiers(domain: String, activations: [ModifierActivation]) async throws {
         var request = try makeRequest(path: "/modifiers", method: "PUT", domain: domain)
-        request.httpBody = try jsonEncoder.encode(ids)
+        request.httpBody = try jsonEncoder.encode(activations)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         _ = try await perform(request, expected: [202])
     }

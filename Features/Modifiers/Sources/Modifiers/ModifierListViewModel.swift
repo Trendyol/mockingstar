@@ -54,15 +54,21 @@ public final class ModifierListViewModel {
     }
 
     @MainActor
-    func toggleEnabled(_ modifier: ModifierModel, domain: String) async {
-        var ids = Set(modifiers.filter(\.enabled).map(\.id))
-        if modifier.enabled {
-            ids.remove(modifier.id)
+    func setSource(_ modifier: ModifierModel, source: ModifierPreviewSource?, domain: String) async {
+        var sources = Dictionary(
+            modifiers.compactMap { model in model.source.map { (model.id, $0) } },
+            uniquingKeysWith: { first, _ in first }
+        )
+        if let source {
+            sources[modifier.id] = source
         } else {
-            ids.insert(modifier.id)
+            sources.removeValue(forKey: modifier.id)
         }
+        let activations = sources
+            .map { ModifierActivation(id: $0.key, source: $0.value) }
+            .sorted { $0.id < $1.id }
         do {
-            try await apiClient.setActiveModifiers(domain: domain, ids: Array(ids).sorted())
+            try await apiClient.setActiveModifiers(domain: domain, activations: activations)
             await load(domain: domain)
         } catch {
             present(error)

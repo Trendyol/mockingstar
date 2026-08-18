@@ -101,18 +101,11 @@ private struct ModifierListTable: View {
     private func table(requestWidthMin: CGFloat, requestWidthIdeal: CGFloat) -> some View {
         Table(viewModel.filteredModifiers, selection: $viewModel.selected) {
             TableColumn("Active") { (modifier: ModifierModel) in
-                Toggle(
-                    "",
-                    isOn: Binding(
-                        get: { modifier.enabled },
-                        set: { _ in
-                            Task { await viewModel.toggleEnabled(modifier, domain: mockDomain) }
-                        }
-                    )
-                )
-                .labelsHidden()
+                ModifierActivationPicker(selection: modifier.source) { newSource in
+                    Task { await viewModel.setSource(modifier, source: newSource, domain: mockDomain) }
+                }
             }
-            .width(70)
+            .width(90)
 
             TableColumn("Method") { (modifier: ModifierModel) in
                 HTTPMethodBadge(method: modifier.method)

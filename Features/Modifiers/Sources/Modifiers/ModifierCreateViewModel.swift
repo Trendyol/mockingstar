@@ -53,7 +53,9 @@ public final class ModifierCreateViewModel {
             sampleMockRequestId: sampleMockRequestId.isEmpty ? nil : sampleMockRequestId,
             transformerCode: """
             function transformer(req, chain) {
-              return chain.proceed(req)
+              var res = chain.proceed(req);
+
+              return res;
             }
             """
         )

@@ -37,11 +37,16 @@ public final class ModifierDetailViewModel {
     var previewInput: ModifierPreviewInput
     let javaScriptEditorSession: EditorSession
     let responseEditorSession: EditorSession
+    let diffEditorSession: MonacoDiffSession
     private var latestPreviewToken = UUID()
     private(set) var fieldErrors: [ModifierDetailField: String] = [:]
     private(set) var previewBodyBase64 = ""
+    private(set) var previewModifiedText = ""
+    private(set) var previewModifiedType: MockModelBodyType = .text
+    private(set) var hasPreviewOriginal = false
 
     var enabled: Bool = false
+    var activeSource: ModifierPreviewSource?
     var isLoading = false
     var shouldShowErrorMessage = false
     var errorMessage = ""
@@ -110,9 +115,13 @@ public final class ModifierDetailViewModel {
             content: .init(content: "", type: .text),
             isReadOnly: true
         )
+        self.diffEditorSession = MonacoDiffSession()
         // Assign last so didSet can safely compare against savedSnapshot.
         self.draft = initialDraft
         self.claudeAPIKey = resolvedKeyStore.load() ?? ""
+        self.diffEditorSession.onEditPath = { [weak self] offset in
+            Task { @MainActor in self?.editPreviewPath(offset: offset) }
+        }
     }
 
     @MainActor
@@ -124,7 +133,11 @@ public final class ModifierDetailViewModel {
             draft = ModifierDetailDraft(model: model)
             savedSnapshot = draft
             previewInput = resolvePreviewInput(model: model, domain: domain)
+            activeSource = model.source
             enabled = model.enabled
+            if let source = model.source {
+                previewInput.source = source
+            }
             javaScriptEditorSession.setContent(model.transformerCode, type: .javascript)
             javaScriptEditorSession.content.onContentDidChange = { [weak self] in
                 guard let self else { return }
@@ -230,17 +243,26 @@ public final class ModifierDetailViewModel {
     }
 
     @MainActor
-    func toggleEnabled(domain: String) async {
+    func setSource(_ source: ModifierPreviewSource?, domain: String) async {
         do {
             let all = try await apiClient.listModifiers(domain: domain)
-            var ids = Set(all.filter(\.enabled).map(\.id))
-            if enabled {
-                ids.remove(currentId)
+            var sources = Dictionary(
+                all.compactMap { model in model.source.map { (model.id, $0) } },
+                uniquingKeysWith: { first, _ in first }
+            )
+            if let source {
+                sources[currentId] = source
+                previewInput.source = source
             } else {
-                ids.insert(currentId)
+                sources.removeValue(forKey: currentId)
             }
-            try await apiClient.setActiveModifiers(domain: domain, ids: Array(ids).sorted())
-            enabled.toggle()
+            let activations = sources
+                .map { ModifierActivation(id: $0.key, source: $0.value) }
+                .sorted { $0.id < $1.id }
+            try await apiClient.setActiveModifiers(domain: domain, activations: activations)
+            activeSource = source
+            enabled = source != nil
+            persistPreviewInput(domain: domain)
         } catch {
             present(error)
         }
@@ -413,12 +435,24 @@ public final class ModifierDetailViewModel {
             .joined(separator: "\n")
         previewIsStale = false
 
-        guard let data = Data(base64Encoded: result.bodyBase64) else {
-            responseEditorSession.setContent(
-                "Invalid Base64 response body",
-                type: .text
-            )
-            return
+        let modified = Self.formatBody(base64: result.bodyBase64)
+        responseEditorSession.setContent(modified.text, type: modified.type)
+        previewModifiedText = modified.text
+        previewModifiedType = modified.type
+
+        if let originalBase64 = result.originalBodyBase64 {
+            let original = Self.formatBody(base64: originalBase64)
+            hasPreviewOriginal = true
+            diffEditorSession.setDiff(original: original.text, modified: modified.text, type: modified.type)
+        } else {
+            hasPreviewOriginal = false
+            diffEditorSession.setDiff(original: nil, modified: modified.text, type: modified.type)
+        }
+    }
+
+    static func formatBody(base64: String) -> (text: String, type: MockModelBodyType) {
+        guard let data = Data(base64Encoded: base64) else {
+            return ("Invalid Base64 response body", .text)
         }
         if let json = try? JSONSerialization.jsonObject(with: data),
            let formatted = try? JSONSerialization.data(
@@ -426,15 +460,29 @@ public final class ModifierDetailViewModel {
                options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
            ),
            let text = String(data: formatted, encoding: .utf8) {
-            responseEditorSession.setContent(text, type: .json)
+            return (text, .json)
         } else if let text = String(data: data, encoding: .utf8) {
-            responseEditorSession.setContent(text, type: .text)
+            return (text, .text)
         } else {
-            responseEditorSession.setContent(
-                "Binary response (\(data.count) bytes). Use Copy to copy Base64.",
-                type: .text
-            )
+            return ("Binary response (\(data.count) bytes). Use Copy to copy Base64.", .text)
         }
+    }
+
+    @MainActor
+    func editPreviewPath(offset: Int) {
+        guard previewModifiedType == .json else { return }
+        guard let resolved = ModifierJSONPath.resolve(json: previewModifiedText, utf16Offset: offset) else { return }
+        let result = ModifierTransformerEditor.applyAssignment(
+            path: resolved.path,
+            valueLiteral: resolved.literal,
+            to: draft.transformerCode
+        )
+        guard result.code != draft.transformerCode else {
+            if let line = result.focusLine { javaScriptEditorSession.revealLine(line) }
+            return
+        }
+        draft.transformerCode = result.code
+        if let line = result.focusLine { javaScriptEditorSession.revealLine(line) }
     }
 
     @MainActor
