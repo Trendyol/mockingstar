@@ -12,12 +12,15 @@ Modifiers let you transform mock or live HTTP responses with JavaScript `transfo
 
 Activation is ephemeral and scoped by `(domain, deviceId)`:
 
+Each activation entry carries a per-modifier `source` (`mock` or `live`) that decides whether the
+wrapped terminal reads the stored mock or the live server:
+
 ```bash
 # Activate modifiers for a device (default domain Dev when omitted)
 curl -X PUT "http://localhost:8008/modifiers?domain=Dev" \
   -H "Content-Type: application/json" \
   -H "deviceId: maestro-device-1" \
-  -d '["discount","latency"]'
+  -d '[{"id":"discount","source":"mock"},{"id":"latency","source":"live"}]'
 
 # Clear active modifiers for that device
 curl -X PUT "http://localhost:8008/modifiers?domain=Dev" \
@@ -27,7 +30,7 @@ curl -X PUT "http://localhost:8008/modifiers?domain=Dev" \
 ```
 
 Missing `deviceId` targets the default instance (same as `/mock` when the header is omitted).
-The macOS UI Active toggle writes that default (`""`) set.
+The macOS modifiers list and detail **Off / Mock / Live** controls write that default (`""`) set. Mock and Live also choose the preview terminal.
 
 Only the exact header/flag name `deviceId` (Maestro) is used for activation. Android advertising’s
 `DeviceId` is ignored so app traffic stays on the UI default set.
@@ -36,9 +39,10 @@ Clients that send an explicit `deviceId` inherit the default set **until** that 
 explicit `PUT /modifiers` (including `[]`, which clears inheritance for that device). Maestro shards that
 manage their own set are unchanged.
 
-**Important:** When a modifier matches and the request does **not** send `disableLiveEnvironment=true`,
-the chain terminal is **live**, not the stored mock. Preview with Mock source is a different path —
-to exercise modifiers against a mock over `/mock`, send `disableLiveEnvironment: true`.
+**Terminal selection:** For a matched chain the terminal is chosen from the matched modifiers' sources.
+If **any** matched modifier requested `live`, the chain terminal is **live**. If **all** matched modifiers
+requested `mock`, the terminal reads the **stored mock**. `disableLiveEnvironment=true` (`onlyMock`) is a
+safety flag that always forces the mock terminal and never contacts live, overriding a `live` source.
 
 Activation state is lost when the MockingStar process restarts.
 
@@ -46,8 +50,8 @@ Activation state is lost when the MockingStar process restarts.
 
 1. `/mock` remains the only ingress.
 2. If the device has no matching active modifiers, existing mock-first / live-fallback behavior is unchanged.
-3. If matching active modifiers exist, they wrap a **live** terminal by default.
-4. If the request sends `disableLiveEnvironment=true`, that safety flag wins and the chain receives the stored mock terminal instead of contacting live.
+3. If matching active modifiers exist, the chain terminal is `live` when at least one matched modifier requested `live`, otherwise the stored mock (all matched `mock`).
+4. If the request sends `disableLiveEnvironment=true`, that safety flag wins and the chain receives the stored mock terminal instead of contacting live, regardless of the per-modifier source.
 5. A transformer may return a response without calling `chain.proceed(req)`.
 
 ## Detail editor
@@ -63,9 +67,11 @@ The modifier detail screen uses a horizontal split:
 
 ### Run (preview)
 
-**Run** (`⌘↩`) calls `POST /modifiers/preview` with the current unsaved draft. It does **not** write the `.js` file and does **not** change any device activation set.
+**Run** (`⌘↩`) calls `POST /modifiers/preview` with the current unsaved draft. It does **not** write the `.js` file.
 
-Preview request fields (URL, method, scenario, headers, body, source) and the preview response are **ephemeral**. They are not written to disk. The only preview-related field persisted on the modifier definition is `sampleMockRequestId`.
+Preview request fields (URL, method, scenario, headers, body) and the preview response are **ephemeral**. They are not written to disk. The only preview-related field persisted on the modifier definition is `sampleMockRequestId`.
+
+**Source** (Off / Mock / Live) is the same device activation as the modifiers list. Mock and Live turn the modifier on for `/mock` traffic and select the preview terminal. Off removes it from the activation set; Run still uses the last Mock or Live terminal.
 
 ### Mock and Live sources
 
@@ -106,7 +112,7 @@ curl -X POST "http://localhost:8008/modifiers?domain=Dev" \
     "transformerCode": "function transformer(req, chain) { var res = chain.proceed(req); res.body.discount = true; return res; }"
   }'
 
-# List (enabled reflects the calling deviceId)
+# List (enabled + source reflect the calling deviceId's activation set)
 curl "http://localhost:8008/modifiers?domain=Dev" -H "deviceId: maestro-device-1"
 
 # Update definition
