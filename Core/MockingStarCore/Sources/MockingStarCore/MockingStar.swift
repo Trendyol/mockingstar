@@ -52,10 +52,10 @@ public final class MockingStarCore {
     /// Resolves a request into a response, routing it through any active modifiers matched for
     /// the request's path/method/scenario before falling back to the original mock/live resolution.
     ///
-    /// Active modifiers wrap a live terminal by default. When `disableLiveEnvironment=true`
-    /// (`mockSource == .onlyMock`), the chain instead receives the stored-mock terminal and never
-    /// contacts live. With no matching active modifiers, existing mock-first/live-fallback behavior
-    /// is preserved.
+    /// Matching active modifiers wrap a terminal chosen from their sources: `.live` if any matched
+    /// modifier requested live, otherwise the stored mock. `disableLiveEnvironment=true`
+    /// (`mockSource == .onlyMock`) always forces the mock terminal. With no matching active
+    /// modifiers, existing mock-first/live-fallback behavior is preserved.
     ///
     /// Fails closed: if the modifier chain throws (JS syntax/runtime error, nested `chain.proceed`
     /// failure, etc.), the request is rejected with a 500 rather than silently falling back to
@@ -63,7 +63,8 @@ public final class MockingStarCore {
     func handle(request: URLRequest, flags: MockServerFlags) async throws -> (status: Int, body: Data, headers: [String: String]) {
         let requestPath = request.url?.path() ?? ""
         let requestMethod = request.httpMethod ?? ""
-        let activeIds = await activationStore.activeModifierIds(domain: flags.domain, deviceId: flags.deviceId)
+        let activeSources = await activationStore.activeModifierSources(domain: flags.domain, deviceId: flags.deviceId)
+        let activeIds = Set(activeSources.keys)
         guard !activeIds.isEmpty else {
             logger.info("modifier skip: no active ids", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? ""),
@@ -96,9 +97,15 @@ public final class MockingStarCore {
             return try await originalHandle(request: request, flags: flags)
         }
 
+        let matchedSources = matchedModifiers.compactMap { activeSources[$0.id] }
+        let terminalIsMock = flags.mockSource == .onlyMock || !matchedSources.contains(.live)
+
         let terminalFlags: MockServerFlags
-        if flags.mockSource == .onlyMock {
-            terminalFlags = flags
+        if terminalIsMock {
+            terminalFlags = MockServerFlags(mockSource: .onlyMock,
+                                            scenario: flags.scenario,
+                                            domain: flags.domain,
+                                            deviceId: flags.deviceId)
         } else {
             terminalFlags = MockServerFlags(mockSource: .onlyLive,
                                             scenario: flags.scenario,
@@ -114,7 +121,7 @@ public final class MockingStarCore {
             "method": .string(requestMethod),
             "scenario": .string(flags.scenario ?? ""),
             "matchedIds": .string(matchedModifiers.map(\.id).joined(separator: ",")),
-            "terminal": .string(flags.mockSource == .onlyMock ? "mock" : "live")
+            "terminal": .string(terminalIsMock ? "mock" : "live")
         ])
 
         let chain = ModifierChain(modifiers: matchedModifiers) { chainRequest in
@@ -665,10 +672,11 @@ extension MockingStarCore: ScenarioHandlerInterface {
 extension MockingStarCore: ServerModifierHandlerInterface {
     public func listModifiers(domain: String, deviceId: String) async throws -> [ModifierModel] {
         let models = try await ModifierStoreActor.shared.store(for: domain).list()
-        let activeIds = await activationStore.activeModifierIds(domain: domain, deviceId: deviceId)
+        let sources = await activationStore.activeModifierSources(domain: domain, deviceId: deviceId)
         return models.map { model in
             var copy = model
-            copy.enabled = activeIds.contains(model.id)
+            copy.source = sources[model.id]
+            copy.enabled = sources[model.id] != nil
             return copy
         }
     }
@@ -677,7 +685,9 @@ extension MockingStarCore: ServerModifierHandlerInterface {
         guard var model = try await ModifierStoreActor.shared.store(for: domain).get(id: id) else {
             return nil
         }
-        model.enabled = await activationStore.isEnabled(domain: domain, deviceId: deviceId, id: id)
+        let source = await activationStore.source(domain: domain, deviceId: deviceId, id: id)
+        model.source = source
+        model.enabled = source != nil
         return model
     }
 
@@ -755,15 +765,18 @@ extension MockingStarCore: ServerModifierHandlerInterface {
         }
     }
 
-    public func setActiveModifiers(domain: String, deviceId: String, ids: [String]) async throws {
-        let uniqueIds = Array(Set(ids))
-        guard uniqueIds.count == ids.count else {
-            throw ServerModifierError.duplicateIds
+    public func setActiveModifiers(domain: String, deviceId: String, activations: [ModifierActivation]) async throws {
+        var sources: [String: ModifierPreviewSource] = [:]
+        for activation in activations {
+            guard sources[activation.id] == nil else {
+                throw ServerModifierError.duplicateIds
+            }
+            sources[activation.id] = activation.source
         }
 
         let store = await ModifierStoreActor.shared.store(for: domain)
         var missing: [String] = []
-        for id in uniqueIds {
+        for id in sources.keys {
             if try store.get(id: id) == nil {
                 missing.append(id)
             }
@@ -772,9 +785,9 @@ extension MockingStarCore: ServerModifierHandlerInterface {
             throw ServerModifierError.unknownIds(missing.sorted())
         }
 
-        let diff = await activationStore.replaceActiveIds(domain: domain,
-                                                          deviceId: deviceId,
-                                                          ids: Set(uniqueIds))
+        let diff = await activationStore.replaceActiveSources(domain: domain,
+                                                              deviceId: deviceId,
+                                                              sources: sources)
         for enabledId in diff.enabledIds {
             logger.info("modifier enabled", metadata: [
                 "modifierId": .string(enabledId),

@@ -210,11 +210,107 @@ final class ModifierIntegrationTests: XCTestCase {
         try writeModifier(domain: domain, id: "exists", path: "/x")
 
         do {
-            try await core.setActiveModifiers(domain: domain, deviceId: "A", ids: ["exists", "missing"])
+            try await core.setActiveModifiers(domain: domain, deviceId: "A", activations: [
+                .init(id: "exists", source: .live),
+                .init(id: "missing", source: .live)
+            ])
             XCTFail("expected unknownIds")
         } catch ServerModifierError.unknownIds(let ids) {
             XCTAssertEqual(ids, ["missing"])
         }
+    }
+
+    func test_handle_MockSourceModifier_PatchesMockAndSkipsLive() async throws {
+        let domain = uniqueDomain("MockSource")
+        let path = "/mock-source"
+        let url = try await saveMock(domain: domain, path: path, body: "{\"from\":\"mock\"}")
+        try writeModifier(domain: domain, id: "mock-mod", path: path, bodyMutation: "res.body.from = \"modifier\";")
+        try await core.setActiveModifiers(domain: domain, deviceId: "", activations: [
+            .init(id: "mock-mod", source: .mock)
+        ])
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let flags = MockServerFlags(mockSource: .default, scenario: nil, domain: domain, deviceId: "")
+
+        let result = try await core.handle(request: request, flags: flags)
+
+        XCTAssertEqual(result.status, 200)
+        XCTAssertEqual(mockURLSession.invokedDataCount, 0)
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: result.body) as? [String: Any])
+        XCTAssertEqual(json["from"] as? String, "modifier")
+    }
+
+    func test_handle_LiveSourceModifier_UsesLiveTerminal() async throws {
+        let domain = uniqueDomain("LiveSource")
+        let path = "/live-source"
+        let url = try await saveMock(domain: domain, path: path, body: "{\"from\":\"mock\"}")
+        try writeModifier(domain: domain, id: "live-mod", path: path, bodyMutation: "res.body.from = res.body.from + \"+modifier\";")
+        try await core.setActiveModifiers(domain: domain, deviceId: "", activations: [
+            .init(id: "live-mod", source: .live)
+        ])
+
+        let liveBody = Data("{\"from\":\"live\"}".utf8)
+        let liveResponse = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!
+        mockURLSession.stubbedDataResult = (liveBody, liveResponse)
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let flags = MockServerFlags(mockSource: .default, scenario: nil, domain: domain, deviceId: "")
+
+        let result = try await core.handle(request: request, flags: flags)
+
+        XCTAssertEqual(result.status, 200)
+        XCTAssertEqual(mockURLSession.invokedDataCount, 1)
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: result.body) as? [String: Any])
+        XCTAssertEqual(json["from"] as? String, "live+modifier")
+    }
+
+    func test_handle_MixedSources_LiveWins() async throws {
+        let domain = uniqueDomain("Mixed")
+        let path = "/mixed"
+        let url = try await saveMock(domain: domain, path: path, body: "{\"from\":\"mock\"}")
+        try writeModifier(domain: domain, id: "a-mock", path: path, order: 1, bodyMutation: "res.body.a = true;")
+        try writeModifier(domain: domain, id: "b-live", path: path, order: 2, bodyMutation: "res.body.b = true;")
+        try await core.setActiveModifiers(domain: domain, deviceId: "", activations: [
+            .init(id: "a-mock", source: .mock),
+            .init(id: "b-live", source: .live)
+        ])
+
+        let liveBody = Data("{\"from\":\"live\"}".utf8)
+        let liveResponse = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!
+        mockURLSession.stubbedDataResult = (liveBody, liveResponse)
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let flags = MockServerFlags(mockSource: .default, scenario: nil, domain: domain, deviceId: "")
+
+        let result = try await core.handle(request: request, flags: flags)
+
+        XCTAssertEqual(mockURLSession.invokedDataCount, 1)
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: result.body) as? [String: Any])
+        XCTAssertEqual(json["from"] as? String, "live")
+    }
+
+    func test_handle_DisableLiveEnvironment_OverridesLiveSource() async throws {
+        let domain = uniqueDomain("DisableLive")
+        let path = "/safety"
+        let url = try await saveMock(domain: domain, path: path, body: "{\"from\":\"mock\"}")
+        try writeModifier(domain: domain, id: "live-mod", path: path, bodyMutation: "res.body.patched = true;")
+        try await core.setActiveModifiers(domain: domain, deviceId: "", activations: [
+            .init(id: "live-mod", source: .live)
+        ])
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let flags = MockServerFlags(mockSource: .onlyMock, scenario: nil, domain: domain, deviceId: "")
+
+        let result = try await core.handle(request: request, flags: flags)
+
+        XCTAssertEqual(mockURLSession.invokedDataCount, 0)
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: result.body) as? [String: Any])
+        XCTAssertEqual(json["from"] as? String, "mock")
+        XCTAssertEqual(json["patched"] as? Bool, true)
     }
 
     func test_updateModifier_RenamePreservesAllDeviceActivation() async throws {

@@ -203,6 +203,59 @@ final class ModifierPreviewTests: XCTestCase {
         XCTAssertEqual(activeIds, Set(["a", "c"]))
     }
 
+    func test_preview_CapturesOriginalBodyFromFirstProceed() async throws {
+        let domain = uniqueDomain("Original")
+        let path = "/cart"
+        let (mock, url) = try await saveMock(domain: domain, path: path, body: "{\"value\":1}")
+        try writeModifier(domain: domain, id: "draft", path: path, sampleMockRequestId: mock.id)
+
+        let request = previewRequest(
+            currentModifierId: "draft",
+            modifierId: "draft",
+            path: path,
+            url: url,
+            sampleMockRequestId: mock.id,
+            transformerCode: passthroughTransformer(bodyMutation: "res.body.value = 99;"),
+            source: .mock
+        )
+
+        let response = try await core.previewModifier(domain: domain, deviceId: "", request: request)
+
+        let modified = try XCTUnwrap(
+            try JSONSerialization.jsonObject(with: try XCTUnwrap(Data(base64Encoded: response.bodyBase64))) as? [String: Any]
+        )
+        XCTAssertEqual(modified["value"] as? Int, 99)
+
+        let originalBase64 = try XCTUnwrap(response.originalBodyBase64)
+        let original = try XCTUnwrap(
+            try JSONSerialization.jsonObject(with: try XCTUnwrap(Data(base64Encoded: originalBase64))) as? [String: Any]
+        )
+        XCTAssertEqual(original["value"] as? Int, 1)
+        XCTAssertEqual(response.originalStatus, 200)
+    }
+
+    func test_preview_OmitsOriginalWhenTransformerSkipsProceed() async throws {
+        let domain = uniqueDomain("NoOriginal")
+        let path = "/cart"
+        let (mock, url) = try await saveMock(domain: domain, path: path, body: "{\"value\":1}")
+        try writeModifier(domain: domain, id: "draft", path: path, sampleMockRequestId: mock.id)
+
+        let request = previewRequest(
+            currentModifierId: "draft",
+            modifierId: "draft",
+            path: path,
+            url: url,
+            sampleMockRequestId: mock.id,
+            transformerCode: "function transformer(req, chain) { return { status: 200, headers: {}, body: { synthetic: true } }; }",
+            source: .mock
+        )
+
+        let response = try await core.previewModifier(domain: domain, deviceId: "", request: request)
+
+        XCTAssertNil(response.originalBodyBase64)
+        XCTAssertNil(response.originalStatus)
+    }
+
     func test_preview_ActiveSavedVersionIsReplacedNotDuplicated() async throws {
         let domain = uniqueDomain("Replace")
         let path = "/cart"

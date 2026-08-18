@@ -6,6 +6,23 @@ import PluginCore
 import PluginCoreLinux
 #endif
 
+private final class FirstResultCapture {
+    private let lock = NSLock()
+    private var stored: HTTPResult?
+
+    func captureIfNeeded(_ result: HTTPResult) {
+        lock.lock()
+        defer { lock.unlock() }
+        if stored == nil { stored = result }
+    }
+
+    var value: HTTPResult? {
+        lock.lock()
+        defer { lock.unlock() }
+        return stored
+    }
+}
+
 enum ModifierPreviewError: Error, Equatable {
     case invalidRequest(String)
     case currentModifierNotFound(String)
@@ -80,7 +97,10 @@ struct ModifierPreviewService {
             )
         }
 
+        let originalCapture = FirstResultCapture()
+
         let chain = ModifierChain(modifiers: matched, executionMode: .preview) { chainRequest in
+            let result: HTTPResult
             switch preview.source {
             case .mock:
                 guard let mockId = preview.modifier.sampleMockRequestId, !mockId.isEmpty else {
@@ -95,26 +115,32 @@ struct ModifierPreviewService {
                     scenario: preview.request.scenario ?? "",
                     id: mockId
                 )
-                return HTTPResult(
+                result = HTTPResult(
                     status: mock.metaData.httpStatus,
                     body: Data(mock.responseBody.utf8),
                     headers: try mock.responseHeader.asDictionary()
                 )
             case .live:
                 do {
-                    return try await liveTerminal(chainRequest)
+                    result = try await liveTerminal(chainRequest)
                 } catch {
                     throw ModifierPreviewError.liveRequestFailed(error.localizedDescription)
                 }
             }
+            originalCapture.captureIfNeeded(result)
+            return result
         }
 
         do {
             let result = try await chain.proceed(request)
+            let original = originalCapture.value
             return ModifierPreviewResponse(
                 status: result.status,
                 headers: result.headers,
-                bodyBase64: result.body.base64EncodedString()
+                bodyBase64: result.body.base64EncodedString(),
+                originalStatus: original?.status,
+                originalHeaders: original?.headers,
+                originalBodyBase64: original?.body.base64EncodedString()
             )
         } catch let error as ModifierPreviewError {
             throw error
