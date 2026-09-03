@@ -16,7 +16,7 @@ You can use all operations independently of the UI with the Mocking Star CLI. Fe
 YusufOzgul@macOS Debug % ./MockingStar help start
 OVERVIEW: Start mock server
 
-USAGE: ./MockingStar start [--logs-folder <logs-folder>] [--port <port>] <folder>
+USAGE: ./MockingStar start [--logs-folder <logs-folder>] [--port <port>] [--threshold <threshold>] <folder>
 
 ARGUMENTS:
     <folder>                Mocks folder path
@@ -25,6 +25,8 @@ OPTIONS:
     -l, --logs-folder <logs-folder>
                             Logs folder
     -p, --port <port>       HTTP Server Port (default: 8008)
+    -t, --threshold <threshold>
+                            Warn if a mock response takes longer than this duration in seconds (default: 0.2)
     -h, --help              Show help information.
 ```
 
