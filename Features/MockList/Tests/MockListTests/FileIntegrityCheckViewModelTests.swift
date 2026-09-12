@@ -32,7 +32,6 @@ final class FileIntegrityCheckViewModelTests: XCTestCase {
 
         viewModel = .init(fileManager: fileManager,
                           mockDiscover: mockDiscover)
-        mockDiscoverResultContinuation.yield(.result(mockModels))
     }
 
     func test_searchFileViolates_isLoading() {
