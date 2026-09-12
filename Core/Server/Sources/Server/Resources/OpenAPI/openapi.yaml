@@ -37,6 +37,7 @@ security: []  # MockingStar is an unauthenticated localhost-only dev server by d
 paths:
   /mock:
     post:
+      operationId: mockPost
       tags: [Mock]
       summary: İsteği mock'la veya live backend'e ilet
       description: >
@@ -75,6 +76,7 @@ paths:
         "501":
           $ref: '#/components/responses/HandlerNotRegistered'
     get:
+      operationId: mockGet
       tags: [Mock]
       summary: İsteği mock'la veya live backend'e ilet (query param varyantı)
       description: >
@@ -134,6 +136,7 @@ paths:
 
   /search:
     post:
+      operationId: searchPost
       tags: [Search]
       summary: Var olan bir mock'u proxy yapmadan ara
       description: >
@@ -167,6 +170,7 @@ paths:
 
   /scenario:
     put:
+      operationId: scenarioPut
       tags: [Scenario]
       summary: Cihaz/path bazlı bir senaryo ata
       description: >
@@ -193,6 +197,7 @@ paths:
         "501":
           $ref: '#/components/responses/HandlerNotRegistered'
     delete:
+      operationId: scenarioDelete
       tags: [Scenario]
       summary: Cihaz/path bazlı bir senaryo ataması sil
       description: PUT ile aynı body — belirtilen kombinasyon için senaryo ataması kaldırılır.
@@ -210,6 +215,7 @@ paths:
 
   /modifiers:
     get:
+      operationId: modifiersList
       tags: [Modifiers]
       summary: Domain için tanımlı tüm modifier'ları listele
       description: >
@@ -231,6 +237,7 @@ paths:
         "501":
           $ref: '#/components/responses/HandlerNotRegistered'
     post:
+      operationId: modifiersCreate
       tags: [Modifiers]
       summary: Yeni bir modifier oluştur
       description: >
@@ -262,6 +269,7 @@ paths:
         "501":
           $ref: '#/components/responses/HandlerNotRegistered'
     put:
+      operationId: modifiersSetActivations
       tags: [Modifiers]
       summary: Cihaz için aktif modifier setini (id + source) değiştir
       description: >
@@ -309,6 +317,7 @@ paths:
         schema: { type: string }
         description: Modifier'ın (dosya adının uzantısız hali) benzersiz kimliği.
     get:
+      operationId: modifierGet
       tags: [Modifiers]
       summary: Id ile tek bir modifier getir
       parameters:
@@ -326,6 +335,7 @@ paths:
         "501":
           $ref: '#/components/responses/HandlerNotRegistered'
     put:
+      operationId: modifierUpdate
       tags: [Modifiers]
       summary: Var olan bir modifier'ı güncelle
       description: >
@@ -352,6 +362,7 @@ paths:
         "501":
           $ref: '#/components/responses/HandlerNotRegistered'
     delete:
+      operationId: modifierDelete
       tags: [Modifiers]
       summary: Bir modifier'ı sil
       description: Dosyayı siler ve domain içindeki tüm cihaz aktif setlerinden id'yi temizler.
@@ -367,6 +378,7 @@ paths:
 
   /modifiers/preview:
     post:
+      operationId: modifierPreview
       tags: [Modifiers]
       summary: Preview an unsaved modifier draft
       description: >
@@ -424,6 +436,7 @@ paths:
 
   /hello:
     get:
+      operationId: helloGet
       tags: [Health]
       summary: Server canlılık kontrolü
       description: >
@@ -615,8 +628,7 @@ components:
         method:
           type: string
         scenario:
-          type: string
-          nullable: true
+          type: [string, "null"]
         headers:
           type: object
           additionalProperties:
