@@ -43,11 +43,13 @@ public final class MockFileManager: FileManagerInterface {
     public var invokedFileExistParameters: (path: String, Void)?
     public var invokedFileExistParametersList: [(path: String, Void)] = []
     public var stubbedFileExistResult: Bool!
+    public var fileExistHandler: ((String) -> Bool)?
     public func fileExist(atPath path: String) -> Bool {
         invokedFileExist = true
         invokedFileExistCount += 1
         invokedFileExistParameters = (path, ())
         invokedFileExistParametersList.append((path, ()))
+        if let fileExistHandler { return fileExistHandler(path) }
         return stubbedFileExistResult
     }
 
@@ -60,6 +62,26 @@ public final class MockFileManager: FileManagerInterface {
         invokedWriteCount += 1
         invokedWriteParameters = (url, fileName, model, ())
         invokedWriteParametersList.append((url, fileName, model, ()))
+    }
+
+    public var invokedWriteContent = false
+    public var invokedWriteContentCount = 0
+    public var invokedWriteContentParameters: (content: String, url: URL, Void)?
+    public var invokedWriteContentParametersList: [(content: String, url: URL, Void)] = []
+    public var stubbedWriteContentError: Error? = nil
+    public var writeContentHandler: ((String, URL) throws -> Void)?
+    public func write(_ content: String, to url: URL) throws {
+        invokedWriteContent = true
+        invokedWriteContentCount += 1
+        invokedWriteContentParameters = (content, url, ())
+        invokedWriteContentParametersList.append((content, url, ()))
+
+        if let writeContentHandler {
+            return try writeContentHandler(content, url)
+        }
+        if let stubbedWriteContentError {
+            throw stubbedWriteContentError
+        }
     }
 
     public var invokedReadJSONFile = false
@@ -105,11 +127,13 @@ public final class MockFileManager: FileManagerInterface {
     public var invokedReadFileParameters: (url: URL, Void)?
     public var invokedReadFileParametersList: [(url: URL, Void)] = []
     public var stubbedReadFileResult: String!
+    public var readFileHandler: ((URL) throws -> String)?
     public func readFile(at url: URL) throws -> String {
         invokedReadFile = true
         invokedReadFileCount += 1
         invokedReadFileParameters = (url, ())
         invokedReadFileParametersList.append((url, ()))
+        if let readFileHandler { return try readFileHandler(url) }
         return stubbedReadFileResult
     }
 
@@ -154,12 +178,16 @@ public final class MockFileManager: FileManagerInterface {
     public var invokedMoveFileParameters: (path: String, newPath: String, Void)?
     public var invokedMoveFileParametersList: [(path: String, newPath: String, Void)] = []
     public var stubbedMoveFileError: Error? = nil
+    public var moveFileHandler: ((String, String) throws -> Void)?
     public func moveFile(from path: String, to newPath: String) throws {
         invokedMoveFile = true
         invokedMoveFileCount += 1
         invokedMoveFileParameters = (path, newPath, ())
         invokedMoveFileParametersList.append((path, newPath, ()))
 
+        if let moveFileHandler {
+            return try moveFileHandler(path, newPath)
+        }
         if let stubbedMoveFileError {
             throw stubbedMoveFileError
         }

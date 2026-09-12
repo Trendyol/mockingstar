@@ -39,6 +39,15 @@ final class MockListViewModelTests: XCTestCase {
                           pasteBoard: pasteBoard)
 
         mockDiscoverResultContinuation.yield(.result(mockModels))
+
+        let loaded = XCTestExpectation(description: "mocks loaded")
+        Task {
+            while viewModel.mockModelList.isEmpty {
+                try? await Task.sleep(nanoseconds: 10_000_000)
+            }
+            loaded.fulfill()
+        }
+        wait(for: [loaded], timeout: 5)
     }
 
     func test_handleData_IsLoading() {

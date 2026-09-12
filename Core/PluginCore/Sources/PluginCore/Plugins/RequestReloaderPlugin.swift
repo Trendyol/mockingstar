@@ -15,7 +15,7 @@ import SwiftyJS
 /// Implementation automatically generates with @SwiftyJS macro
 /// ```swift
 /// class RequestReloaderPluginJSBridge: RequestReloaderPlugin {
-///     private (set) var jsContext = JSContext()!
+///     private(set) var jsContext = JSContext()!
 ///     private let encoder = JSValueEncoder()
 ///     private let decoder = JSValueDecoder()
 ///

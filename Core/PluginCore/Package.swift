@@ -46,5 +46,6 @@ let package = Package(
             dependencies: ["PluginCore",
                            .product(name: "CommonKitTestSupport", package: "CommonKit")
             ]),
-    ]
+    ],
+    swiftLanguageVersions: [.v5]
 )

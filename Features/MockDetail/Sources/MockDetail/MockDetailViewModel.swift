@@ -30,7 +30,8 @@ public final class MockDetailViewModel {
     // MARK: Data Models
     private var originalMockModel: MockModel
     let mockDomain: String
-    private let editorContent: EditorContent = .init()
+    let editorSession = EditorSession(content: .init())
+    private var editorContent: EditorContent { editorSession.content }
     @ObservationIgnored var selectedEditorType: MockDetailEditorType = .responseBody { didSet { editorModelTypeChanged() }}
     var mockModel: MockModel
 
@@ -65,7 +66,6 @@ public final class MockDetailViewModel {
 
         editorModelTypeChanged()
         registerContentChange()
-        JsonEditorCache.shared.content = editorContent
     }
 
     /// Updates the content of the JSON editor based on the selected editor type.

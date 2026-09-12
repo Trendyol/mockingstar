@@ -56,3 +56,16 @@ jobs:
 
     - name: Linux Build Check
       run: swift build -c release --package-path ./MockingStarExecutable
+
+  openapi-lint:
+    name: 'Lint OpenAPI Spec'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out Repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+
+    - name: Lint OpenAPI spec
+      run: npx --yes @redocly/cli lint Core/Server/Sources/Server/Resources/OpenAPI/openapi.yaml

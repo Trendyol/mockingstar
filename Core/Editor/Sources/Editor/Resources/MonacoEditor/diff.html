@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <style>
+            body {
+                overflow: hidden;
+                margin: 0;
+                padding: 0;
+            }
+            ::-webkit-scrollbar {
+                display: none;
+            }
+        </style>
+    </head>
+
+<body>
+    <div id="container" style="height:100vh;"></div>
+
+    <script src="monaco-editor/min/vs/loader.js"></script>
+    <script>
+        var diffEditor = null;
+        var originalModel = null;
+        var modifiedModel = null;
+        var currentLanguage = 'plaintext';
+
+        require.config({ paths: { 'vs': 'monaco-editor/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            var theme = "vs-light"
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                theme = "vs-dark"
+                document.body.style.backgroundColor = "black";
+            } else {
+                document.body.style.backgroundColor = "white";
+            }
+
+            diffEditor = monaco.editor.createDiffEditor(document.getElementById('container'), {
+                fontSize: "13px",
+                readOnly: true,
+                originalEditable: false,
+                automaticLayout: true,
+                renderSideBySide: true,
+                wordWrap: 'on',
+                theme: theme,
+                scrollbar: {
+                    vertical: 'auto',
+                    horizontal: 'auto',
+                    useShadows: false,
+                    verticalScrollbarSize: 20,
+                    horizontalScrollbarSize: 20
+                },
+            });
+
+            originalModel = monaco.editor.createModel("", currentLanguage);
+            modifiedModel = monaco.editor.createModel("", currentLanguage);
+            diffEditor.setModel({ original: originalModel, modified: modifiedModel });
+
+            diffEditor.getModifiedEditor().addAction({
+                id: 'modifier-edit-in-js',
+                label: 'Edit in JavaScript',
+                contextMenuGroupId: 'navigation',
+                contextMenuOrder: 1,
+                run: function (ed) {
+                    var position = ed.getPosition();
+                    if (!position) { return; }
+                    var offset = ed.getModel().getOffsetAt(position);
+                    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.editPath) {
+                        window.webkit.messageHandlers.editPath.postMessage(String(offset));
+                    }
+                }
+            });
+
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+                setTheme(event.matches ? "dark" : "light")
+            });
+        });
+
+        function b64DecodeUnicode(str) {
+            return decodeURIComponent(atob(str).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+        }
+
+        function setDiffContent(originalBase64, modifiedBase64) {
+            if (!originalModel || !modifiedModel) { return; }
+            originalModel.setValue(b64DecodeUnicode(originalBase64));
+            modifiedModel.setValue(b64DecodeUnicode(modifiedBase64));
+        }
+
+        function setLanguage(language) {
+            currentLanguage = language;
+            if (originalModel) { monaco.editor.setModelLanguage(originalModel, language); }
+            if (modifiedModel) { monaco.editor.setModelLanguage(modifiedModel, language); }
+        }
+
+        function setTheme(theme) {
+            if (theme == "dark") {
+                monaco.editor.setTheme("vs-dark")
+                document.body.style.backgroundColor = "black";
+            } else {
+                monaco.editor.setTheme("vs-light")
+                document.body.style.backgroundColor = "white";
+            }
+        }
+    </script>
+</body>
+
+</html>

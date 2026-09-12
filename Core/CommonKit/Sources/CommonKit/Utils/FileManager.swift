@@ -59,6 +59,14 @@ public protocol FileManagerInterface {
     ///   - If creating the directory or writing the file encounters any other error, a `FileManagerError.writeFileError` is thrown.
     func write(to url: URL, fileName: String, model: Encodable) throws
 
+    /// Writes string content to a file at the specified URL.
+    ///
+    /// - Parameters:
+    ///   - content: The string content to write.
+    ///   - url: The URL of the file to write.
+    /// - Throws: If creating the directory or writing the file encounters an error, a `FileManagerError` is thrown.
+    func write(_ content: String, to url: URL) throws
+
     /// Reads and decodes a JSON file at the specified URL into a model of the specified type.
     ///
     /// - Parameters:
@@ -139,6 +147,21 @@ extension FileManager: FileManagerInterface {
             }
         } catch where error is EncodingError {
             throw FileManagerError.modelEncodingError(error)
+        } catch {
+            throw FileManagerError.writeFileError(error)
+        }
+    }
+
+    public func write(_ content: String, to url: URL) throws {
+        do {
+            let directory = url.deletingLastPathComponent()
+            try createDirectory(at: directory, withIntermediateDirectories: true)
+            guard let data = content.data(using: .utf8) else {
+                throw FileManagerError.fileSaveError
+            }
+            try data.write(to: url, options: .atomic)
+        } catch let error as FileManagerError {
+            throw error
         } catch {
             throw FileManagerError.writeFileError(error)
         }

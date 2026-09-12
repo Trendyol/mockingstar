@@ -35,6 +35,13 @@
     },
     {
       "target" : {
+        "containerPath" : "container:..\/Features\/Modifiers",
+        "identifier" : "ModifiersTests",
+        "name" : "ModifiersTests"
+      }
+    },
+    {
+      "target" : {
         "containerPath" : "container:..\/Core\/Editor",
         "identifier" : "DiffEditorTests",
         "name" : "DiffEditorTests"

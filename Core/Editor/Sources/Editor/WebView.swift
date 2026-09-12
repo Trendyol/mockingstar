@@ -10,20 +10,29 @@ import WebKit
 import CommonKit
 
 final class EditorWebView: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
-    static var shared = EditorWebView()
-    private(set) var webView: WKWebView = WKWebView()
-    var content: EditorContent? = nil
+    let webView: WKWebView
+    let content: EditorContent
+    private(set) var isReadOnly: Bool
     private var lastEditorContent = ""
 
-    private override init() {
+    init(content: EditorContent, isReadOnly: Bool) {
+        self.content = content
+        self.isReadOnly = isReadOnly
+        webView = WKWebView()
         super.init()
         createEditor()
+        content.onContentChange = { [weak self] in self?.updateContent() }
+        content.onLanguageChange = { [weak self] in self?.updateLanguage() }
+    }
+
+    deinit {
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "updateText")
     }
 
     private func createEditor() {
         webView.navigationDelegate = self
         webView.uiDelegate = self
-        
+
         guard let url = Bundle.module.url(forResource: "main", withExtension: "html", subdirectory: "MonacoEditor") else { return }
         webView.load(URLRequest(url: url))
         webView.configuration.userContentController.removeAllScriptMessageHandlers()
@@ -33,15 +42,22 @@ final class EditorWebView: NSObject, WKNavigationDelegate, WKUIDelegate, WKScrip
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         setInitialContent()
+        updateLanguage()
+        setReadOnly(isReadOnly)
+    }
+
+    func setReadOnly(_ value: Bool) {
+        isReadOnly = value
+        webView.runJS("setReadOnly(\(value ? "true" : "false"))")
     }
 
     func setInitialContent() {
-        let base64 = content?.content.data(using: .utf8)?.base64EncodedString() ?? ""
+        let base64 = content.content.data(using: .utf8)?.base64EncodedString() ?? ""
         webView.runJS("setEditorContent(`\(base64)`)")
     }
 
     func updateContent() {
-        guard let content = content, lastEditorContent != content.content else { return }
+        guard lastEditorContent != content.content else { return }
         lastEditorContent = content.content
         let base64 = content.content.data(using: .utf8)?.base64EncodedString() ?? ""
 
@@ -51,7 +67,6 @@ final class EditorWebView: NSObject, WKNavigationDelegate, WKUIDelegate, WKScrip
     }
 
     func updateLanguage() {
-        guard let content = content else { return }
         let languageId = content.type.monacoLanguageId
 
         DispatchQueue.main.async {
@@ -60,8 +75,8 @@ final class EditorWebView: NSObject, WKNavigationDelegate, WKUIDelegate, WKScrip
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard let message = message.body as? String, message != content?.content else { return }
-        content?.content = message
+        guard let message = message.body as? String, message != content.content else { return }
+        content.content = message
         lastEditorContent = message
     }
 }

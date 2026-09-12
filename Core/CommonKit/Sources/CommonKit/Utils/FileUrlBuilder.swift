@@ -81,6 +81,22 @@ public protocol FileUrlBuilderInterface {
     /// - Throws: If constructing the URL encounters an error, a `FileUrlBuilderError` is thrown.
     func commonPluginFolderUrl() throws -> URL
 
+    /// Returns the URL for the "Modifiers" folder within a specific domain.
+    ///
+    /// - Parameter mockDomain: The domain for which the "Modifiers" folder URL is constructed.
+    /// - Returns: The URL for the "Modifiers" folder within the specified domain.
+    /// - Throws: If constructing the URL encounters an error, a `FileUrlBuilderError` is thrown.
+    func modifierFolderUrl(for mockDomain: String) throws -> URL
+
+    /// Returns the URL for a specific modifier JavaScript file.
+    ///
+    /// - Parameters:
+    ///   - mockDomain: The domain for which the modifier file URL is constructed.
+    ///   - id: The modifier identifier.
+    /// - Returns: The URL for the specified modifier JavaScript file.
+    /// - Throws: If constructing the URL encounters an error, a `FileUrlBuilderError` is thrown.
+    func modifierFileUrl(for mockDomain: String, id: String) throws -> URL
+
     func isPathMatched(requestPath: String, configPath: String, pathMatchingRatio: Double) -> Bool
 }
 
@@ -168,6 +184,17 @@ public final class FileUrlBuilder: FileUrlBuilderInterface {
             throw FileUrlBuilderError.urlError
         }
         return URL(filePath: url.path())
+    }
+
+    public func modifierFolderUrl(for mockDomain: String) throws -> URL {
+        guard let url = URL(string: folderPath + "Domains/" + mockDomain + "/Modifiers") else {
+            throw FileUrlBuilderError.urlError
+        }
+        return URL(filePath: url.path())
+    }
+
+    public func modifierFileUrl(for mockDomain: String, id: String) throws -> URL {
+        try modifierFolderUrl(for: mockDomain).appending(path: "\(id).js")
     }
 
     public func isPathMatched(requestPath: String, configPath: String, pathMatchingRatio: Double) -> Bool {

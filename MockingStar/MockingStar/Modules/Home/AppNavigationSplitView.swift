@@ -11,6 +11,7 @@ import Logs
 import MockDetail
 import MockDomainConfigs
 import MockList
+import Modifiers
 import MockingStarCore
 import PluginConfigs
 import SwiftUI
@@ -19,6 +20,8 @@ struct AppNavigationSplitView: View {
     @Bindable private var navigationStore = NavigationStore.shared
     @AppStorage("mockDomain") var mockDomain: String = ""
     @AppStorage("isOnboardingDone") private var isOnboardingDone: Bool = false
+    @State private var modifierCreationSeed: ModifierCreationSeed?
+    @State private var modifierListViewModel = ModifierListViewModel()
     private let mockListViewModel = MockListViewModel()
     private let onboardingCompleted = OnboardingCompleted.shared
     private let deeplinkStore = DeeplinkStore.shared
@@ -31,7 +34,9 @@ struct AppNavigationSplitView: View {
                         .frame(minWidth: 280)
                 } detail: {
                     NavigationStack(path: $navigationStore.path) {
-                        MockListView(viewModel: mockListViewModel)
+                        MockListView(viewModel: mockListViewModel) { seed in
+                            modifierCreationSeed = seed
+                        }
                             .navigationDestination(for: Route.self) { route in
                                 switch route {
                                 case .mock(let mock):
@@ -50,6 +55,13 @@ struct AppNavigationSplitView: View {
                                     LogsView()
                                 case .fileIntegrityCheck:
                                     FileIntegrityCheckView()
+                                case .modifiers:
+                                    ModifierListView(viewModel: modifierListViewModel)
+                                case .modifier(let id, let previewSeed):
+                                    ModifierDetailRouteView(
+                                        modifierId: id,
+                                        previewSeed: previewSeed
+                                    )
                                 }
                             }
                     }
@@ -61,6 +73,21 @@ struct AppNavigationSplitView: View {
             }
         }
         .overlay { NotificationView() }
+        .sheet(
+            isPresented: Binding(
+                get: { modifierCreationSeed != nil },
+                set: { if !$0 { modifierCreationSeed = nil } }
+            )
+        ) {
+            if let seed = modifierCreationSeed {
+                ModifierCreateSheet(seed: seed, domain: mockDomain) { id, previewSeed in
+                    modifierCreationSeed = nil
+                    navigationStore.open(
+                        .modifier(id: id, previewSeed: previewSeed)
+                    )
+                }
+            }
+        }
         .onChange(of: deeplinkStore.deeplinks) {
             switch deeplinkStore.deeplinks.last {
             case .openMock(_, let mockDomain) where self.mockDomain != mockDomain:
