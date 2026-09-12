@@ -5,6 +5,9 @@ import PluginCore
 #elseif os(Linux)
 import PluginCoreLinux
 #endif
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 private final class FirstResultCapture {
     private let lock = NSLock()

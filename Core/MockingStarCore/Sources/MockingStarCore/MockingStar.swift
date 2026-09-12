@@ -305,7 +305,6 @@ public final class MockingStarCore {
         logger.debug("Checking mock should save", metadata: [
             "traceUrl": .string(request.url?.absoluteString ?? "")
         ])
-        var request = request
 
         let shouldSave = executeMockFilterForShouldSave(for: request, scenario: flags.scenario ?? "", statusCode: status, mockFilters: decider.mockFilters)
 
