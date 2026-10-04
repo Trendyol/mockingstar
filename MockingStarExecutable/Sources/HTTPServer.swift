@@ -12,11 +12,11 @@ import MockingStarCore
 final class HTTPServer {
     private let server: ServerInterface
 
-    init(port: UInt16, threshold: Double = 0.2) {
+    init(port: UInt16) {
         server = Server(port: port)
 
         let mockingStarCore = MockingStarCore()
-        server.registerMockHandler(TimedMockHandler(wrapping: mockingStarCore, threshold: threshold))
+        server.registerMockHandler(mockingStarCore)
         server.registerMockSearchHandler(mockingStarCore)
         server.registerScenarioHandler(mockingStarCore)
     }

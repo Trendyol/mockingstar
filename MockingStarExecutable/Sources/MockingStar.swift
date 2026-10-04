@@ -28,8 +28,8 @@ private struct Start: AsyncParsableCommand {
     @Option(name: .shortAndLong, help: "HTTP Server Port")
     var port: UInt16 = 8008
 
-    @Option(name: .shortAndLong, help: "Warn if a mock response takes longer than this duration in seconds")
-    var threshold: Double = 0.2
+    @Option(name: .shortAndLong, help: "Export Mock Trace JSONL to this file or directory")
+    var traceExport: String? = nil
 
     @Argument(help: "Mocks folder path")
     var folder: String
@@ -44,7 +44,13 @@ private struct Start: AsyncParsableCommand {
             Logger.Constant.customLogFolderPath = logsFolder
         }
 
-        let server = HTTPServer(port: port, threshold: threshold)
+        if let traceExport, !traceExport.isEmpty {
+            Logger.Constant.traceExportPath = traceExport
+        } else if let logsFolder, !logsFolder.isEmpty {
+            Logger.Constant.traceExportPath = URL(filePath: logsFolder).appending(path: "MockingStarTrace.json").path()
+        }
+
+        let server = HTTPServer(port: port)
         try await server.startServer()
     }
 }
