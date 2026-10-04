@@ -28,6 +28,9 @@ private struct Start: AsyncParsableCommand {
     @Option(name: .shortAndLong, help: "HTTP Server Port")
     var port: UInt16 = 8008
 
+    @Option(name: .shortAndLong, help: "Export Mock Trace JSONL to this file or directory")
+    var traceExport: String? = nil
+
     @Argument(help: "Mocks folder path")
     var folder: String
 
@@ -35,8 +38,16 @@ private struct Start: AsyncParsableCommand {
         @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
         workspaces = [Workspace(name: "Workspace", path: folder, bookmark: Data())]
 
+        Logger.Constant.enableConsoleLogging = true
+
         if let logsFolder, !logsFolder.isEmpty {
             Logger.Constant.customLogFolderPath = logsFolder
+        }
+
+        if let traceExport, !traceExport.isEmpty {
+            Logger.Constant.traceExportPath = traceExport
+        } else if let logsFolder, !logsFolder.isEmpty {
+            Logger.Constant.traceExportPath = URL(filePath: logsFolder).appending(path: "MockingStarTrace.json").path()
         }
 
         let server = HTTPServer(port: port)

@@ -111,6 +111,13 @@ public struct MockTraceOverlayView: View {
                     .cornerRadius(4)
                     .help(entry.metadata["errorMessage"].orEmpty)
 
+                if let duration = entry.metadata["duration"], !duration.isEmpty {
+                    Text("\(duration)s")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .monospacedDigit()
+                }
+
                 Spacer()
             }
             

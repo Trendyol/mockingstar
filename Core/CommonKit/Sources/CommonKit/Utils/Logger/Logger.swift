@@ -12,6 +12,8 @@ extension Logger {
     public enum Constant {
         static let subsystem = "com.trendyol.MockingStar"
         public static var customLogFolderPath: String = ""
+        public static var enableConsoleLogging: Bool = false
+        public static var traceExportPath: String = ""
     }
 }
 
@@ -65,12 +67,19 @@ public final class Logger {
 #if DEBUG
             logHandlers.append(OSLogHandler(category: category))
 #endif
+            if Constant.enableConsoleLogging {
+                logHandlers.append(ConsoleLogHandler())
+            }
 #else
             logHandlers.append(ConsoleLogHandler())
 #endif
 
             if !Constant.customLogFolderPath.isEmpty {
                 logHandlers.append(LogFileLogHandler.shared)
+            }
+
+            if !Constant.traceExportPath.isEmpty {
+                logHandlers.append(TraceExportLogHandler.shared)
             }
 
             return MultiplexLogHandler(logHandlers)

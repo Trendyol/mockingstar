@@ -45,6 +45,7 @@ The trace window displays the following information for each request:
   - 🔵 Blue: Live request
   - 🟢 Green: Mock response served
   - 🔴 Red: Error occurred
+- **Duration**: How long the request took to complete, in seconds
 - **URL**: The full request URL
 
 ### Request Status Types
