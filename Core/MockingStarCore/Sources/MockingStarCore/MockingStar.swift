@@ -106,7 +106,7 @@ public final class MockingStarCore {
     }
 
     private func logMockTrace(request: URLRequest, responseType: String, startedAt: ContinuousClock.Instant, errorMessage: String? = nil) {
-        let duration = String(format: "%.4f", (ContinuousClock().now - startedAt).seconds)
+        let duration = String(format: "%.4f", (ContinuousClock().now - startedAt) / .seconds(1))
         if let errorMessage {
             logger.info("Mock Trace", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? ""),
@@ -565,12 +565,5 @@ extension MockingStarCore: MockingStarCoreInterface {
         case .ignoreDomain:
             return .domainIgnoredByConfigs
         }
-    }
-}
-
-private extension Duration {
-    var seconds: Double {
-        let components = self.components
-        return Double(components.seconds) + Double(components.attoseconds) / 1e18
     }
 }

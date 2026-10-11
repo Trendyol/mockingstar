@@ -105,6 +105,9 @@ public protocol FileManagerInterface {
     /// - Throws: If an error occurs during the file removal process, a `FileManagerError.deleteError` is thrown.
     func removeFile(at path: String) throws
 
+    @discardableResult
+    func createFile(atPath path: String, contents: Data?) -> Bool
+
     /// Updates the content of the file at the specified path with the encoded representation of the provided data.
     ///
     /// - Parameters:
@@ -226,6 +229,11 @@ extension FileManager: FileManagerInterface {
         } catch {
             throw FileManagerError.deleteError(error)
         }
+    }
+
+    @discardableResult
+    public func createFile(atPath path: String, contents: Data?) -> Bool {
+        createFile(atPath: path, contents: contents, attributes: nil)
     }
 
     public func updateFileContent(path: String, content: Encodable) throws {

@@ -28,7 +28,7 @@ private struct Start: AsyncParsableCommand {
     @Option(name: .shortAndLong, help: "HTTP Server Port")
     var port: UInt16 = 8008
 
-    @Option(name: .shortAndLong, help: "Export Mock Trace JSONL to this file or directory")
+    @Option(name: .shortAndLong, help: "Export Mock Trace JSONL to this file or directory (default: ./MockingStarTrace.json)")
     var traceExport: String? = nil
 
     @Argument(help: "Mocks folder path")
@@ -46,8 +46,10 @@ private struct Start: AsyncParsableCommand {
 
         if let traceExport, !traceExport.isEmpty {
             Logger.Constant.traceExportPath = traceExport
-        } else if let logsFolder, !logsFolder.isEmpty {
-            Logger.Constant.traceExportPath = URL(filePath: logsFolder).appending(path: "MockingStarTrace.json").path()
+        } else {
+            Logger.Constant.traceExportPath = URL(filePath: FileManager.default.currentDirectoryPath)
+                .appending(path: "MockingStarTrace.json")
+                .path()
         }
 
         let server = HTTPServer(port: port)

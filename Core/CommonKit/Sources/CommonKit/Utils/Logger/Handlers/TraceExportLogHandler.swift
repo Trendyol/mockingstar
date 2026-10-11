@@ -13,25 +13,25 @@ final class TraceExportLogHandler: LogHandler {
     private let fileHandle: FileHandle?
     private let jsonEncoder = JSONEncoder()
 
-    private init() {
+    init(fileManager: FileManagerInterface = FileManager.default) {
         let fileURL: URL
         let exportPath = Logger.Constant.traceExportPath
-        let pathExists = FileManager.default.fileOrDirectoryExists(atPath: exportPath)
+        let pathExists = fileManager.fileOrDirectoryExists(atPath: exportPath)
 
         if pathExists.isExist && pathExists.isDirectory {
             fileURL = URL(filePath: exportPath).appending(path: "MockingStarTrace.json")
-            FileManager.default.createFile(atPath: fileURL.path(), contents: nil)
+            fileManager.createFile(atPath: fileURL.path(), contents: nil)
         } else if pathExists.isExist {
             fileURL = URL(filePath: exportPath)
-            try? FileManager.default.removeItem(at: fileURL)
-            FileManager.default.createFile(atPath: fileURL.path(), contents: nil)
+            try? fileManager.removeFile(at: fileURL.path())
+            fileManager.createFile(atPath: fileURL.path(), contents: nil)
         } else {
             fileURL = URL(filePath: exportPath)
             let directory = fileURL.deletingLastPathComponent()
-            if !FileManager.default.fileOrDirectoryExists(atPath: directory.path()).isExist {
-                try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            if !fileManager.fileOrDirectoryExists(atPath: directory.path()).isExist {
+                try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true, attributes: nil)
             }
-            FileManager.default.createFile(atPath: fileURL.path(), contents: nil)
+            fileManager.createFile(atPath: fileURL.path(), contents: nil)
         }
 
         self.fileHandle = try? FileHandle(forWritingTo: fileURL)
