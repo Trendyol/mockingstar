@@ -23,8 +23,8 @@ final class MockListViewModelTests: XCTestCase {
     private var notificationManager: MockNotificationManager!
     private var pasteBoard: MockNSPasteboard!
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
+    override func setUp() async throws {
+        try await super.setUp()
         (mockDiscoverResult, mockDiscoverResultContinuation) = AsyncStream<MockDiscoverResult>.makeStream()
 
         fileManager = .init()
@@ -39,25 +39,16 @@ final class MockListViewModelTests: XCTestCase {
                           pasteBoard: pasteBoard)
 
         mockDiscoverResultContinuation.yield(.result(mockModels))
+        await waitUntilMocksLoaded()
     }
 
-    func test_handleData_IsLoading() {
+    func test_handleData_IsLoading() async {
         XCTAssertFalse(viewModel.isLoading)
         XCTAssertFalse(viewModel.mockModelList.isEmpty)
 
         mockDiscoverResultContinuation.yield(.loading)
+        await waitUntil { self.viewModel.isLoading }
 
-        let exp = XCTestExpectation(description: "MockListViewModelTests")
-
-        Task {
-            while !viewModel.isLoading {
-                try? await Task.sleep(nanoseconds: 100_000_000)
-            }
-
-            exp.fulfill()
-        }
-
-        wait(for: [exp], timeout: 10)
         XCTAssertTrue(viewModel.isLoading)
         XCTAssertTrue(viewModel.mockModelList.isEmpty)
     }
@@ -286,6 +277,17 @@ Error Domain=Failed Code=-1 "(null)"
         XCTAssertEqual(pasteBoard.invokedSetStringParametersList.map(\.dataType), [.string])
         XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.title), ["Request copied to clipboard"])
         XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.color), [.green])
+    }
+
+    private func waitUntilMocksLoaded() async {
+        await waitUntil { !self.viewModel.mockModelList.isEmpty }
+    }
+
+    private func waitUntil(_ condition: @escaping () -> Bool) async {
+        let timeout = Date().addingTimeInterval(5)
+        while !condition(), Date() < timeout {
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
     }
 }
 
