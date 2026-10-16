@@ -181,6 +181,20 @@ public final class MockFileManager: FileManagerInterface {
         }
     }
 
+    public var invokedCreateFile = false
+    public var invokedCreateFileCount = 0
+    public var invokedCreateFileParameters: (path: String, contents: Data?, Void)?
+    public var invokedCreateFileParametersList: [(path: String, contents: Data?, Void)] = []
+    public var stubbedCreateFileResult: Bool = true
+    @discardableResult
+    public func createFile(atPath path: String, contents: Data?) -> Bool {
+        invokedCreateFile = true
+        invokedCreateFileCount += 1
+        invokedCreateFileParameters = (path, contents, ())
+        invokedCreateFileParametersList.append((path, contents, ()))
+        return stubbedCreateFileResult
+    }
+
     public var invokedUpdateFileContent = false
     public var invokedUpdateFileContentCount = 0
     public var invokedUpdateFileContentParameters: (path: String, content: Encodable, Void)?
