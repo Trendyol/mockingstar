@@ -49,10 +49,10 @@ public struct MockModifierActivation: Codable, Hashable, Sendable {
     }
 }
 
-/// Writable payload for creating or updating a modifier definition.
-///
-/// On create, `id` chooses the filename. On update, the path segment identifies the current
-/// modifier and a different body `id` requests a filename rename.
+/// Create/update body. Unlike `MockModifierModel`, this has no `enabled` or `source`:
+/// those come from the caller's device activation set, not from the file.
+/// `id` is optional because update identifies the file by the URL path; a different
+/// body `id` asks for a rename. `MockModifierModel.id` is always the current filename.
 public struct MockModifierWriteRequest: Codable, Hashable, Sendable {
     public var id: String?
     public var path: String
