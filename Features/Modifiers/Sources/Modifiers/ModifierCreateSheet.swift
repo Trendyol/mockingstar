@@ -23,6 +23,11 @@ public struct MockModifierCreateSheet: View {
             Text("New Modifier")
                 .font(.title2.bold())
 
+            Text("ID becomes the .js filename. Path and method must match the request to transform. Scenario is optional. Order starts at 1; a lower order runs first.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
             Form {
                 TextField("ID (filename)", text: $viewModel.modifierId)
                 TextField("Path", text: $viewModel.path)

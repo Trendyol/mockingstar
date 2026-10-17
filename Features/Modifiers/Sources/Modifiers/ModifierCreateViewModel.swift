@@ -77,6 +77,7 @@ public final class MockModifierCreateViewModel {
         if seed.mockId != nil || seed.url != MockModifierCreationSeed.empty.url {
             resolvedURL = seed.url
         } else {
+            // Preview needs an absolute URL. A modifier created without a mock only has a path.
             let normalizedPath = path.hasPrefix("/") ? path : "/" + path
             resolvedURL = "https://example.com\(normalizedPath)"
         }
