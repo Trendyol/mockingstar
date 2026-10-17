@@ -135,6 +135,24 @@ final class MockModifierListViewModelTests: XCTestCase {
         XCTAssertEqual(api.invokedCreate?.order, 3)
     }
 
+    func test_deletePending_DeletesEveryConfirmedSelection() async {
+        api.stubbedList = [
+            sampleModifier(id: "a", order: 1),
+            sampleModifier(id: "b", order: 2),
+            sampleModifier(id: "c", order: 3)
+        ]
+        await sut.load(domain: "Dev")
+        sut.selected = ["a", "c"]
+
+        sut.confirmDelete(ids: ["a", "c"])
+        await sut.deletePending(domain: "Dev")
+
+        XCTAssertEqual(api.invokedDeletedIds, ["a", "c"])
+        XCTAssertEqual(sut.modifiers.map(\.id), ["b"])
+        XCTAssertTrue(sut.selected.isEmpty)
+        XCTAssertNil(api.invokedSetActiveActivations)
+    }
+
     func test_paste_IgnoresPlainTextWithoutClipboardPrefix() async {
         api.stubbedList = [sampleModifier()]
         await sut.load(domain: "Dev")
@@ -482,6 +500,7 @@ final class FakeMockModifierAPIClient: MockModifierAPIClientInterface {
     var invokedPreview: MockModifierPreviewRequest?
     var previewHandler: ((MockModifierPreviewRequest) async throws -> MockModifierPreviewResponse)?
     var invokedCreate: MockModifierWriteRequest?
+    var invokedDeletedIds: [String] = []
     var invokedSetActiveActivations: [MockModifierActivation]?
     var invokedUpdate: (id: String, request: MockModifierWriteRequest)?
 
@@ -509,7 +528,9 @@ final class FakeMockModifierAPIClient: MockModifierAPIClientInterface {
     }
 
     func deleteModifier(domain: String, id: String) async throws {
+        invokedDeletedIds.append(id)
         if let stubbedError { throw stubbedError }
+        stubbedList.removeAll { $0.id == id }
     }
 
     func setActiveModifiers(domain: String, activations: [MockModifierActivation]) async throws {

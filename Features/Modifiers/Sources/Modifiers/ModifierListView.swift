@@ -50,7 +50,7 @@ public struct MockModifierListView: View {
         } message: {
             Text(viewModel.errorMessage)
         }
-        .confirmationDialog("Delete modifier?", isPresented: $viewModel.shouldShowDeleteConfirmation) {
+        .confirmationDialog(viewModel.deleteConfirmationTitle, isPresented: $viewModel.shouldShowDeleteConfirmation) {
             Button("Delete", role: .destructive) {
                 Task { await viewModel.deletePending(domain: mockDomain) }
             }
@@ -148,8 +148,7 @@ private struct MockModifierListTable: View {
                 Divider()
             }
             Button("Delete", role: .destructive) {
-                guard let id = selections.first else { return }
-                viewModel.confirmDelete(id: id)
+                viewModel.confirmDelete(ids: Array(selections))
             }
         } primaryAction: { selections in
             guard let id = selections.first else { return }

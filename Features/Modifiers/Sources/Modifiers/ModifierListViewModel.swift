@@ -20,7 +20,13 @@ public final class MockModifierListViewModel {
     var shouldShowErrorMessage = false
     var errorMessage = ""
     var shouldShowDeleteConfirmation = false
-    var pendingDeleteId: String?
+    var pendingDeleteIds: [String] = []
+
+    var deleteConfirmationTitle: String {
+        pendingDeleteIds.count > 1
+            ? "Delete \(pendingDeleteIds.count) modifiers?"
+            : "Delete modifier?"
+    }
     var shouldShowCreateSheet = false
 
     var filteredModifiers: [MockModifierModel] {
@@ -82,22 +88,32 @@ public final class MockModifierListViewModel {
     }
 
     @MainActor
-    func confirmDelete(id: String) {
-        pendingDeleteId = id
-        shouldShowDeleteConfirmation = true
+    func confirmDelete(ids: [String]) {
+        pendingDeleteIds = ids
+        shouldShowDeleteConfirmation = !ids.isEmpty
     }
 
     @MainActor
     func deletePending(domain: String) async {
-        guard let id = pendingDeleteId else { return }
-        do {
-            try await apiClient.deleteModifier(domain: domain, id: id)
-            notificationManager.show(title: "Modifier deleted", color: .green)
-            await load(domain: domain)
-        } catch {
-            present(error)
+        let ids = pendingDeleteIds
+        pendingDeleteIds = []
+        guard !ids.isEmpty else { return }
+        var failure: Error?
+        for id in ids {
+            do {
+                try await apiClient.deleteModifier(domain: domain, id: id)
+            } catch {
+                failure = error
+            }
         }
-        pendingDeleteId = nil
+        selected.subtract(ids)
+        await load(domain: domain)
+        if let failure {
+            present(failure)
+        } else {
+            let title = ids.count == 1 ? "Modifier deleted" : "\(ids.count) modifiers deleted"
+            notificationManager.show(title: title, color: .green)
+        }
     }
 
     func openDetail(id: String, previewSeed: MockModifierCreationSeed? = nil) {
