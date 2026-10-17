@@ -14,9 +14,11 @@ final class MockModifierParser {
 
     /// Parses modifier metadata from JavaScript, deriving `id` from `filenameId`.
     ///
-    /// Legacy files may still contain `var id`, `var enabled`, and `var priority`. Those values are
-    /// ignored for identity/activation (`id` comes from the filename; `enabled` defaults to false
-    /// here). `priority` is mapped to `order` when `order` is absent.
+    /// Metadata lives in the `.js` file as `var` bindings because the transformer is JavaScript
+    /// and JavaScriptCore evaluates both in one pass. There is no separate JSON sidecar.
+    /// `var id` and `var enabled` are ignored (`id` is the filename; activation is not on disk).
+    /// `var priority` is read as `order` only when `order` is absent — earlier commits on this
+    /// branch wrote `priority` before `order` replaced it. Nothing outside this branch ships that shape.
     func parse(jsCode: String, filenameId: String) throws -> MockModifierModel {
         try Self.validateModifierId(filenameId)
 
@@ -72,7 +74,8 @@ final class MockModifierParser {
         )
     }
 
-    /// Serializes a canonical on-disk representation without `id`, `enabled`, or legacy `priority`.
+    /// Serializes the on-disk file. `id` and `enabled` are not written. `priority` is not written;
+    /// `order` is the only sequence field.
     func serialize(_ model: MockModifierModel) -> String {
         let transformerBody = Self.extractTransformerBody(from: model.transformerCode)
         return """

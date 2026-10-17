@@ -10,6 +10,8 @@ public enum MockModifierExecutionMode: String, Sendable {
     case preview
 }
 
+/// Linux has no JavaScriptCore. The type exists so the shared call site compiles
+/// and returns the terminal response without running transformers.
 public final class MockModifierChain {
     private let terminal: (URLRequest) async throws -> HTTPResult
 
