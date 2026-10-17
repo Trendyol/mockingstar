@@ -59,11 +59,7 @@ Activation state is lost when the MockingStar process restarts.
 The modifier detail screen uses a horizontal split:
 
 - **Left:** Response pane (status, headers, body). Larger by default; body is read-only.
-- **Right:** JavaScript editor with **Ask Claude** and **Run**, plus Metadata and Preview Request forms.
-
-### Ask Claude
-
-**Ask Claude** opens a sheet where you paste a Trendyol GenAI Gateway (MLP) API key (stored in `UserDefaults` under `modifierGenAIGatewayAPIKey` — avoids Keychain permission prompts) and describe the desired transformer change. MockingStar calls the OpenAI-compatible Chat Completions API (`https://mlplatform.gcp.trendyol.com/piper/genai/chat/completions`, `Authorization: Bearer`, model `gemini-3.5-flash`) with metadata, the current JS, and a **schema-only** summary of the latest preview JSON (types/structure, no real values, to reduce tokens), then replaces the right-hand editor with the returned `function transformer(req, chain) { ... }`. The change stays unsaved until you press **Save**; it does not auto-Run.
+- **Right:** JavaScript editor with **Run**, plus Metadata and Preview Request forms.
 
 ### Run (preview)
 

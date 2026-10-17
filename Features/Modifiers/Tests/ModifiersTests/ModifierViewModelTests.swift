@@ -161,82 +161,6 @@ final class MockModifierDetailViewModelTests: XCTestCase {
         XCTAssertTrue(sut.shouldShowUnsavedIndicator)
     }
 
-    func test_askClaude_AppliesTransformerAndPersistsKey() async {
-        let notifications = MockNotificationManager()
-        let keyStore = InMemoryAPIKeyStore()
-        let claude = MockClaudeMessagesClient()
-        claude.stubbedText = """
-        ```javascript
-        function transformer(req, chain) {
-          var res = chain.proceed(req);
-          res.body.fromClaude = true;
-          return res;
-        }
-        ```
-        """
-
-        sut = MockModifierDetailViewModel(
-            modifierId: "discount",
-            apiClient: api,
-            notificationManager: notifications,
-            navigationStore: navigationStore,
-            apiKeyStore: keyStore,
-            claudeClient: claude
-        )
-        api.stubbedGet = sampleModifier()
-        await sut.load(domain: "Dev")
-        sut.claudeAPIKey = "sk-ant-test"
-        sut.claudeUserIntent = "fromClaude alanını true yap"
-        sut.shouldShowAskClaudeSheet = true
-        sut.previewStatus = 200
-        sut.responseEditorSession.setContent("{\"ok\":true}", type: .json)
-
-        let ok = await sut.askClaude()
-
-        XCTAssertTrue(ok)
-        XCTAssertFalse(sut.shouldShowAskClaudeSheet)
-        XCTAssertTrue(sut.claudeUserIntent.isEmpty)
-        XCTAssertTrue(sut.claudeSheetError.isEmpty)
-        XCTAssertTrue(sut.draft.transformerCode.contains("fromClaude"))
-        XCTAssertEqual(sut.javaScriptEditorSession.content.content, sut.draft.transformerCode)
-        XCTAssertTrue(sut.shouldShowUnsavedIndicator)
-        XCTAssertEqual(keyStore.load(), "sk-ant-test")
-        XCTAssertEqual(claude.invokedAPIKey, "sk-ant-test")
-        XCTAssertTrue(claude.invokedUser?.contains("fromClaude alanını true yap") == true)
-        XCTAssertTrue(claude.invokedUser?.contains("Current transformer (EDIT THIS") == true)
-        XCTAssertTrue(claude.invokedUser?.contains("chain.proceed(req)") == true)
-        XCTAssertTrue(claude.invokedUser?.contains("Sample response schema") == true)
-        XCTAssertTrue(claude.invokedUser?.contains("\"ok\"") == true)
-        XCTAssertFalse(claude.invokedUser?.contains("{\"ok\":true}") == true)
-        XCTAssertEqual(claude.invokedSystem, ModifierClaudePromptBuilder.systemPrompt)
-    }
-
-    func test_askClaude_FailureKeepsSheetAndShowsError() async {
-        let keyStore = InMemoryAPIKeyStore()
-        let claude = MockClaudeMessagesClient()
-        claude.stubbedError = ClaudeMessagesError.invalidResponse(status: 401, message: "invalid x-api-key")
-
-        sut = MockModifierDetailViewModel(
-            modifierId: "discount",
-            apiClient: api,
-            notificationManager: MockNotificationManager(),
-            navigationStore: navigationStore,
-            apiKeyStore: keyStore,
-            claudeClient: claude
-        )
-        api.stubbedGet = sampleModifier()
-        await sut.load(domain: "Dev")
-        sut.claudeAPIKey = "bad-key"
-        sut.shouldShowAskClaudeSheet = true
-
-        let ok = await sut.askClaude()
-
-        XCTAssertFalse(ok)
-        XCTAssertTrue(sut.shouldShowAskClaudeSheet)
-        XCTAssertTrue(sut.claudeSheetError.contains("401"))
-        XCTAssertFalse(sut.draft.transformerCode.contains("fromClaude"))
-    }
-
     func test_runPreview_SendsUnsavedDraftWithoutUpdate() async {
         api.stubbedGet = sampleModifier(id: "discount")
         api.stubbedPreview = .init(
@@ -533,21 +457,5 @@ final class FakeMockModifierAPIClient: MockModifierAPIClientInterface {
         if let stubbedError { throw stubbedError }
         if let previewHandler { return try await previewHandler(request) }
         return stubbedPreview
-    }
-}
-
-final class MockClaudeMessagesClient: ClaudeMessagesClientInterface {
-    var stubbedText = ""
-    var stubbedError: Error?
-    var invokedAPIKey: String?
-    var invokedSystem: String?
-    var invokedUser: String?
-
-    func complete(apiKey: String, system: String, user: String) async throws -> String {
-        invokedAPIKey = apiKey
-        invokedSystem = system
-        invokedUser = user
-        if let stubbedError { throw stubbedError }
-        return stubbedText
     }
 }

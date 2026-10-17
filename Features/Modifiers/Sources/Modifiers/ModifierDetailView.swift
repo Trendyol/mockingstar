@@ -49,13 +49,6 @@ public struct MockModifierDetailView: View {
                                 ProgressView().controlSize(.small)
                             }
                             Button {
-                                viewModel.openAskClaudeSheet()
-                            } label: {
-                                Label("Ask Claude", systemImage: "sparkles")
-                            }
-                            .help("Ask Claude to rewrite the transformer from your intent + preview sample")
-                            .disabled(viewModel.isClaudeLoading)
-                            Button {
                                 Task { await viewModel.runPreview(domain: mockDomain) }
                             } label: {
                                 Label("Run", systemImage: "play.fill")
@@ -121,100 +114,10 @@ public struct MockModifierDetailView: View {
             }
             Button("Cancel", role: .cancel) {}
         }
-        .sheet(isPresented: $viewModel.shouldShowAskClaudeSheet) {
-            ModifierAskClaudeSheet(viewModel: viewModel)
-        }
         .modifier(ChangeConfirmationViewModifier(hasChange: $viewModel.shouldShowUnsavedIndicator,
                                                  backNavigationShortcutDisabled: .init(get: { isEditorFocused }, set: { _ in })) {
             Task { _ = await viewModel.save(domain: mockDomain) }
         })
-    }
-}
-
-private struct ModifierAskClaudeSheet: View {
-    @Bindable var viewModel: MockModifierDetailViewModel
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Ask Claude for transformer JS")
-                .font(.title2.bold())
-
-            Text("Describe the next incremental change. Claude receives your current JS plus a response schema, updates the existing transformer, and tries not to break working logic.")
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Text("GenAI Gateway API key")
-                .font(.headline)
-            HStack(spacing: 8) {
-                SecureField("MLP UI generated key", text: $viewModel.claudeAPIKey)
-                    .textFieldStyle(.roundedBorder)
-                    .disabled(viewModel.isClaudeLoading)
-                Button("Clear") {
-                    viewModel.clearClaudeAPIKey()
-                }
-                .disabled(viewModel.claudeAPIKey.isEmpty || viewModel.isClaudeLoading)
-            }
-
-            Text("What should this modifier do?")
-                .font(.headline)
-            TextEditor(text: $viewModel.claudeUserIntent)
-                .font(.body)
-                .frame(minHeight: 120)
-                .disabled(viewModel.isClaudeLoading)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.secondary.opacity(0.35))
-                )
-
-            if viewModel.previewStatus == nil {
-                Label(
-                    "Tip: Run a preview first so Claude gets the sample response JSON.",
-                    systemImage: "info.circle"
-                )
-                .font(.callout)
-                .foregroundStyle(.secondary)
-            }
-
-            if !viewModel.claudeSheetError.isEmpty {
-                Text(viewModel.claudeSheetError)
-                    .font(.callout)
-                    .foregroundStyle(.red)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            HStack {
-                Spacer()
-                Button("Cancel") {
-                    viewModel.shouldShowAskClaudeSheet = false
-                    dismiss()
-                }
-                .disabled(viewModel.isClaudeLoading)
-                Button {
-                    Task {
-                        if await viewModel.askClaude() {
-                            dismiss()
-                        }
-                    }
-                } label: {
-                    if viewModel.isClaudeLoading {
-                        ProgressView()
-                            .controlSize(.small)
-                    } else {
-                        Text("Generate")
-                    }
-                }
-                .keyboardShortcut(.defaultAction)
-                .disabled(!viewModel.canGenerateWithClaude)
-            }
-        }
-        .padding(20)
-        .frame(width: 520)
-        .onChange(of: viewModel.shouldShowAskClaudeSheet) { _, isPresented in
-            if !isPresented {
-                dismiss()
-            }
-        }
     }
 }
 

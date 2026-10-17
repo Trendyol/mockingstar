@@ -22,8 +22,6 @@ public final class MockModifierDetailViewModel {
     private let navigationStore: NavigationStore
     private let pasteBoard: NSPasteboardInterface
     private let defaults: UserDefaults
-    private let apiKeyStore: APIKeyStoreInterface
-    private let claudeClient: ClaudeMessagesClientInterface
     private let initialPreviewSeed: MockModifierCreationSeed?
 
     private(set) var currentId: String
@@ -57,11 +55,6 @@ public final class MockModifierDetailViewModel {
     var previewResponseHeaders: String = ""
     var previewIsStale = false
     var isPreviewLoading = false
-    var shouldShowAskClaudeSheet = false
-    var claudeAPIKey = ""
-    var claudeUserIntent = ""
-    var claudeSheetError = ""
-    var isClaudeLoading = false
 
     /// Compatibility alias used by navigation title / existing call sites.
     var modifierId: String { currentId }
@@ -75,19 +68,13 @@ public final class MockModifierDetailViewModel {
         responseEditorSession.content.content
     }
 
-    var canGenerateWithClaude: Bool {
-        !claudeAPIKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isClaudeLoading
-    }
-
     public init(modifierId: String,
                 previewSeed: MockModifierCreationSeed? = nil,
                 apiClient: MockModifierAPIClientInterface = MockModifierAPIClient(),
                 notificationManager: NotificationManagerInterface = NotificationManager.shared,
                 navigationStore: NavigationStore = .shared,
                 pasteBoard: NSPasteboardInterface = NSPasteboard.general,
-                defaults: UserDefaults = .standard,
-                apiKeyStore: APIKeyStoreInterface? = nil,
-                claudeClient: ClaudeMessagesClientInterface = ClaudeMessagesClient()) {
+                defaults: UserDefaults = .standard) {
         let placeholder = MockModifierModel(
             id: modifierId,
             path: "/",
@@ -95,14 +82,11 @@ public final class MockModifierDetailViewModel {
             transformerCode: ""
         )
         let initialDraft = MockModifierDetailDraft(model: placeholder)
-        let resolvedKeyStore = apiKeyStore ?? UserDefaultsAPIKeyStore(defaults: defaults)
         self.apiClient = apiClient
         self.notificationManager = notificationManager
         self.navigationStore = navigationStore
         self.pasteBoard = pasteBoard
         self.defaults = defaults
-        self.apiKeyStore = resolvedKeyStore
-        self.claudeClient = claudeClient
         self.initialPreviewSeed = previewSeed
         self.currentId = modifierId
         self.savedSnapshot = initialDraft
@@ -118,7 +102,6 @@ public final class MockModifierDetailViewModel {
         self.diffEditorSession = MonacoDiffSession()
         // Assign last so didSet can safely compare against savedSnapshot.
         self.draft = initialDraft
-        self.claudeAPIKey = resolvedKeyStore.load() ?? ""
         self.diffEditorSession.onEditPath = { [weak self] offset in
             Task { @MainActor in self?.editPreviewPath(offset: offset) }
         }
@@ -286,83 +269,6 @@ public final class MockModifierDetailViewModel {
         let value = String(data: data, encoding: .utf8) ?? previewBodyBase64
         pasteBoard.clearContents()
         pasteBoard.setString(value, forType: .string)
-    }
-
-    func openAskClaudeSheet() {
-        claudeSheetError = ""
-        if claudeAPIKey.isEmpty {
-            claudeAPIKey = apiKeyStore.load() ?? ""
-        }
-        shouldShowAskClaudeSheet = true
-    }
-
-    @MainActor
-    func clearClaudeAPIKey() {
-        do {
-            try apiKeyStore.clear()
-            claudeAPIKey = ""
-            claudeSheetError = ""
-        } catch {
-            claudeSheetError = error.localizedDescription
-        }
-    }
-
-    /// Calls Claude and replaces the JS editor draft with the returned transformer.
-    /// - Returns: `true` when the transformer was applied and the sheet should dismiss.
-    @MainActor
-    @discardableResult
-    func askClaude() async -> Bool {
-        guard canGenerateWithClaude else { return false }
-        claudeSheetError = ""
-        isClaudeLoading = true
-        defer { isClaudeLoading = false }
-
-        do {
-            try apiKeyStore.save(claudeAPIKey)
-            let sample: String?
-            if previewStatus != nil {
-                let body = responseEditorSession.content.content
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                sample = body.isEmpty ? nil : body
-            } else {
-                sample = nil
-            }
-            // Prefer Monaco editor content so unsynced keystrokes are included.
-            let currentJavaScript = javaScriptEditorSession.content.content
-            if draft.transformerCode != currentJavaScript {
-                draft.transformerCode = currentJavaScript
-            }
-            let userPrompt = ModifierClaudePromptBuilder.buildUserPrompt(
-                userIntent: claudeUserIntent,
-                modifierId: draft.id,
-                path: draft.path,
-                method: draft.method,
-                scenario: draft.scenario,
-                currentJavaScript: currentJavaScript,
-                sampleResponse: sample
-            )
-            let assistant = try await claudeClient.complete(
-                apiKey: claudeAPIKey,
-                system: ModifierClaudePromptBuilder.systemPrompt,
-                user: userPrompt
-            )
-            let js = try ModifierClaudeResponseParser.extractTransformerJavaScript(from: assistant)
-            applyGeneratedTransformer(js)
-            claudeUserIntent = ""
-            claudeSheetError = ""
-            shouldShowAskClaudeSheet = false
-            notificationManager.show(title: "Claude updated transformer", color: .green)
-            return true
-        } catch {
-            claudeSheetError = error.localizedDescription
-            notificationManager.show(title: error.localizedDescription, color: .red)
-            return false
-        }
-    }
-
-    private func applyGeneratedTransformer(_ javaScript: String) {
-        draft.transformerCode = javaScript
-        javaScriptEditorSession.setContent(javaScript, type: .javascript)
     }
 
     private func refreshDirtyState() {
