@@ -15,7 +15,7 @@ public struct MockModifierMatcher {
             .filter { $0.method.uppercased() == method.uppercased() }
             .filter { modifier in
                 guard let modifierScenario = modifier.scenario, !modifierScenario.isEmpty else { return true }
-                return modifierScenario == (scenario ?? "")
+                return modifierScenario == scenario
             }
             .sorted { lhs, rhs in
                 if lhs.order != rhs.order { return lhs.order < rhs.order }
