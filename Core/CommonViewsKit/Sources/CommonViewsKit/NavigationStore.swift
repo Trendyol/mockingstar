@@ -18,7 +18,7 @@ public enum Route: Hashable, Equatable {
     case logs
     case fileIntegrityCheck
     case modifiers
-    case modifier(id: String, previewSeed: ModifierCreationSeed? = nil)
+    case modifier(id: String, previewSeed: MockModifierCreationSeed? = nil)
 }
 
 @Observable

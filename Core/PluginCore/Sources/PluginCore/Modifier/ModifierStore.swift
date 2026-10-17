@@ -1,7 +1,7 @@
 import Foundation
 import CommonKit
 
-public enum ModifierStoreError: LocalizedError {
+public enum MockModifierStoreError: LocalizedError {
     case alreadyExists(String)
     case notFound(String)
     case invalidId(String)
@@ -15,22 +15,22 @@ public enum ModifierStoreError: LocalizedError {
     }
 }
 
-public protocol ModifierStoreInterface {
+public protocol MockModifierStoreInterface {
     var domain: String { get }
-    func list() throws -> [ModifierModel]
-    func get(id: String) throws -> ModifierModel?
-    func get(ids: [String]) throws -> [ModifierModel]
-    func create(_ model: ModifierModel) throws
-    func update(currentId: String, with model: ModifierModel) throws
+    func list() throws -> [MockModifierModel]
+    func get(id: String) throws -> MockModifierModel?
+    func get(ids: [String]) throws -> [MockModifierModel]
+    func create(_ model: MockModifierModel) throws
+    func update(currentId: String, with model: MockModifierModel) throws
     func delete(id: String) throws
 }
 
-public final class ModifierStore: ModifierStoreInterface {
+public final class MockModifierStore: MockModifierStoreInterface {
     public let domain: String
     private let fileManager: FileManagerInterface
     private let fileUrlBuilder: FileUrlBuilderInterface
-    private let parser = ModifierParser()
-    private let logger = Logger(category: "ModifierStore")
+    private let parser = MockModifierParser()
+    private let logger = Logger(category: "MockModifierStore")
 
     public init(domain: String,
                 fileManager: FileManagerInterface = FileManager.default,
@@ -40,7 +40,7 @@ public final class ModifierStore: ModifierStoreInterface {
         self.fileUrlBuilder = fileUrlBuilder
     }
 
-    public func list() throws -> [ModifierModel] {
+    public func list() throws -> [MockModifierModel] {
         let folder = try fileUrlBuilder.modifierFolderUrl(for: domain)
         guard fileManager.fileOrDirectoryExists(atPath: folder.path()).isExist else { return [] }
         let files = try fileManager.folderContent(at: folder).filter { $0.pathExtension == "js" }
@@ -55,7 +55,7 @@ public final class ModifierStore: ModifierStoreInterface {
         }
     }
 
-    public func get(id: String) throws -> ModifierModel? {
+    public func get(id: String) throws -> MockModifierModel? {
         try validateId(id)
         let url = try fileUrlBuilder.modifierFileUrl(for: domain, id: id)
         guard fileManager.fileExist(atPath: url.path()) else { return nil }
@@ -63,8 +63,8 @@ public final class ModifierStore: ModifierStoreInterface {
     }
 
     /// Loads only the requested modifier files by filename. Missing IDs are omitted.
-    public func get(ids: [String]) throws -> [ModifierModel] {
-        var result: [ModifierModel] = []
+    public func get(ids: [String]) throws -> [MockModifierModel] {
+        var result: [MockModifierModel] = []
         result.reserveCapacity(ids.count)
         for id in ids {
             if let model = try get(id: id) {
@@ -74,11 +74,11 @@ public final class ModifierStore: ModifierStoreInterface {
         return result
     }
 
-    public func create(_ model: ModifierModel) throws {
+    public func create(_ model: MockModifierModel) throws {
         try validateId(model.id)
         let url = try fileUrlBuilder.modifierFileUrl(for: domain, id: model.id)
         guard !fileManager.fileExist(atPath: url.path()) else {
-            throw ModifierStoreError.alreadyExists(model.id)
+            throw MockModifierStoreError.alreadyExists(model.id)
         }
         try fileManager.write(parser.serialize(model), to: url)
         logger.info("Modifier created", metadata: [
@@ -87,13 +87,13 @@ public final class ModifierStore: ModifierStoreInterface {
         ])
     }
 
-    public func update(currentId: String, with model: ModifierModel) throws {
+    public func update(currentId: String, with model: MockModifierModel) throws {
         try validateId(currentId)
         try validateId(model.id)
 
         let currentURL = try fileUrlBuilder.modifierFileUrl(for: domain, id: currentId)
         guard fileManager.fileExist(atPath: currentURL.path()) else {
-            throw ModifierStoreError.notFound(currentId)
+            throw MockModifierStoreError.notFound(currentId)
         }
 
         if currentId == model.id {
@@ -107,7 +107,7 @@ public final class ModifierStore: ModifierStoreInterface {
 
         let targetURL = try fileUrlBuilder.modifierFileUrl(for: domain, id: model.id)
         guard !fileManager.fileExist(atPath: targetURL.path()) else {
-            throw ModifierStoreError.alreadyExists(model.id)
+            throw MockModifierStoreError.alreadyExists(model.id)
         }
 
         let originalContent = try fileManager.readFile(at: currentURL)
@@ -129,7 +129,7 @@ public final class ModifierStore: ModifierStoreInterface {
         try validateId(id)
         let url = try fileUrlBuilder.modifierFileUrl(for: domain, id: id)
         guard fileManager.fileExist(atPath: url.path()) else {
-            throw ModifierStoreError.notFound(id)
+            throw MockModifierStoreError.notFound(id)
         }
         try fileManager.removeFile(at: url.path())
         logger.info("modifier deleted", metadata: [
@@ -140,20 +140,20 @@ public final class ModifierStore: ModifierStoreInterface {
 
     private func validateId(_ id: String) throws {
         do {
-            try ModifierParser.validateModifierId(id)
+            try MockModifierParser.validateModifierId(id)
         } catch {
-            throw ModifierStoreError.invalidId(id)
+            throw MockModifierStoreError.invalidId(id)
         }
     }
 }
 
-public actor ModifierStoreActor {
-    public static let shared = ModifierStoreActor()
-    private var stores: [String: ModifierStore] = [:]
+public actor MockModifierStoreActor {
+    public static let shared = MockModifierStoreActor()
+    private var stores: [String: MockModifierStore] = [:]
 
-    public func store(for domain: String) -> ModifierStore {
+    public func store(for domain: String) -> MockModifierStore {
         if let existing = stores[domain] { return existing }
-        let created = ModifierStore(domain: domain)
+        let created = MockModifierStore(domain: domain)
         stores[domain] = created
         return created
     }

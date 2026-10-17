@@ -1,7 +1,7 @@
 import XCTest
 @testable import Modifiers
 
-final class ModifierJSONPathTests: XCTestCase {
+final class MockModifierJSONPathTests: XCTestCase {
     private func offset(of needle: String, in text: String) -> Int {
         let ns = text as NSString
         let range = ns.range(of: needle)
@@ -19,7 +19,7 @@ final class ModifierJSONPathTests: XCTestCase {
           ]
         }
         """
-        let resolved = ModifierJSONPath.resolve(json: json, utf16Offset: offset(of: "banner", in: json))
+        let resolved = MockModifierJSONPath.resolve(json: json, utf16Offset: offset(of: "banner", in: json))
         XCTAssertEqual(resolved?.path, [.key("widgets"), .index(0), .key("type")])
         XCTAssertEqual(resolved?.literal, "\"banner\"")
     }
@@ -30,7 +30,7 @@ final class ModifierJSONPathTests: XCTestCase {
           "count" : 42
         }
         """
-        let resolved = ModifierJSONPath.resolve(json: json, utf16Offset: offset(of: "count", in: json))
+        let resolved = MockModifierJSONPath.resolve(json: json, utf16Offset: offset(of: "count", in: json))
         XCTAssertEqual(resolved?.path, [.key("count")])
         XCTAssertEqual(resolved?.literal, "42")
     }
@@ -41,15 +41,15 @@ final class ModifierJSONPathTests: XCTestCase {
           "flag" : true
         }
         """
-        let resolved = ModifierJSONPath.resolve(json: json, utf16Offset: offset(of: "true", in: json))
+        let resolved = MockModifierJSONPath.resolve(json: json, utf16Offset: offset(of: "true", in: json))
         XCTAssertEqual(resolved?.path, [.key("flag")])
         XCTAssertEqual(resolved?.literal, "true")
     }
 }
 
-final class ModifierTransformerEditorTests: XCTestCase {
+final class MockModifierTransformerEditorTests: XCTestCase {
     func test_lhs_UsesBracketsForNonIdentifierKeys() {
-        let lhs = ModifierTransformerEditor.lhs(for: [.key("widgets"), .index(0), .key("foo-bar")])
+        let lhs = MockModifierTransformerEditor.lhs(for: [.key("widgets"), .index(0), .key("foo-bar")])
         XCTAssertEqual(lhs, "res.body.widgets[0][\"foo-bar\"]")
     }
 
@@ -59,7 +59,7 @@ final class ModifierTransformerEditorTests: XCTestCase {
           return res;
         }
         """
-        let result = ModifierTransformerEditor.applyAssignment(
+        let result = MockModifierTransformerEditor.applyAssignment(
             path: [.key("widgets"), .index(0), .key("type")],
             valueLiteral: "\"banner\"",
             to: code
@@ -83,7 +83,7 @@ final class ModifierTransformerEditorTests: XCTestCase {
           return res;
         }
         """
-        let result = ModifierTransformerEditor.applyAssignment(
+        let result = MockModifierTransformerEditor.applyAssignment(
             path: [.key("type")],
             valueLiteral: "\"new\"",
             to: code
@@ -101,7 +101,7 @@ final class ModifierTransformerEditorTests: XCTestCase {
           return res;
         }
         """
-        XCTAssertEqual(ModifierTransformerEditor.ensureProceed(in: code), code)
+        XCTAssertEqual(MockModifierTransformerEditor.ensureProceed(in: code), code)
     }
 
     func test_applyAssignment_InsertsBeforeReturnChainProceed() {
@@ -110,7 +110,7 @@ final class ModifierTransformerEditorTests: XCTestCase {
           return chain.proceed(req)
         }
         """
-        let result = ModifierTransformerEditor.applyAssignment(
+        let result = MockModifierTransformerEditor.applyAssignment(
             path: [.key("type")],
             valueLiteral: "\"banner\"",
             to: code
@@ -127,7 +127,7 @@ final class ModifierTransformerEditorTests: XCTestCase {
 
     func test_applyAssignment_InsertsBeforeReturnOnSingleLineTransformer() throws {
         let code = "function transformer(req, chain) { return chain.proceed(req) }"
-        let result = ModifierTransformerEditor.applyAssignment(
+        let result = MockModifierTransformerEditor.applyAssignment(
             path: [.key("flag")],
             valueLiteral: "true",
             to: code
@@ -140,7 +140,7 @@ final class ModifierTransformerEditorTests: XCTestCase {
     }
 
     func test_applyAssignment_SecondEditStaysBeforeReturn() {
-        let first = ModifierTransformerEditor.applyAssignment(
+        let first = MockModifierTransformerEditor.applyAssignment(
             path: [.key("a")],
             valueLiteral: "1",
             to: """
@@ -149,7 +149,7 @@ final class ModifierTransformerEditorTests: XCTestCase {
             }
             """
         )
-        let second = ModifierTransformerEditor.applyAssignment(
+        let second = MockModifierTransformerEditor.applyAssignment(
             path: [.key("b")],
             valueLiteral: "2",
             to: first.code

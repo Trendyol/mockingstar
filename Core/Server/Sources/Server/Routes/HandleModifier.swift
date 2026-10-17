@@ -1,5 +1,5 @@
 //
-//  HandleModifier.swift
+//  HandleMockModifier.swift
 //
 //
 //  Created for Partial Mock Modifier feature.
@@ -9,23 +9,23 @@ import FlyingFox
 import Foundation
 import CommonKit
 
-public protocol ServerModifierHandlerInterface: AnyObject {
-    func listModifiers(domain: String, deviceId: String) async throws -> [ModifierModel]
-    func getModifier(domain: String, id: String, deviceId: String) async throws -> ModifierModel?
-    func createModifier(domain: String, model: ModifierModel) async throws
-    func updateModifier(domain: String, currentId: String, model: ModifierModel) async throws
+public protocol ServerMockModifierHandlerInterface: AnyObject {
+    func listModifiers(domain: String, deviceId: String) async throws -> [MockModifierModel]
+    func getModifier(domain: String, id: String, deviceId: String) async throws -> MockModifierModel?
+    func createModifier(domain: String, model: MockModifierModel) async throws
+    func updateModifier(domain: String, currentId: String, model: MockModifierModel) async throws
     func deleteModifier(domain: String, id: String) async throws
-    func setActiveModifiers(domain: String, deviceId: String, activations: [ModifierActivation]) async throws
+    func setActiveModifiers(domain: String, deviceId: String, activations: [MockModifierActivation]) async throws
     func previewModifier(
         domain: String,
         deviceId: String,
-        request: ModifierPreviewRequest
-    ) async throws -> ModifierPreviewResponse
+        request: MockModifierPreviewRequest
+    ) async throws -> MockModifierPreviewResponse
 }
 
 /// Server-facing modifier error, kept independent from `PluginCore` so consumers of `Server`
-/// don't need to depend on (or leak) `PluginCore`'s `ModifierStoreError`.
-public enum ServerModifierError: LocalizedError {
+/// don't need to depend on (or leak) `PluginCore`'s `MockModifierStoreError`.
+public enum ServerMockModifierError: LocalizedError {
     case alreadyExists(String)
     case notFound(String)
     case invalidId(String)
@@ -54,16 +54,16 @@ public enum ServerModifierError: LocalizedError {
     }
 }
 
-final class HandleModifier: HTTPHandler {
-    static var handler: ServerModifierHandlerInterface?
+final class HandleMockModifier: HTTPHandler {
+    static var handler: ServerMockModifierHandlerInterface?
     private let jsonEncoder = JSONEncoder()
     private let jsonDecoder = JSONDecoder()
-    private let logger = Logger(category: "HandleModifier")
+    private let logger = Logger(category: "HandleMockModifier")
 
     func handleRequest(_ request: HTTPRequest) async throws -> HTTPResponse {
         logger.debug("New request handled")
 
-        guard let handler = HandleModifier.handler else {
+        guard let handler = HandleMockModifier.handler else {
             logger.fault("Handler not registered, you should register handler before handling requests")
             return .init(statusCode: .notImplemented)
         }
@@ -98,13 +98,13 @@ final class HandleModifier: HTTPHandler {
             default:
                 return .init(statusCode: .methodNotAllowed)
             }
-        } catch ServerModifierError.alreadyExists {
+        } catch ServerMockModifierError.alreadyExists {
             return .init(statusCode: .conflict)
-        } catch ServerModifierError.notFound {
+        } catch ServerMockModifierError.notFound {
             return .init(statusCode: .notFound)
-        } catch ServerModifierError.invalidId,
-                ServerModifierError.unknownIds,
-                ServerModifierError.duplicateIds {
+        } catch ServerMockModifierError.invalidId,
+                ServerMockModifierError.unknownIds,
+                ServerMockModifierError.duplicateIds {
             return .init(statusCode: .badRequest)
         } catch let error as DecodingError {
             logger.error("Handle modifier decode error: \(error)")
@@ -115,23 +115,23 @@ final class HandleModifier: HTTPHandler {
         }
     }
 
-    private func handleList(handler: ServerModifierHandlerInterface, domain: String, deviceId: String) async throws -> HTTPResponse {
+    private func handleList(handler: ServerMockModifierHandlerInterface, domain: String, deviceId: String) async throws -> HTTPResponse {
         let modifiers = try await handler.listModifiers(domain: domain, deviceId: deviceId)
         return jsonResponse(statusCode: .ok, body: try jsonEncoder.encode(modifiers))
     }
 
-    private func handleGet(handler: ServerModifierHandlerInterface, domain: String, deviceId: String, id: String) async throws -> HTTPResponse {
+    private func handleGet(handler: ServerMockModifierHandlerInterface, domain: String, deviceId: String, id: String) async throws -> HTTPResponse {
         guard let modifier = try await handler.getModifier(domain: domain, id: id, deviceId: deviceId) else {
             return .init(statusCode: .notFound)
         }
         return jsonResponse(statusCode: .ok, body: try jsonEncoder.encode(modifier))
     }
 
-    private func handleCreate(handler: ServerModifierHandlerInterface, domain: String, request: HTTPRequest) async throws -> HTTPResponse {
+    private func handleCreate(handler: ServerMockModifierHandlerInterface, domain: String, request: HTTPRequest) async throws -> HTTPResponse {
         let bodyData = try await request.bodyData
-        let writeRequest = try jsonDecoder.decode(ModifierWriteRequest.self, from: bodyData)
+        let writeRequest = try jsonDecoder.decode(MockModifierWriteRequest.self, from: bodyData)
         guard let id = writeRequest.id, !id.isEmpty else {
-            throw ServerModifierError.invalidId("")
+            throw ServerMockModifierError.invalidId("")
         }
         let model = writeRequest.asModel(id: id)
         logger.info("Creating modifier, domain \(domain), id \(model.id)")
@@ -139,9 +139,9 @@ final class HandleModifier: HTTPHandler {
         return .init(statusCode: .created)
     }
 
-    private func handleUpdate(handler: ServerModifierHandlerInterface, domain: String, id: String, request: HTTPRequest) async throws -> HTTPResponse {
+    private func handleUpdate(handler: ServerMockModifierHandlerInterface, domain: String, id: String, request: HTTPRequest) async throws -> HTTPResponse {
         let bodyData = try await request.bodyData
-        let writeRequest = try jsonDecoder.decode(ModifierWriteRequest.self, from: bodyData)
+        let writeRequest = try jsonDecoder.decode(MockModifierWriteRequest.self, from: bodyData)
         let targetId = writeRequest.id ?? id
         let model = writeRequest.asModel(id: targetId)
         logger.info("Updating modifier, domain \(domain), current id \(id), target id \(targetId)")
@@ -149,38 +149,38 @@ final class HandleModifier: HTTPHandler {
         return .init(statusCode: .accepted)
     }
 
-    private func handleSetActive(handler: ServerModifierHandlerInterface, domain: String, deviceId: String, request: HTTPRequest) async throws -> HTTPResponse {
+    private func handleSetActive(handler: ServerMockModifierHandlerInterface, domain: String, deviceId: String, request: HTTPRequest) async throws -> HTTPResponse {
         let bodyData = try await request.bodyData
-        let activations = try jsonDecoder.decode([ModifierActivation].self, from: bodyData)
+        let activations = try jsonDecoder.decode([MockModifierActivation].self, from: bodyData)
         logger.info("Setting active modifiers, domain \(domain), deviceId \(deviceId), count \(activations.count)")
         try await handler.setActiveModifiers(domain: domain, deviceId: deviceId, activations: activations)
         return .init(statusCode: .accepted)
     }
 
     private func handlePreview(
-        handler: ServerModifierHandlerInterface,
+        handler: ServerMockModifierHandlerInterface,
         domain: String,
         deviceId: String,
         request: HTTPRequest
     ) async -> HTTPResponse {
         do {
             let bodyData = try await request.bodyData
-            let preview = try jsonDecoder.decode(ModifierPreviewRequest.self, from: bodyData)
+            let preview = try jsonDecoder.decode(MockModifierPreviewRequest.self, from: bodyData)
             let result = try await handler.previewModifier(
                 domain: domain,
                 deviceId: deviceId,
                 request: preview
             )
             return jsonResponse(statusCode: .ok, body: try jsonEncoder.encode(result))
-        } catch ServerModifierError.previewInvalidRequest(let message) {
+        } catch ServerMockModifierError.previewInvalidRequest(let message) {
             return previewError(status: 400, code: "invalid_request", message: message)
-        } catch ServerModifierError.previewNotFound(let message) {
+        } catch ServerMockModifierError.previewNotFound(let message) {
             return previewError(status: 404, code: "not_found", message: message)
-        } catch ServerModifierError.previewConflict(let message) {
+        } catch ServerMockModifierError.previewConflict(let message) {
             return previewError(status: 409, code: "conflict", message: message)
-        } catch ServerModifierError.previewExecutionFailed(let message) {
+        } catch ServerMockModifierError.previewExecutionFailed(let message) {
             return previewError(status: 422, code: "execution_failed", message: message)
-        } catch ServerModifierError.previewLiveRequestFailed(let message) {
+        } catch ServerMockModifierError.previewLiveRequestFailed(let message) {
             return previewError(status: 502, code: "live_proxy_failed", message: message)
         } catch let error as DecodingError {
             return previewError(
@@ -204,7 +204,7 @@ final class HandleModifier: HTTPHandler {
         message: String
     ) -> HTTPResponse {
         let body = (try? jsonEncoder.encode(
-            ModifierAPIErrorResponse(code: code, message: message)
+            MockModifierAPIErrorResponse(code: code, message: message)
         )) ?? Data()
         return jsonResponse(
             statusCode: .init(status, phrase: ""),

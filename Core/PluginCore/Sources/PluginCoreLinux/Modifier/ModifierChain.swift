@@ -5,16 +5,16 @@ import Foundation
 import FoundationNetworking
 #endif
 
-public enum ModifierExecutionMode: String, Sendable {
+public enum MockModifierExecutionMode: String, Sendable {
     case runtime
     case preview
 }
 
-public final class ModifierChain {
+public final class MockModifierChain {
     private let terminal: (URLRequest) async throws -> HTTPResult
 
-    public init(modifiers: [ModifierModel],
-                executionMode: ModifierExecutionMode = .runtime,
+    public init(modifiers: [MockModifierModel],
+                executionMode: MockModifierExecutionMode = .runtime,
                 terminal: @escaping (URLRequest) async throws -> HTTPResult) {
         _ = executionMode
         self.terminal = terminal

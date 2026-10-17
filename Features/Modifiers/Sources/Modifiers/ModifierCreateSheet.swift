@@ -1,18 +1,18 @@
 import CommonKit
 import SwiftUI
 
-public struct ModifierCreateSheet: View {
-    @State private var viewModel: ModifierCreateViewModel
+public struct MockModifierCreateSheet: View {
+    @State private var viewModel: MockModifierCreateViewModel
     private let domain: String
-    private let onCreated: (String, ModifierCreationSeed) -> Void
+    private let onCreated: (String, MockModifierCreationSeed) -> Void
     @Environment(\.dismiss) private var dismiss
 
     public init(
-        seed: ModifierCreationSeed,
+        seed: MockModifierCreationSeed,
         domain: String,
-        onCreated: @escaping (String, ModifierCreationSeed) -> Void
+        onCreated: @escaping (String, MockModifierCreationSeed) -> Void
     ) {
-        _viewModel = State(initialValue: ModifierCreateViewModel(seed: seed))
+        _viewModel = State(initialValue: MockModifierCreateViewModel(seed: seed))
         self.domain = domain
         self.onCreated = onCreated
     }

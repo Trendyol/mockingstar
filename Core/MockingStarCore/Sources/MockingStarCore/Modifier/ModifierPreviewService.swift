@@ -26,7 +26,7 @@ private final class FirstResultCapture {
     }
 }
 
-enum ModifierPreviewError: Error, Equatable {
+enum MockModifierPreviewError: Error, Equatable {
     case invalidRequest(String)
     case currentModifierNotFound(String)
     case mockNotFound(String)
@@ -35,48 +35,48 @@ enum ModifierPreviewError: Error, Equatable {
     case liveRequestFailed(String)
 }
 
-struct ModifierPreviewService {
-    let activationStore: ModifierActivationStore
+struct MockModifierPreviewService {
+    let activationStore: MockModifierActivationStore
     let storedMockLoader: StoredMockLoader
 
     func execute(
         domain: String,
         deviceId: String,
-        preview: ModifierPreviewRequest,
+        preview: MockModifierPreviewRequest,
         liveTerminal: @escaping (URLRequest) async throws -> HTTPResult
-    ) async throws -> ModifierPreviewResponse {
+    ) async throws -> MockModifierPreviewResponse {
         guard let desiredId = preview.modifier.id, !desiredId.isEmpty else {
-            throw ModifierPreviewError.invalidRequest("modifier id is required")
+            throw MockModifierPreviewError.invalidRequest("modifier id is required")
         }
         guard preview.modifier.order >= 1 else {
-            throw ModifierPreviewError.invalidRequest("Order must be at least 1")
+            throw MockModifierPreviewError.invalidRequest("Order must be at least 1")
         }
         guard !preview.request.method.isEmpty else {
-            throw ModifierPreviewError.invalidRequest("HTTP method is required")
+            throw MockModifierPreviewError.invalidRequest("HTTP method is required")
         }
 
-        let store = await ModifierStoreActor.shared.store(for: domain)
+        let store = await MockModifierStoreActor.shared.store(for: domain)
         do {
             guard try store.get(id: preview.currentModifierId) != nil else {
-                throw ModifierPreviewError.currentModifierNotFound(
+                throw MockModifierPreviewError.currentModifierNotFound(
                     preview.currentModifierId
                 )
             }
             if desiredId != preview.currentModifierId,
                try store.get(id: desiredId) != nil {
-                throw ModifierPreviewError.conflict(desiredId)
+                throw MockModifierPreviewError.conflict(desiredId)
             }
-        } catch let error as ModifierPreviewError {
+        } catch let error as MockModifierPreviewError {
             throw error
-        } catch ModifierStoreError.invalidId(let id) {
-            throw ModifierPreviewError.invalidRequest("Invalid modifier id: \(id)")
+        } catch MockModifierStoreError.invalidId(let id) {
+            throw MockModifierPreviewError.invalidRequest("Invalid modifier id: \(id)")
         }
 
         var request = URLRequest(url: preview.request.url)
         request.httpMethod = preview.request.method.uppercased()
         request.allHTTPHeaderFields = preview.request.headers
         guard let body = Data(base64Encoded: preview.request.bodyBase64) else {
-            throw ModifierPreviewError.invalidRequest("Body is not valid Base64")
+            throw MockModifierPreviewError.invalidRequest("Body is not valid Base64")
         }
         request.httpBody = body.isEmpty ? nil : body
 
@@ -88,26 +88,26 @@ struct ModifierPreviewService {
         let draft = preview.modifier.asModel(id: desiredId)
         candidates.append(draft)
 
-        let matched = ModifierMatcher().match(
+        let matched = MockModifierMatcher().match(
             modifiers: candidates,
             path: preview.request.url.path(),
             method: preview.request.method,
             scenario: preview.request.scenario
         )
         guard matched.contains(where: { $0.id == desiredId }) else {
-            throw ModifierPreviewError.invalidRequest(
+            throw MockModifierPreviewError.invalidRequest(
                 "Preview request does not match the draft modifier"
             )
         }
 
         let originalCapture = FirstResultCapture()
 
-        let chain = ModifierChain(modifiers: matched, executionMode: .preview) { chainRequest in
+        let chain = MockModifierChain(modifiers: matched, executionMode: .preview) { chainRequest in
             let result: HTTPResult
             switch preview.source {
             case .mock:
                 guard let mockId = preview.modifier.sampleMockRequestId, !mockId.isEmpty else {
-                    throw ModifierPreviewError.invalidRequest(
+                    throw MockModifierPreviewError.invalidRequest(
                         "Sample mock id is required for Mock source"
                     )
                 }
@@ -127,7 +127,7 @@ struct ModifierPreviewService {
                 do {
                     result = try await liveTerminal(chainRequest)
                 } catch {
-                    throw ModifierPreviewError.liveRequestFailed(error.localizedDescription)
+                    throw MockModifierPreviewError.liveRequestFailed(error.localizedDescription)
                 }
             }
             originalCapture.captureIfNeeded(result)
@@ -137,7 +137,7 @@ struct ModifierPreviewService {
         do {
             let result = try await chain.proceed(request)
             let original = originalCapture.value
-            return ModifierPreviewResponse(
+            return MockModifierPreviewResponse(
                 status: result.status,
                 headers: result.headers,
                 bodyBase64: result.body.base64EncodedString(),
@@ -145,10 +145,10 @@ struct ModifierPreviewService {
                 originalHeaders: original?.headers,
                 originalBodyBase64: original?.body.base64EncodedString()
             )
-        } catch let error as ModifierPreviewError {
+        } catch let error as MockModifierPreviewError {
             throw error
         } catch {
-            throw ModifierPreviewError.executionFailed(String(describing: error))
+            throw MockModifierPreviewError.executionFailed(String(describing: error))
         }
     }
 }

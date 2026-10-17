@@ -6,23 +6,23 @@ import CommonViewsKit
 import CommonViewsKitTestSupport
 
 @MainActor
-final class ModifierListViewModelTests: XCTestCase {
-    private var api: MockModifierAPIClient!
+final class MockModifierListViewModelTests: XCTestCase {
+    private var api: FakeMockModifierAPIClient!
     private var notifications: MockNotificationManager!
-    private var sut: ModifierListViewModel!
+    private var sut: MockModifierListViewModel!
 
     override func setUp() {
         super.setUp()
-        api = MockModifierAPIClient()
+        api = FakeMockModifierAPIClient()
         notifications = MockNotificationManager()
-        sut = ModifierListViewModel(apiClient: api, notificationManager: notifications, navigationStore: .shared)
+        sut = MockModifierListViewModel(apiClient: api, notificationManager: notifications, navigationStore: .shared)
     }
 
     private func sampleModifier(
         id: String = "discount",
         order: Int = 1
-    ) -> ModifierModel {
-        ModifierModel(
+    ) -> MockModifierModel {
+        MockModifierModel(
             id: id,
             path: "/cart",
             method: "GET",
@@ -34,8 +34,8 @@ final class ModifierListViewModelTests: XCTestCase {
 
     func test_load_PopulatesModifiers() async {
         api.stubbedList = [
-            ModifierModel(id: "a", path: "/a", method: "GET", enabled: true, order: 1, transformerCode: "function transformer(req, chain){return chain.proceed(req)}"),
-            ModifierModel(id: "b", path: "/b", method: "POST", enabled: false, order: 2, transformerCode: "function transformer(req, chain){return chain.proceed(req)}")
+            MockModifierModel(id: "a", path: "/a", method: "GET", enabled: true, order: 1, transformerCode: "function transformer(req, chain){return chain.proceed(req)}"),
+            MockModifierModel(id: "b", path: "/b", method: "POST", enabled: false, order: 2, transformerCode: "function transformer(req, chain){return chain.proceed(req)}")
         ]
 
         await sut.load(domain: "Dev")
@@ -46,28 +46,28 @@ final class ModifierListViewModelTests: XCTestCase {
 
     func test_setSource_SendsFullActivationSetPreservingExistingSources() async {
         api.stubbedList = [
-            ModifierModel(id: "a", path: "/a", method: "GET", enabled: true, source: .live, order: 1, transformerCode: "x"),
-            ModifierModel(id: "b", path: "/b", method: "GET", enabled: false, order: 2, transformerCode: "x")
+            MockModifierModel(id: "a", path: "/a", method: "GET", enabled: true, source: .live, order: 1, transformerCode: "x"),
+            MockModifierModel(id: "b", path: "/b", method: "GET", enabled: false, order: 2, transformerCode: "x")
         ]
         await sut.load(domain: "Dev")
         let inactive = try! XCTUnwrap(sut.modifiers.first(where: { $0.id == "b" }))
         api.stubbedList = [
-            ModifierModel(id: "a", path: "/a", method: "GET", enabled: true, source: .live, order: 1, transformerCode: "x"),
-            ModifierModel(id: "b", path: "/b", method: "GET", enabled: true, source: .mock, order: 2, transformerCode: "x")
+            MockModifierModel(id: "a", path: "/a", method: "GET", enabled: true, source: .live, order: 1, transformerCode: "x"),
+            MockModifierModel(id: "b", path: "/b", method: "GET", enabled: true, source: .mock, order: 2, transformerCode: "x")
         ]
 
         await sut.setSource(inactive, source: .mock, domain: "Dev")
 
         XCTAssertEqual(api.invokedSetActiveActivations, [
-            ModifierActivation(id: "a", source: .live),
-            ModifierActivation(id: "b", source: .mock)
+            MockModifierActivation(id: "a", source: .live),
+            MockModifierActivation(id: "b", source: .mock)
         ])
     }
 
     func test_setSource_OffRemovesModifierFromActivationSet() async {
         api.stubbedList = [
-            ModifierModel(id: "a", path: "/a", method: "GET", enabled: true, source: .live, order: 1, transformerCode: "x"),
-            ModifierModel(id: "b", path: "/b", method: "GET", enabled: true, source: .mock, order: 2, transformerCode: "x")
+            MockModifierModel(id: "a", path: "/a", method: "GET", enabled: true, source: .live, order: 1, transformerCode: "x"),
+            MockModifierModel(id: "b", path: "/b", method: "GET", enabled: true, source: .mock, order: 2, transformerCode: "x")
         ]
         await sut.load(domain: "Dev")
         let active = try! XCTUnwrap(sut.modifiers.first(where: { $0.id == "b" }))
@@ -75,15 +75,15 @@ final class ModifierListViewModelTests: XCTestCase {
         await sut.setSource(active, source: nil, domain: "Dev")
 
         XCTAssertEqual(api.invokedSetActiveActivations, [
-            ModifierActivation(id: "a", source: .live)
+            MockModifierActivation(id: "a", source: .live)
         ])
     }
 
     func test_load_ServerUnavailable_ShowsError() async {
-        api.stubbedError = ModifierAPIError.serverUnavailable
+        api.stubbedError = MockModifierAPIError.serverUnavailable
         await sut.load(domain: "Dev")
         XCTAssertTrue(sut.shouldShowErrorMessage)
-        XCTAssertEqual(sut.errorMessage, ModifierAPIError.serverUnavailable.localizedDescription)
+        XCTAssertEqual(sut.errorMessage, MockModifierAPIError.serverUnavailable.localizedDescription)
     }
 
     func test_modifierLookupAndDefaultOrderSupportTableSelection() async {
@@ -99,16 +99,16 @@ final class ModifierListViewModelTests: XCTestCase {
 }
 
 @MainActor
-final class ModifierDetailViewModelTests: XCTestCase {
-    private var api: MockModifierAPIClient!
-    private var sut: ModifierDetailViewModel!
+final class MockModifierDetailViewModelTests: XCTestCase {
+    private var api: FakeMockModifierAPIClient!
+    private var sut: MockModifierDetailViewModel!
     private var navigationStore: NavigationStore!
 
     override func setUp() {
         super.setUp()
-        api = MockModifierAPIClient()
+        api = FakeMockModifierAPIClient()
         navigationStore = NavigationStore()
-        sut = ModifierDetailViewModel(
+        sut = MockModifierDetailViewModel(
             modifierId: "discount",
             apiClient: api,
             notificationManager: MockNotificationManager(),
@@ -119,8 +119,8 @@ final class ModifierDetailViewModelTests: XCTestCase {
     private func sampleModifier(
         id: String = "discount",
         order: Int = 1
-    ) -> ModifierModel {
-        ModifierModel(
+    ) -> MockModifierModel {
+        MockModifierModel(
             id: id,
             path: "/cart",
             method: "GET",
@@ -175,7 +175,7 @@ final class ModifierDetailViewModelTests: XCTestCase {
         ```
         """
 
-        sut = ModifierDetailViewModel(
+        sut = MockModifierDetailViewModel(
             modifierId: "discount",
             apiClient: api,
             notificationManager: notifications,
@@ -216,7 +216,7 @@ final class ModifierDetailViewModelTests: XCTestCase {
         let claude = MockClaudeMessagesClient()
         claude.stubbedError = ClaudeMessagesError.invalidResponse(status: 401, message: "invalid x-api-key")
 
-        sut = ModifierDetailViewModel(
+        sut = MockModifierDetailViewModel(
             modifierId: "discount",
             apiClient: api,
             notificationManager: MockNotificationManager(),
@@ -277,7 +277,7 @@ final class ModifierDetailViewModelTests: XCTestCase {
         api.stubbedGet = sampleModifier(id: "discount")
         await sut.load(domain: "Dev")
         sut.draft.id = "discount-v2"
-        api.stubbedError = ModifierAPIError.conflict
+        api.stubbedError = MockModifierAPIError.conflict
 
         let saved = await sut.save(domain: "Dev")
         XCTAssertFalse(saved)
@@ -290,7 +290,7 @@ final class ModifierDetailViewModelTests: XCTestCase {
         let suiteName = "modifier.preview.test.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        ModifierPreviewInputStore.save(
+        MockModifierPreviewInputStore.save(
             .init(
                 source: .mock,
                 url: "https://stored.example/cart",
@@ -303,14 +303,14 @@ final class ModifierDetailViewModelTests: XCTestCase {
             id: "discount",
             defaults: defaults
         )
-        sut = ModifierDetailViewModel(
+        sut = MockModifierDetailViewModel(
             modifierId: "discount",
             apiClient: api,
             notificationManager: MockNotificationManager(),
             navigationStore: navigationStore,
             defaults: defaults
         )
-        api.stubbedGet = ModifierModel(
+        api.stubbedGet = MockModifierModel(
             id: "discount",
             path: "/cart",
             method: "GET",
@@ -329,7 +329,7 @@ final class ModifierDetailViewModelTests: XCTestCase {
     func test_setSource_ActivatesModifierAndPreviewTogether() async {
         api.stubbedGet = sampleModifier()
         api.stubbedList = [
-            ModifierModel(id: "latency", path: "/x", method: "GET", enabled: true, source: .mock, transformerCode: "x"),
+            MockModifierModel(id: "latency", path: "/x", method: "GET", enabled: true, source: .mock, transformerCode: "x"),
             sampleModifier()
         ]
         await sut.load(domain: "Dev")
@@ -339,8 +339,8 @@ final class ModifierDetailViewModelTests: XCTestCase {
         XCTAssertEqual(sut.previewInput.source, .live)
         XCTAssertEqual(sut.activeSource, .live)
         XCTAssertEqual(api.invokedSetActiveActivations, [
-            ModifierActivation(id: "discount", source: .live),
-            ModifierActivation(id: "latency", source: .mock)
+            MockModifierActivation(id: "discount", source: .live),
+            MockModifierActivation(id: "latency", source: .mock)
         ])
     }
 
@@ -360,7 +360,7 @@ final class ModifierDetailViewModelTests: XCTestCase {
     }
 
     func test_load_WithCreationSeed_KeepsMockURLAndHeaders() async {
-        let seed = ModifierCreationSeed(
+        let seed = MockModifierCreationSeed(
             mockId: "mock-1",
             url: "https://real.example/search?q=1",
             path: "/search",
@@ -372,7 +372,7 @@ final class ModifierDetailViewModelTests: XCTestCase {
         let suiteName = "modifier.preview.test.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        sut = ModifierDetailViewModel(
+        sut = MockModifierDetailViewModel(
             modifierId: "discount",
             previewSeed: seed,
             apiClient: api,
@@ -380,7 +380,7 @@ final class ModifierDetailViewModelTests: XCTestCase {
             navigationStore: navigationStore,
             defaults: defaults
         )
-        api.stubbedGet = ModifierModel(
+        api.stubbedGet = MockModifierModel(
             id: "discount",
             path: "/search",
             method: "GET",
@@ -401,7 +401,7 @@ final class ModifierDetailViewModelTests: XCTestCase {
         let suiteName = "modifier.preview.test.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        sut = ModifierDetailViewModel(
+        sut = MockModifierDetailViewModel(
             modifierId: "discount",
             apiClient: api,
             notificationManager: MockNotificationManager(),
@@ -416,7 +416,7 @@ final class ModifierDetailViewModelTests: XCTestCase {
         let saved = await sut.save(domain: "Dev")
         XCTAssertTrue(saved)
 
-        let reloaded = ModifierDetailViewModel(
+        let reloaded = MockModifierDetailViewModel(
             modifierId: "discount",
             apiClient: api,
             notificationManager: MockNotificationManager(),
@@ -433,7 +433,7 @@ final class ModifierDetailViewModelTests: XCTestCase {
         api.stubbedGet = sampleModifier()
         await sut.load(domain: "Dev")
         final class ContinuationsBox: @unchecked Sendable {
-            var values: [CheckedContinuation<ModifierPreviewResponse, Error>] = []
+            var values: [CheckedContinuation<MockModifierPreviewResponse, Error>] = []
         }
         let box = ContinuationsBox()
         api.previewHandler = { _ in
@@ -465,9 +465,9 @@ final class ModifierDetailViewModelTests: XCTestCase {
     }
 }
 
-private extension ModifierModel {
-    func with(enabled: Bool, source: ModifierPreviewSource? = nil) -> ModifierModel {
-        ModifierModel(
+private extension MockModifierModel {
+    func with(enabled: Bool, source: MockModifierPreviewSource? = nil) -> MockModifierModel {
+        MockModifierModel(
             id: id,
             path: path,
             method: method,
@@ -481,37 +481,37 @@ private extension ModifierModel {
     }
 }
 
-final class MockModifierAPIClient: ModifierAPIClientInterface {
-    var stubbedList: [ModifierModel] = []
-    var stubbedGet: ModifierModel?
+final class FakeMockModifierAPIClient: MockModifierAPIClientInterface {
+    var stubbedList: [MockModifierModel] = []
+    var stubbedGet: MockModifierModel?
     var stubbedError: Error?
-    var stubbedPreview = ModifierPreviewResponse(
+    var stubbedPreview = MockModifierPreviewResponse(
         status: 200,
         headers: [:],
         bodyBase64: ""
     )
-    var invokedPreview: ModifierPreviewRequest?
-    var previewHandler: ((ModifierPreviewRequest) async throws -> ModifierPreviewResponse)?
-    var invokedCreate: ModifierWriteRequest?
-    var invokedSetActiveActivations: [ModifierActivation]?
-    var invokedUpdate: (id: String, request: ModifierWriteRequest)?
+    var invokedPreview: MockModifierPreviewRequest?
+    var previewHandler: ((MockModifierPreviewRequest) async throws -> MockModifierPreviewResponse)?
+    var invokedCreate: MockModifierWriteRequest?
+    var invokedSetActiveActivations: [MockModifierActivation]?
+    var invokedUpdate: (id: String, request: MockModifierWriteRequest)?
 
-    func listModifiers(domain: String) async throws -> [ModifierModel] {
+    func listModifiers(domain: String) async throws -> [MockModifierModel] {
         if let stubbedError { throw stubbedError }
         return stubbedList
     }
 
-    func getModifier(domain: String, id: String) async throws -> ModifierModel {
+    func getModifier(domain: String, id: String) async throws -> MockModifierModel {
         if let stubbedError { throw stubbedError }
         return stubbedGet!
     }
 
-    func createModifier(domain: String, request: ModifierWriteRequest) async throws {
+    func createModifier(domain: String, request: MockModifierWriteRequest) async throws {
         if let stubbedError { throw stubbedError }
         invokedCreate = request
     }
 
-    func updateModifier(domain: String, id: String, request: ModifierWriteRequest) async throws {
+    func updateModifier(domain: String, id: String, request: MockModifierWriteRequest) async throws {
         if let stubbedError { throw stubbedError }
         invokedUpdate = (id, request)
     }
@@ -520,15 +520,15 @@ final class MockModifierAPIClient: ModifierAPIClientInterface {
         if let stubbedError { throw stubbedError }
     }
 
-    func setActiveModifiers(domain: String, activations: [ModifierActivation]) async throws {
+    func setActiveModifiers(domain: String, activations: [MockModifierActivation]) async throws {
         if let stubbedError { throw stubbedError }
         invokedSetActiveActivations = activations
     }
 
     func previewModifier(
         domain: String,
-        request: ModifierPreviewRequest
-    ) async throws -> ModifierPreviewResponse {
+        request: MockModifierPreviewRequest
+    ) async throws -> MockModifierPreviewResponse {
         invokedPreview = request
         if let stubbedError { throw stubbedError }
         if let previewHandler { return try await previewHandler(request) }

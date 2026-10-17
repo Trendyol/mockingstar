@@ -3,15 +3,15 @@ import XCTest
 import CommonKit
 import CommonKitTestSupport
 
-final class ModifierStoreTests: XCTestCase {
-    var store: ModifierStore!
+final class MockModifierStoreTests: XCTestCase {
+    var store: MockModifierStore!
     var fileManager: MockFileManager!
     var fileUrlBuilder: MockFileUrlBuilder!
 
     let folder = URL(filePath: "/tmp/Modifiers")
     let fileURL = URL(filePath: "/tmp/Modifiers/test-modifier.js")
 
-    let sampleModel = ModifierModel(
+    let sampleModel = MockModifierModel(
         id: "test-modifier",
         path: "/users/1",
         method: "GET",
@@ -31,7 +31,7 @@ final class ModifierStoreTests: XCTestCase {
         fileUrlBuilder.modifierFileUrlHandler = { [folder] _, id in
             folder.appending(path: "\(id).js")
         }
-        store = ModifierStore(domain: "Dev", fileManager: fileManager, fileUrlBuilder: fileUrlBuilder)
+        store = MockModifierStore(domain: "Dev", fileManager: fileManager, fileUrlBuilder: fileUrlBuilder)
     }
 
     func test_list_EmptyFolder_ReturnsEmpty() throws {
@@ -54,16 +54,16 @@ final class ModifierStoreTests: XCTestCase {
     func test_create_WhenExists_Throws409StyleError() throws {
         fileManager.stubbedFileExistResult = true
         XCTAssertThrowsError(try store.create(sampleModel)) { error in
-            guard case ModifierStoreError.alreadyExists("test-modifier") = error else {
+            guard case MockModifierStoreError.alreadyExists("test-modifier") = error else {
                 return XCTFail("unexpected \(error)")
             }
         }
     }
 
     func test_create_InvalidId_Throws() {
-        let model = ModifierModel(id: "../evil", path: "/x", method: "GET", transformerCode: "function transformer(req, chain) { return chain.proceed(req) }")
+        let model = MockModifierModel(id: "../evil", path: "/x", method: "GET", transformerCode: "function transformer(req, chain) { return chain.proceed(req) }")
         XCTAssertThrowsError(try store.create(model)) { error in
-            guard case ModifierStoreError.invalidId = error else {
+            guard case MockModifierStoreError.invalidId = error else {
                 return XCTFail("unexpected \(error)")
             }
         }
@@ -121,14 +121,14 @@ final class ModifierStoreTests: XCTestCase {
     func test_update_MissingFile_ThrowsNotFound() {
         fileManager.stubbedFileExistResult = false
         XCTAssertThrowsError(try store.update(currentId: sampleModel.id, with: sampleModel)) { error in
-            guard case ModifierStoreError.notFound("test-modifier") = error else {
+            guard case MockModifierStoreError.notFound("test-modifier") = error else {
                 return XCTFail("unexpected \(error)")
             }
         }
     }
 
     func test_update_RenameWritesThenMovesCanonicalFile() throws {
-        let renamed = ModifierModel(
+        let renamed = MockModifierModel(
             id: "renamed",
             path: sampleModel.path,
             method: sampleModel.method,
@@ -148,7 +148,7 @@ final class ModifierStoreTests: XCTestCase {
     }
 
     func test_update_RenameTargetExistsThrowsConflictWithoutWriting() {
-        let renamed = ModifierModel(
+        let renamed = MockModifierModel(
             id: "renamed",
             path: "/users/1",
             method: "GET",
@@ -159,7 +159,7 @@ final class ModifierStoreTests: XCTestCase {
         }
 
         XCTAssertThrowsError(try store.update(currentId: "test-modifier", with: renamed)) {
-            guard case ModifierStoreError.alreadyExists("renamed") = $0 else {
+            guard case MockModifierStoreError.alreadyExists("renamed") = $0 else {
                 return XCTFail("unexpected \($0)")
             }
         }
@@ -167,7 +167,7 @@ final class ModifierStoreTests: XCTestCase {
     }
 
     func test_update_MoveFailureRestoresOriginalContent() {
-        let renamed = ModifierModel(
+        let renamed = MockModifierModel(
             id: "renamed",
             path: "/users/1",
             method: "GET",

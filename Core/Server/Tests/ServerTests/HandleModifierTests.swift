@@ -1,5 +1,5 @@
 //
-//  HandleModifierTests.swift
+//  HandleMockModifierTests.swift
 //
 //
 //  Created for Partial Mock Modifier feature.
@@ -10,34 +10,34 @@ import FlyingFox
 import CommonKit
 @testable import Server
 
-final class HandleModifierTests: XCTestCase {
-    private var sut: HandleModifier!
-    private var mockHandler: MockModifierHandler!
+final class HandleMockModifierTests: XCTestCase {
+    private var sut: HandleMockModifier!
+    private var mockHandler: FakeMockModifierHandler!
     private let jsonEncoder = JSONEncoder()
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        sut = HandleModifier()
-        mockHandler = MockModifierHandler()
-        HandleModifier.handler = mockHandler
+        sut = HandleMockModifier()
+        mockHandler = FakeMockModifierHandler()
+        HandleMockModifier.handler = mockHandler
     }
 
     override func tearDownWithError() throws {
         try super.tearDownWithError()
         sut = nil
-        HandleModifier.handler = nil
+        HandleMockModifier.handler = nil
     }
 
-    private func sampleModifier(id: String = "test-modifier") -> ModifierModel {
+    private func sampleModifier(id: String = "test-modifier") -> MockModifierModel {
         .init(id: id, path: "/users/1", method: "GET", scenario: nil, enabled: false, order: 1, sampleMockRequestId: nil, transformerCode: "function transformer(req, chain) { return chain.proceed(req) }")
     }
 
-    private func writeRequest(id: String? = "test-modifier") -> ModifierWriteRequest {
+    private func writeRequest(id: String? = "test-modifier") -> MockModifierWriteRequest {
         .init(id: id, path: "/users/1", method: "GET", scenario: nil, order: 1, sampleMockRequestId: nil, transformerCode: "function transformer(req, chain) { return chain.proceed(req) }")
     }
 
-    private func makePreviewRequest() -> ModifierPreviewRequest {
-        ModifierPreviewRequest(
+    private func makePreviewRequest() -> MockModifierPreviewRequest {
+        MockModifierPreviewRequest(
             currentModifierId: "discount",
             modifier: .init(
                 id: "discount",
@@ -67,7 +67,7 @@ final class HandleModifierTests: XCTestCase {
         XCTAssertEqual(mockHandler.invokedListParameters?.domain, "Dev")
         XCTAssertEqual(mockHandler.invokedListParameters?.deviceId, "")
         let bodyData = try await response.bodyData
-        let decoded = try JSONDecoder().decode([ModifierModel].self, from: bodyData)
+        let decoded = try JSONDecoder().decode([MockModifierModel].self, from: bodyData)
         XCTAssertEqual(decoded, [sampleModifier()])
     }
 
@@ -84,7 +84,7 @@ final class HandleModifierTests: XCTestCase {
     }
 
     func test_handleRequest_GETList_HandlerNotRegistered() async throws {
-        HandleModifier.handler = nil
+        HandleMockModifier.handler = nil
         let request = HTTPRequest.make(method: .GET, path: "/modifiers")
         let response = try await sut.handleRequest(request)
         XCTAssertEqual(response.statusCode.code, 501)
@@ -134,7 +134,7 @@ final class HandleModifierTests: XCTestCase {
 
     func test_handleRequest_POST_AlreadyExists_Returns409() async throws {
         let body = try jsonEncoder.encode(writeRequest())
-        mockHandler.stubbedCreateError = ServerModifierError.alreadyExists("test-modifier")
+        mockHandler.stubbedCreateError = ServerMockModifierError.alreadyExists("test-modifier")
         let request = HTTPRequest.make(method: .POST, path: "/modifiers", body: body)
         let response = try await sut.handleRequest(request)
         XCTAssertEqual(response.statusCode.code, 409)
@@ -169,7 +169,7 @@ final class HandleModifierTests: XCTestCase {
     }
 
     func test_handleRequest_PUTById_RenameConflict_Returns409() async throws {
-        mockHandler.stubbedUpdateError = ServerModifierError.alreadyExists("renamed")
+        mockHandler.stubbedUpdateError = ServerMockModifierError.alreadyExists("renamed")
         let body = try jsonEncoder.encode(writeRequest(id: "renamed"))
         let request = HTTPRequest.make(
             method: .PUT,
@@ -186,8 +186,8 @@ final class HandleModifierTests: XCTestCase {
 
     func test_handleRequest_PUTActiveIds_ReplacesDeviceSet() async throws {
         let body = try jsonEncoder.encode([
-            ModifierActivation(id: "discount", source: .mock),
-            ModifierActivation(id: "latency", source: .live)
+            MockModifierActivation(id: "discount", source: .mock),
+            MockModifierActivation(id: "latency", source: .live)
         ])
         let request = HTTPRequest.make(method: .PUT,
                                        path: "/modifiers?domain=Dev",
@@ -200,13 +200,13 @@ final class HandleModifierTests: XCTestCase {
         XCTAssertEqual(mockHandler.invokedSetActiveParameters?.domain, "Dev")
         XCTAssertEqual(mockHandler.invokedSetActiveParameters?.deviceId, "device-a")
         XCTAssertEqual(mockHandler.invokedSetActiveParameters?.activations, [
-            ModifierActivation(id: "discount", source: .mock),
-            ModifierActivation(id: "latency", source: .live)
+            MockModifierActivation(id: "discount", source: .mock),
+            MockModifierActivation(id: "latency", source: .live)
         ])
     }
 
     func test_handleRequest_PUTActiveIds_DefaultDomainAndDevice() async throws {
-        let body = try jsonEncoder.encode([ModifierActivation(id: "discount", source: .mock)])
+        let body = try jsonEncoder.encode([MockModifierActivation(id: "discount", source: .mock)])
         let request = HTTPRequest.make(method: .PUT, path: "/modifiers", body: body)
 
         let response = try await sut.handleRequest(request)
@@ -217,8 +217,8 @@ final class HandleModifierTests: XCTestCase {
     }
 
     func test_handleRequest_PUTActiveIds_UnknownIds_Returns400() async throws {
-        mockHandler.stubbedSetActiveError = ServerModifierError.unknownIds(["missing"])
-        let body = try jsonEncoder.encode([ModifierActivation(id: "missing", source: .live)])
+        mockHandler.stubbedSetActiveError = ServerMockModifierError.unknownIds(["missing"])
+        let body = try jsonEncoder.encode([MockModifierActivation(id: "missing", source: .live)])
         let request = HTTPRequest.make(method: .PUT, path: "/modifiers", body: body)
         let response = try await sut.handleRequest(request)
         XCTAssertEqual(response.statusCode.code, 400)
@@ -255,12 +255,12 @@ final class HandleModifierTests: XCTestCase {
         XCTAssertEqual(mockHandler.invokedPreviewParameters?.domain, "Prod")
         XCTAssertEqual(mockHandler.invokedPreviewParameters?.deviceId, "device-a")
         let body = try await response.bodyData
-        let decoded = try JSONDecoder().decode(ModifierPreviewResponse.self, from: body)
+        let decoded = try JSONDecoder().decode(MockModifierPreviewResponse.self, from: body)
         XCTAssertEqual(decoded.status, 404)
     }
 
     func test_handleRequest_POSTPreview_ExecutionFailureReturns422JSON() async throws {
-        mockHandler.stubbedPreviewError = ServerModifierError.previewExecutionFailed("boom")
+        mockHandler.stubbedPreviewError = ServerMockModifierError.previewExecutionFailed("boom")
         let request = HTTPRequest.make(
             method: .POST,
             path: "/modifiers/preview",
@@ -269,7 +269,7 @@ final class HandleModifierTests: XCTestCase {
 
         let response = try await sut.handleRequest(request)
         let body = try await response.bodyData
-        let error = try JSONDecoder().decode(ModifierAPIErrorResponse.self, from: body)
+        let error = try JSONDecoder().decode(MockModifierAPIErrorResponse.self, from: body)
 
         XCTAssertEqual(response.statusCode.code, 422)
         XCTAssertEqual(response.headers[HTTPHeader("Content-Type")], "application/json")
@@ -278,7 +278,7 @@ final class HandleModifierTests: XCTestCase {
     }
 
     func test_handleRequest_POSTPreview_MapsStructuredErrors() async throws {
-        let cases: [(ServerModifierError, Int, String)] = [
+        let cases: [(ServerMockModifierError, Int, String)] = [
             (.previewInvalidRequest("invalid"), 400, "invalid_request"),
             (.previewNotFound("missing"), 404, "not_found"),
             (.previewConflict("exists"), 409, "conflict"),
@@ -296,7 +296,7 @@ final class HandleModifierTests: XCTestCase {
             let response = try await sut.handleRequest(request)
             let body = try await response.bodyData
             let envelope = try JSONDecoder().decode(
-                ModifierAPIErrorResponse.self,
+                MockModifierAPIErrorResponse.self,
                 from: body
             )
 
@@ -322,25 +322,25 @@ final class HandleModifierTests: XCTestCase {
 
 // MARK: - Mock Handler
 
-private final class MockModifierHandler: ServerModifierHandlerInterface {
-    var stubbedListResult: [ModifierModel] = []
+private final class FakeMockModifierHandler: ServerMockModifierHandlerInterface {
+    var stubbedListResult: [MockModifierModel] = []
     var invokedListParameters: (domain: String, deviceId: String)?
 
-    var stubbedGetResult: ModifierModel?
+    var stubbedGetResult: MockModifierModel?
     var invokedGetParameters: (domain: String, id: String, deviceId: String)?
 
     var stubbedCreateError: Error?
-    var invokedCreateParameters: (domain: String, model: ModifierModel)?
+    var invokedCreateParameters: (domain: String, model: MockModifierModel)?
 
     var stubbedUpdateError: Error?
-    var invokedUpdateParameters: (domain: String, currentId: String, model: ModifierModel)?
+    var invokedUpdateParameters: (domain: String, currentId: String, model: MockModifierModel)?
 
     var invokedDeleteParameters: (domain: String, id: String)?
 
     var stubbedSetActiveError: Error?
-    var invokedSetActiveParameters: (domain: String, deviceId: String, activations: [ModifierActivation])?
+    var invokedSetActiveParameters: (domain: String, deviceId: String, activations: [MockModifierActivation])?
 
-    var stubbedPreviewResult = ModifierPreviewResponse(
+    var stubbedPreviewResult = MockModifierPreviewResponse(
         status: 200,
         headers: ["Content-Type": "application/json"],
         bodyBase64: Data("{\"ok\":true}".utf8).base64EncodedString()
@@ -349,25 +349,25 @@ private final class MockModifierHandler: ServerModifierHandlerInterface {
     var invokedPreviewParameters: (
         domain: String,
         deviceId: String,
-        request: ModifierPreviewRequest
+        request: MockModifierPreviewRequest
     )?
 
-    func listModifiers(domain: String, deviceId: String) async throws -> [ModifierModel] {
+    func listModifiers(domain: String, deviceId: String) async throws -> [MockModifierModel] {
         invokedListParameters = (domain, deviceId)
         return stubbedListResult
     }
 
-    func getModifier(domain: String, id: String, deviceId: String) async throws -> ModifierModel? {
+    func getModifier(domain: String, id: String, deviceId: String) async throws -> MockModifierModel? {
         invokedGetParameters = (domain, id, deviceId)
         return stubbedGetResult
     }
 
-    func createModifier(domain: String, model: ModifierModel) async throws {
+    func createModifier(domain: String, model: MockModifierModel) async throws {
         invokedCreateParameters = (domain, model)
         if let stubbedCreateError { throw stubbedCreateError }
     }
 
-    func updateModifier(domain: String, currentId: String, model: ModifierModel) async throws {
+    func updateModifier(domain: String, currentId: String, model: MockModifierModel) async throws {
         invokedUpdateParameters = (domain, currentId, model)
         if let stubbedUpdateError { throw stubbedUpdateError }
     }
@@ -376,7 +376,7 @@ private final class MockModifierHandler: ServerModifierHandlerInterface {
         invokedDeleteParameters = (domain, id)
     }
 
-    func setActiveModifiers(domain: String, deviceId: String, activations: [ModifierActivation]) async throws {
+    func setActiveModifiers(domain: String, deviceId: String, activations: [MockModifierActivation]) async throws {
         invokedSetActiveParameters = (domain, deviceId, activations)
         if let stubbedSetActiveError { throw stubbedSetActiveError }
     }
@@ -384,8 +384,8 @@ private final class MockModifierHandler: ServerModifierHandlerInterface {
     func previewModifier(
         domain: String,
         deviceId: String,
-        request: ModifierPreviewRequest
-    ) async throws -> ModifierPreviewResponse {
+        request: MockModifierPreviewRequest
+    ) async throws -> MockModifierPreviewResponse {
         invokedPreviewParameters = (domain, deviceId, request)
         if let stubbedPreviewError { throw stubbedPreviewError }
         return stubbedPreviewResult

@@ -5,14 +5,14 @@ import SwiftUI
 
 @Observable
 @MainActor
-public final class ModifierCreateViewModel {
+public final class MockModifierCreateViewModel {
     public struct Result: Equatable {
         public let id: String
-        public let seed: ModifierCreationSeed
+        public let seed: MockModifierCreationSeed
     }
 
-    private let seed: ModifierCreationSeed
-    private let apiClient: ModifierAPIClientInterface
+    private let seed: MockModifierCreationSeed
+    private let apiClient: MockModifierAPIClientInterface
     private let notificationManager: NotificationManagerInterface
 
     var modifierId = ""
@@ -25,8 +25,8 @@ public final class ModifierCreateViewModel {
     var fieldError: String?
 
     public init(
-        seed: ModifierCreationSeed,
-        apiClient: ModifierAPIClientInterface = ModifierAPIClient(),
+        seed: MockModifierCreationSeed,
+        apiClient: MockModifierAPIClientInterface = MockModifierAPIClient(),
         notificationManager: NotificationManagerInterface = NotificationManager.shared
     ) {
         self.seed = seed
@@ -44,7 +44,7 @@ public final class ModifierCreateViewModel {
             fieldError = "ID, path, method and a positive order are required"
             return nil
         }
-        let request = ModifierWriteRequest(
+        let request = MockModifierWriteRequest(
             id: id,
             path: path,
             method: method.uppercased(),
@@ -72,15 +72,15 @@ public final class ModifierCreateViewModel {
     }
 
     /// Keeps mock URL/headers/body from the creation seed and syncs form metadata.
-    private func makePreviewSeed() -> ModifierCreationSeed {
+    private func makePreviewSeed() -> MockModifierCreationSeed {
         let resolvedURL: String
-        if seed.mockId != nil || seed.url != ModifierCreationSeed.empty.url {
+        if seed.mockId != nil || seed.url != MockModifierCreationSeed.empty.url {
             resolvedURL = seed.url
         } else {
             let normalizedPath = path.hasPrefix("/") ? path : "/" + path
             resolvedURL = "https://example.com\(normalizedPath)"
         }
-        return ModifierCreationSeed(
+        return MockModifierCreationSeed(
             mockId: sampleMockRequestId.isEmpty ? nil : sampleMockRequestId,
             url: resolvedURL,
             path: path,

@@ -2,8 +2,8 @@ import XCTest
 @testable import PluginCore
 import CommonKit
 
-final class ModifierParserTests: XCTestCase {
-    private let parser = ModifierParser()
+final class MockModifierParserTests: XCTestCase {
+    private let parser = MockModifierParser()
 
     private let legacyJS = """
     var id = "embedded-id"
@@ -54,7 +54,7 @@ final class ModifierParserTests: XCTestCase {
     func test_parse_MissingPath_Throws() {
         let js = "var method = \"GET\"\nfunction transformer(req, chain) { return chain.proceed(req) }\n"
         XCTAssertThrowsError(try parser.parse(jsCode: js, filenameId: "x")) { error in
-            guard case ModifierParseError.missingRequiredField("path") = error else {
+            guard case MockModifierParseError.missingRequiredField("path") = error else {
                 return XCTFail("unexpected \(error)")
             }
         }
@@ -63,7 +63,7 @@ final class ModifierParserTests: XCTestCase {
     func test_parse_MissingMethod_Throws() {
         let js = "var path = \"/x\"\nfunction transformer(req, chain) { return chain.proceed(req) }\n"
         XCTAssertThrowsError(try parser.parse(jsCode: js, filenameId: "x")) { error in
-            guard case ModifierParseError.missingRequiredField("method") = error else {
+            guard case MockModifierParseError.missingRequiredField("method") = error else {
                 return XCTFail("unexpected \(error)")
             }
         }
@@ -71,7 +71,7 @@ final class ModifierParserTests: XCTestCase {
 
     func test_parse_SyntaxError_Throws() {
         XCTAssertThrowsError(try parser.parse(jsCode: "var path = ", filenameId: "x")) { error in
-            guard case ModifierParseError.syntaxError = error else {
+            guard case MockModifierParseError.syntaxError = error else {
                 return XCTFail("unexpected \(error)")
             }
         }
@@ -79,14 +79,14 @@ final class ModifierParserTests: XCTestCase {
 
     func test_parse_InvalidFilenameId_Throws() {
         XCTAssertThrowsError(try parser.parse(jsCode: canonicalJS, filenameId: "../evil")) { error in
-            guard case ModifierParseError.invalidModifierId = error else {
+            guard case MockModifierParseError.invalidModifierId = error else {
                 return XCTFail("unexpected \(error)")
             }
         }
     }
 
     func test_serialize_OmitsIdEnabledPriority() {
-        let model = ModifierModel(id: "discount",
+        let model = MockModifierModel(id: "discount",
                                   path: "/cart",
                                   method: "GET",
                                   scenario: "promo",
@@ -104,7 +104,7 @@ final class ModifierParserTests: XCTestCase {
     }
 
     func test_serialize_RoundTrip_PreservesFields() throws {
-        let original = ModifierModel(id: "latency",
+        let original = MockModifierModel(id: "latency",
                                      path: "/users",
                                      method: "POST",
                                      scenario: nil,

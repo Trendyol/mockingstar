@@ -5,7 +5,7 @@ import Editor
 import Foundation
 import SwiftUI
 
-enum ModifierDetailField: Hashable {
+enum MockModifierDetailField: Hashable {
     case id
     case path
     case method
@@ -16,37 +16,37 @@ enum ModifierDetailField: Hashable {
 }
 
 @Observable
-public final class ModifierDetailViewModel {
-    private let apiClient: ModifierAPIClientInterface
+public final class MockModifierDetailViewModel {
+    private let apiClient: MockModifierAPIClientInterface
     private let notificationManager: NotificationManagerInterface
     private let navigationStore: NavigationStore
     private let pasteBoard: NSPasteboardInterface
     private let defaults: UserDefaults
     private let apiKeyStore: APIKeyStoreInterface
     private let claudeClient: ClaudeMessagesClientInterface
-    private let initialPreviewSeed: ModifierCreationSeed?
+    private let initialPreviewSeed: MockModifierCreationSeed?
 
     private(set) var currentId: String
-    var draft: ModifierDetailDraft {
+    var draft: MockModifierDetailDraft {
         didSet {
             refreshDirtyState()
             syncJavaScriptEditorFromDraft()
         }
     }
-    private var savedSnapshot: ModifierDetailDraft
-    var previewInput: ModifierPreviewInput
+    private var savedSnapshot: MockModifierDetailDraft
+    var previewInput: MockModifierPreviewInput
     let javaScriptEditorSession: EditorSession
     let responseEditorSession: EditorSession
     let diffEditorSession: MonacoDiffSession
     private var latestPreviewToken = UUID()
-    private(set) var fieldErrors: [ModifierDetailField: String] = [:]
+    private(set) var fieldErrors: [MockModifierDetailField: String] = [:]
     private(set) var previewBodyBase64 = ""
     private(set) var previewModifiedText = ""
     private(set) var previewModifiedType: MockModelBodyType = .text
     private(set) var hasPreviewOriginal = false
 
     var enabled: Bool = false
-    var activeSource: ModifierPreviewSource?
+    var activeSource: MockModifierPreviewSource?
     var isLoading = false
     var shouldShowErrorMessage = false
     var errorMessage = ""
@@ -80,21 +80,21 @@ public final class ModifierDetailViewModel {
     }
 
     public init(modifierId: String,
-                previewSeed: ModifierCreationSeed? = nil,
-                apiClient: ModifierAPIClientInterface = ModifierAPIClient(),
+                previewSeed: MockModifierCreationSeed? = nil,
+                apiClient: MockModifierAPIClientInterface = MockModifierAPIClient(),
                 notificationManager: NotificationManagerInterface = NotificationManager.shared,
                 navigationStore: NavigationStore = .shared,
                 pasteBoard: NSPasteboardInterface = NSPasteboard.general,
                 defaults: UserDefaults = .standard,
                 apiKeyStore: APIKeyStoreInterface? = nil,
                 claudeClient: ClaudeMessagesClientInterface = ClaudeMessagesClient()) {
-        let placeholder = ModifierModel(
+        let placeholder = MockModifierModel(
             id: modifierId,
             path: "/",
             method: "GET",
             transformerCode: ""
         )
-        let initialDraft = ModifierDetailDraft(model: placeholder)
+        let initialDraft = MockModifierDetailDraft(model: placeholder)
         let resolvedKeyStore = apiKeyStore ?? UserDefaultsAPIKeyStore(defaults: defaults)
         self.apiClient = apiClient
         self.notificationManager = notificationManager
@@ -130,7 +130,7 @@ public final class ModifierDetailViewModel {
         defer { isLoading = false }
         do {
             let model = try await apiClient.getModifier(domain: domain, id: currentId)
-            draft = ModifierDetailDraft(model: model)
+            draft = MockModifierDetailDraft(model: model)
             savedSnapshot = draft
             previewInput = resolvePreviewInput(model: model, domain: domain)
             activeSource = model.source
@@ -167,7 +167,7 @@ public final class ModifierDetailViewModel {
             shouldShowUnsavedIndicator = false
             persistPreviewInput(domain: domain)
             if oldId != currentId {
-                ModifierPreviewInputStore.remove(domain: domain, id: oldId, defaults: defaults)
+                MockModifierPreviewInputStore.remove(domain: domain, id: oldId, defaults: defaults)
                 navigationStore.replaceLast(
                     with: .modifier(id: currentId, previewSeed: initialPreviewSeed)
                 )
@@ -180,13 +180,13 @@ public final class ModifierDetailViewModel {
         }
     }
 
-    private func resolvePreviewInput(model: ModifierModel, domain: String) -> ModifierPreviewInput {
+    private func resolvePreviewInput(model: MockModifierModel, domain: String) -> MockModifierPreviewInput {
         if let initialPreviewSeed {
-            let seeded = ModifierPreviewInput.initial(model: model, seed: initialPreviewSeed)
-            ModifierPreviewInputStore.save(seeded, domain: domain, id: currentId, defaults: defaults)
+            let seeded = MockModifierPreviewInput.initial(model: model, seed: initialPreviewSeed)
+            MockModifierPreviewInputStore.save(seeded, domain: domain, id: currentId, defaults: defaults)
             return seeded
         }
-        if let stored = ModifierPreviewInputStore.load(
+        if let stored = MockModifierPreviewInputStore.load(
             domain: domain,
             id: currentId,
             defaults: defaults
@@ -197,7 +197,7 @@ public final class ModifierDetailViewModel {
     }
 
     private func persistPreviewInput(domain: String) {
-        ModifierPreviewInputStore.save(
+        MockModifierPreviewInputStore.save(
             previewInput,
             domain: domain,
             id: currentId,
@@ -243,7 +243,7 @@ public final class ModifierDetailViewModel {
     }
 
     @MainActor
-    func setSource(_ source: ModifierPreviewSource?, domain: String) async {
+    func setSource(_ source: MockModifierPreviewSource?, domain: String) async {
         do {
             let all = try await apiClient.listModifiers(domain: domain)
             var sources = Dictionary(
@@ -257,7 +257,7 @@ public final class ModifierDetailViewModel {
                 sources.removeValue(forKey: currentId)
             }
             let activations = sources
-                .map { ModifierActivation(id: $0.key, source: $0.value) }
+                .map { MockModifierActivation(id: $0.key, source: $0.value) }
                 .sorted { $0.id < $1.id }
             try await apiClient.setActiveModifiers(domain: domain, activations: activations)
             activeSource = source
@@ -426,7 +426,7 @@ public final class ModifierDetailViewModel {
         return fieldErrors.isEmpty ? (url, headers) : nil
     }
 
-    private func applyPreview(_ result: ModifierPreviewResponse) {
+    private func applyPreview(_ result: MockModifierPreviewResponse) {
         previewStatus = result.status
         previewBodyBase64 = result.bodyBase64
         previewResponseHeaders = result.headers
@@ -471,8 +471,8 @@ public final class ModifierDetailViewModel {
     @MainActor
     func editPreviewPath(offset: Int) {
         guard previewModifiedType == .json else { return }
-        guard let resolved = ModifierJSONPath.resolve(json: previewModifiedText, utf16Offset: offset) else { return }
-        let result = ModifierTransformerEditor.applyAssignment(
+        guard let resolved = MockModifierJSONPath.resolve(json: previewModifiedText, utf16Offset: offset) else { return }
+        let result = MockModifierTransformerEditor.applyAssignment(
             path: resolved.path,
             valueLiteral: resolved.literal,
             to: draft.transformerCode

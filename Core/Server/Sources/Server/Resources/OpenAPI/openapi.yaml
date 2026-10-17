@@ -227,13 +227,13 @@ paths:
         - $ref: '#/components/parameters/DeviceIdHeader'
       responses:
         "200":
-          description: Modifier listesi.
+          description: MockModifier listesi.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Modifier'
+                  $ref: '#/components/schemas/MockModifier'
         "501":
           $ref: '#/components/responses/HandlerNotRegistered'
     post:
@@ -250,7 +250,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModifierWriteRequest'
+              $ref: '#/components/schemas/MockModifierWriteRequest'
             example:
               id: "discount"
               path: "/cart"
@@ -261,7 +261,7 @@ paths:
               transformerCode: "function transformer(req, chain) { return chain.proceed(req) }"
       responses:
         "201":
-          description: Modifier oluşturuldu.
+          description: MockModifier oluşturuldu.
         "400":
           description: Geçersiz id veya payload.
         "409":
@@ -295,7 +295,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/ModifierActivation'
+                $ref: '#/components/schemas/MockModifierActivation'
             example:
               - id: discount
                 source: mock
@@ -315,7 +315,7 @@ paths:
         in: path
         required: true
         schema: { type: string }
-        description: Modifier'ın (dosya adının uzantısız hali) benzersiz kimliği.
+        description: MockModifier'ın (dosya adının uzantısız hali) benzersiz kimliği.
     get:
       operationId: modifierGet
       tags: [Modifiers]
@@ -325,11 +325,11 @@ paths:
         - $ref: '#/components/parameters/DeviceIdHeader'
       responses:
         "200":
-          description: Modifier bulundu.
+          description: MockModifier bulundu.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Modifier'
+                $ref: '#/components/schemas/MockModifier'
         "404":
           description: Belirtilen id ile modifier bulunamadı.
         "501":
@@ -349,14 +349,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModifierWriteRequest'
+              $ref: '#/components/schemas/MockModifierWriteRequest'
       responses:
         "202":
-          description: Modifier başarıyla güncellendi.
+          description: MockModifier başarıyla güncellendi.
         "400":
           description: Geçersiz id veya payload.
         "404":
-          description: Modifier bulunamadı.
+          description: MockModifier bulunamadı.
         "409":
           description: Rename hedef id zaten mevcut.
         "501":
@@ -370,9 +370,9 @@ paths:
         - $ref: '#/components/parameters/DomainQuery'
       responses:
         "202":
-          description: Modifier başarıyla silindi.
+          description: MockModifier başarıyla silindi.
         "404":
-          description: Modifier bulunamadı.
+          description: MockModifier bulunamadı.
         "501":
           $ref: '#/components/responses/HandlerNotRegistered'
 
@@ -385,7 +385,7 @@ paths:
         Unsaved draft ile preview çalıştırır. HTTP `200` başarılı preview
         anlamına gelir; dönüştürülmüş status body'deki `status` alanındadır.
         Hata durumunda `400`/`404`/`409`/`422`/`502` ve
-        `ModifierAPIErrorResponse` döner (`execution_failed`, `invalid_request`,
+        `MockModifierAPIErrorResponse` döner (`execution_failed`, `invalid_request`,
         `not_found`, `conflict`, `live_proxy_failed`).
       parameters:
         - $ref: '#/components/parameters/DomainQuery'
@@ -395,7 +395,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModifierPreviewRequest'
+              $ref: '#/components/schemas/MockModifierPreviewRequest'
             example:
               currentModifierId: discount
               modifier:
@@ -420,17 +420,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModifierPreviewResponse'
+                $ref: '#/components/schemas/MockModifierPreviewResponse'
         "400":
-          $ref: '#/components/responses/ModifierPreviewError'
+          $ref: '#/components/responses/MockModifierPreviewError'
         "404":
-          $ref: '#/components/responses/ModifierPreviewError'
+          $ref: '#/components/responses/MockModifierPreviewError'
         "409":
-          $ref: '#/components/responses/ModifierPreviewError'
+          $ref: '#/components/responses/MockModifierPreviewError'
         "422":
-          $ref: '#/components/responses/ModifierPreviewError'
+          $ref: '#/components/responses/MockModifierPreviewError'
         "502":
-          $ref: '#/components/responses/ModifierPreviewError'
+          $ref: '#/components/responses/MockModifierPreviewError'
         "501":
           $ref: '#/components/responses/HandlerNotRegistered'
 
@@ -487,7 +487,7 @@ components:
       required: false
       schema: { type: string, default: "Dev" }
       description: >
-        Modifier'ların ait olduğu domain. Verilmezse `Dev` kullanılır.
+        MockModifier'ların ait olduğu domain. Verilmezse `Dev` kullanılır.
 
   schemas:
     MockRequestBody:
@@ -538,7 +538,7 @@ components:
           type: string
         mockDomain:
           type: string
-    Modifier:
+    MockModifier:
       type: object
       required: [id, path, method, enabled, order, transformerCode]
       properties:
@@ -547,10 +547,10 @@ components:
           description: Dosya adının uzantısız hali; JS içine yazılmaz, API yanıtında türetilir.
         path:
           type: string
-          description: Modifier'ın eşleşeceği istek path'i.
+          description: MockModifier'ın eşleşeceği istek path'i.
         method:
           type: string
-          description: Modifier'ın eşleşeceği HTTP method'u.
+          description: MockModifier'ın eşleşeceği HTTP method'u.
           example: "GET"
         scenario:
           type: [string, "null"]
@@ -575,13 +575,13 @@ components:
             çalışır (1, 2, 3...).
         sampleMockRequestId:
           type: [string, "null"]
-          description: Modifier düzenleme UI'ında örnek göstermek için referans alınan mock id'si (opsiyonel).
+          description: MockModifier düzenleme UI'ında örnek göstermek için referans alınan mock id'si (opsiyonel).
         transformerCode:
           type: string
           description: >
             `function transformer(req, chain) { ... }` JS kaynak kodu. API yanıtında
             metadata satırları olmadan transformer gövdesi döner.
-    ModifierActivation:
+    MockModifierActivation:
       type: object
       required: [id, source]
       properties:
@@ -595,7 +595,7 @@ components:
             Bu modifier eşleştiğinde sarmalanan terminalin stored mock (`mock`) mı
             yoksa live (`live`) mı okunacağı. Eşleşenler arasında en az bir `live`
             varsa zincir terminali live olur.
-    ModifierWriteRequest:
+    MockModifierWriteRequest:
       type: object
       required: [path, method, order, transformerCode]
       properties:
@@ -618,7 +618,7 @@ components:
           type: [string, "null"]
         transformerCode:
           type: string
-    ModifierPreviewHTTPRequest:
+    MockModifierPreviewHTTPRequest:
       type: object
       required: [url, method, headers, bodyBase64]
       properties:
@@ -636,20 +636,20 @@ components:
         bodyBase64:
           type: string
           format: byte
-    ModifierPreviewRequest:
+    MockModifierPreviewRequest:
       type: object
       required: [currentModifierId, modifier, request, source]
       properties:
         currentModifierId:
           type: string
         modifier:
-          $ref: '#/components/schemas/ModifierWriteRequest'
+          $ref: '#/components/schemas/MockModifierWriteRequest'
         request:
-          $ref: '#/components/schemas/ModifierPreviewHTTPRequest'
+          $ref: '#/components/schemas/MockModifierPreviewHTTPRequest'
         source:
           type: string
           enum: [mock, live]
-    ModifierPreviewResponse:
+    MockModifierPreviewResponse:
       type: object
       required: [status, headers, bodyBase64]
       properties:
@@ -662,7 +662,7 @@ components:
         bodyBase64:
           type: string
           format: byte
-    ModifierAPIErrorResponse:
+    MockModifierAPIErrorResponse:
       type: object
       required: [code, message]
       properties:
@@ -691,12 +691,12 @@ components:
       content:
         text/plain:
           schema: { type: string }
-    ModifierPreviewError:
-      description: Modifier preview failed.
+    MockModifierPreviewError:
+      description: MockModifier preview failed.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ModifierAPIErrorResponse'
+            $ref: '#/components/schemas/MockModifierAPIErrorResponse'
           example:
             code: execution_failed
             message: Transformer threw an error

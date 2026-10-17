@@ -3,8 +3,8 @@ import Foundation
 import XCTest
 @testable import PluginCore
 
-final class ModifierExecutorTests: XCTestCase {
-    private let executor = ModifierExecutor()
+final class MockModifierExecutorTests: XCTestCase {
+    private let executor = MockModifierExecutor()
 
     private func request(url: String = "https://example.com/x", method: String = "GET") -> URLRequest {
         var request = URLRequest(url: URL(string: url)!)
@@ -12,8 +12,8 @@ final class ModifierExecutorTests: XCTestCase {
         return request
     }
 
-    private func model(code: String, id: String = "m") -> ModifierModel {
-        ModifierModel(id: id, path: "/x", method: "GET", order: 1, transformerCode: code)
+    private func model(code: String, id: String = "m") -> MockModifierModel {
+        MockModifierModel(id: id, path: "/x", method: "GET", order: 1, transformerCode: code)
     }
 
     func test_execute_MutatesJSONResponseBody() throws {
@@ -77,7 +77,7 @@ final class ModifierExecutorTests: XCTestCase {
         XCTAssertThrowsError(try executor.execute(modifier: model, request: request()) { _ in
             HTTPResult(status: 200, body: Data(), headers: [:])
         }) { error in
-            guard case ModifierExecutionError.jsException = error else {
+            guard case MockModifierExecutionError.jsException = error else {
                 return XCTFail("unexpected \(error)")
             }
         }
@@ -89,7 +89,7 @@ final class ModifierExecutorTests: XCTestCase {
         XCTAssertThrowsError(try executor.execute(modifier: model, request: request()) { _ in
             HTTPResult(status: 200, body: Data(), headers: [:])
         }) { error in
-            guard case ModifierExecutionError.missingTransformer = error else {
+            guard case MockModifierExecutionError.missingTransformer = error else {
                 return XCTFail("unexpected \(error)")
             }
         }

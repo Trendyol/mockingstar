@@ -4,12 +4,12 @@ import Editor
 import SwiftUI
 
 /// Owns a stable ViewModel so NavigationStack parent re-renders do not wipe preview seed/state.
-public struct ModifierDetailRouteView: View {
-    @State private var viewModel: ModifierDetailViewModel
+public struct MockModifierDetailRouteView: View {
+    @State private var viewModel: MockModifierDetailViewModel
 
-    public init(modifierId: String, previewSeed: ModifierCreationSeed? = nil) {
+    public init(modifierId: String, previewSeed: MockModifierCreationSeed? = nil) {
         _viewModel = State(
-            initialValue: ModifierDetailViewModel(
+            initialValue: MockModifierDetailViewModel(
                 modifierId: modifierId,
                 previewSeed: previewSeed
             )
@@ -17,16 +17,16 @@ public struct ModifierDetailRouteView: View {
     }
 
     public var body: some View {
-        ModifierDetailView(viewModel: viewModel)
+        MockModifierDetailView(viewModel: viewModel)
     }
 }
 
-public struct ModifierDetailView: View {
-    @Bindable private var viewModel: ModifierDetailViewModel
+public struct MockModifierDetailView: View {
+    @Bindable private var viewModel: MockModifierDetailViewModel
     @AppStorage("mockDomain") private var mockDomain: String = "Dev"
     @FocusState private var isEditorFocused: Bool
 
-    public init(viewModel: ModifierDetailViewModel) {
+    public init(viewModel: MockModifierDetailViewModel) {
         self.viewModel = viewModel
     }
 
@@ -37,7 +37,7 @@ public struct ModifierDetailView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 HSplitView {
-                    ModifierResponsePane(viewModel: viewModel)
+                    MockModifierResponsePane(viewModel: viewModel)
                         .frame(minWidth: 420)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
 
@@ -70,7 +70,7 @@ public struct ModifierDetailView: View {
                             .frame(minHeight: 220)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                        ModifierDetailInspectorPane(viewModel: viewModel)
+                        MockModifierDetailInspectorPane(viewModel: viewModel)
                             .frame(minHeight: 280)
                     }
                     .frame(minWidth: 340, idealWidth: 420)
@@ -132,7 +132,7 @@ public struct ModifierDetailView: View {
 }
 
 private struct ModifierAskClaudeSheet: View {
-    @Bindable var viewModel: ModifierDetailViewModel
+    @Bindable var viewModel: MockModifierDetailViewModel
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -219,8 +219,8 @@ private struct ModifierAskClaudeSheet: View {
 }
 
 /// Matches Mock Detail inspector: always-open GroupBox sections instead of DisclosureGroups.
-private struct ModifierDetailInspectorPane: View {
-    @Bindable var viewModel: ModifierDetailViewModel
+private struct MockModifierDetailInspectorPane: View {
+    @Bindable var viewModel: MockModifierDetailViewModel
     @AppStorage("mockDomain") private var mockDomain: String = "Dev"
 
     var body: some View {
@@ -298,7 +298,7 @@ private struct ModifierDetailInspectorPane: View {
             GroupBox {
                 VStack(alignment: .leading, spacing: 0) {
                     LabeledContent("Source") {
-                        ModifierSourcePicker(selection: viewModel.activeSource) { newSource in
+                        MockModifierSourcePicker(selection: viewModel.activeSource) { newSource in
                             Task { await viewModel.setSource(newSource, domain: mockDomain) }
                         }
                         .frame(maxWidth: 240)
@@ -364,7 +364,7 @@ private struct ModifierDetailInspectorPane: View {
     }
 
     @ViewBuilder
-    private func fieldErrorText(for field: ModifierDetailField) -> some View {
+    private func fieldErrorText(for field: MockModifierDetailField) -> some View {
         if let message = viewModel.fieldErrors[field] {
             Text(message)
                 .font(.caption)
@@ -377,9 +377,9 @@ private struct ModifierDetailInspectorPane: View {
 
 /// Form-safe Off/Mock/Live control. System `.segmented` picks get clipped inside
 /// grouped form rows and look crooked on macOS.
-private struct ModifierSourcePicker: View {
-    let selection: ModifierPreviewSource?
-    let onChange: (ModifierPreviewSource?) -> Void
+private struct MockModifierSourcePicker: View {
+    let selection: MockModifierPreviewSource?
+    let onChange: (MockModifierPreviewSource?) -> Void
 
     var body: some View {
         HStack(spacing: 2) {
@@ -391,7 +391,7 @@ private struct ModifierSourcePicker: View {
         .background(Color.secondary.opacity(0.2), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
-    private func chip(title: String, value: ModifierPreviewSource?) -> some View {
+    private func chip(title: String, value: MockModifierPreviewSource?) -> some View {
         let selected = selection == value
         return Button {
             onChange(value)

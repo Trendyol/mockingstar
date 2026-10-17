@@ -1,9 +1,9 @@
 import XCTest
 @testable import CommonKit
 
-final class ModifierPreviewModelsTests: XCTestCase {
+final class MockModifierPreviewModelsTests: XCTestCase {
     func test_previewRequest_CodableRoundTrip_PreservesDraftAndBinaryBody() throws {
-        let request = ModifierPreviewRequest(
+        let request = MockModifierPreviewRequest(
             currentModifierId: "discount",
             modifier: .init(
                 id: "discount-v2",
@@ -25,7 +25,7 @@ final class ModifierPreviewModelsTests: XCTestCase {
         )
 
         let data = try JSONEncoder().encode(request)
-        XCTAssertEqual(try JSONDecoder().decode(ModifierPreviewRequest.self, from: data), request)
+        XCTAssertEqual(try JSONDecoder().decode(MockModifierPreviewRequest.self, from: data), request)
     }
 
     func test_creationSeed_FromMock_CopiesRequestFields() throws {
@@ -46,7 +46,7 @@ final class ModifierPreviewModelsTests: XCTestCase {
             responseBody: "{}"
         )
 
-        let seed = ModifierCreationSeed(mock: mock)
+        let seed = MockModifierCreationSeed(mock: mock)
 
         XCTAssertEqual(seed.mockId, "mock-1")
         XCTAssertEqual(seed.url, "https://example.com/cart?item=1")

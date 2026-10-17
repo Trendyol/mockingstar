@@ -29,11 +29,11 @@ struct StoredMockLoader {
         )
         let fileURL = URL(filePath: root.path() + "/" + relativePath)
         guard fileManager.fileExist(atPath: fileURL.path()) else {
-            throw ModifierPreviewError.mockNotFound(id)
+            throw MockModifierPreviewError.mockNotFound(id)
         }
         let mock: MockModel = try fileManager.readJSONFile(at: fileURL)
         guard mock.id == id else {
-            throw ModifierPreviewError.mockNotFound(id)
+            throw MockModifierPreviewError.mockNotFound(id)
         }
         return mock
     }

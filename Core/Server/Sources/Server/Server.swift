@@ -13,7 +13,7 @@ public protocol ServerInterface {
     func registerMockHandler(_ handler: ServerMockHandlerInterface)
     func registerMockSearchHandler(_ handler: ServerMockSearchHandlerInterface)
     func registerScenarioHandler(_ handler: ScenarioHandlerInterface)
-    func registerModifierHandler(_ handler: ServerModifierHandlerInterface)
+    func registerModifierHandler(_ handler: ServerMockModifierHandlerInterface)
 }
 
 public final class Server: ServerInterface {
@@ -45,13 +45,13 @@ public final class Server: ServerInterface {
         await server.appendRoute("GET /mock", to: CORSHandler(wrapping: HandleMock()))
         await server.appendRoute("POST /search", to: CORSHandler(wrapping: HandleSearchMock()))
         await server.appendRoute("/scenario", to: CORSHandler(wrapping: HandleScenario()))
-        await server.appendRoute("GET /modifiers", to: CORSHandler(wrapping: HandleModifier()))
-        await server.appendRoute("POST /modifiers", to: CORSHandler(wrapping: HandleModifier()))
-        await server.appendRoute("POST /modifiers/preview", to: CORSHandler(wrapping: HandleModifier()))
-        await server.appendRoute("GET /modifiers/*", to: CORSHandler(wrapping: HandleModifier()))
-        await server.appendRoute("PUT /modifiers", to: CORSHandler(wrapping: HandleModifier()))
-        await server.appendRoute("PUT /modifiers/*", to: CORSHandler(wrapping: HandleModifier()))
-        await server.appendRoute("DELETE /modifiers/*", to: CORSHandler(wrapping: HandleModifier()))
+        await server.appendRoute("GET /modifiers", to: CORSHandler(wrapping: HandleMockModifier()))
+        await server.appendRoute("POST /modifiers", to: CORSHandler(wrapping: HandleMockModifier()))
+        await server.appendRoute("POST /modifiers/preview", to: CORSHandler(wrapping: HandleMockModifier()))
+        await server.appendRoute("GET /modifiers/*", to: CORSHandler(wrapping: HandleMockModifier()))
+        await server.appendRoute("PUT /modifiers", to: CORSHandler(wrapping: HandleMockModifier()))
+        await server.appendRoute("PUT /modifiers/*", to: CORSHandler(wrapping: HandleMockModifier()))
+        await server.appendRoute("DELETE /modifiers/*", to: CORSHandler(wrapping: HandleMockModifier()))
         await server.appendRoute("GET /hello", to: CORSHandler(wrapping: ClosureHTTPHandler { _ in
             .init(statusCode: .teapot)
         }))
@@ -144,8 +144,8 @@ public final class Server: ServerInterface {
         HandleScenario.handler = handler
     }
 
-    public func registerModifierHandler(_ handler: ServerModifierHandlerInterface) {
+    public func registerModifierHandler(_ handler: ServerMockModifierHandlerInterface) {
         logger.debug("Server register handler \(String(describing: handler))")
-        HandleModifier.handler = handler
+        HandleMockModifier.handler = handler
     }
 }

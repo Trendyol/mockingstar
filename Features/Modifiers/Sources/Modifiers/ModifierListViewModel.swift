@@ -4,14 +4,14 @@ import Foundation
 import SwiftUI
 
 @Observable
-public final class ModifierListViewModel {
-    private let apiClient: ModifierAPIClientInterface
+public final class MockModifierListViewModel {
+    private let apiClient: MockModifierAPIClientInterface
     private let notificationManager: NotificationManagerInterface
     private let navigationStore: NavigationStore
 
-    var modifiers: [ModifierModel] = []
+    var modifiers: [MockModifierModel] = []
     var searchTerm: String = ""
-    var selected = Set<ModifierModel.ID>()
+    var selected = Set<MockModifierModel.ID>()
     var isLoading = false
     var shouldShowErrorMessage = false
     var errorMessage = ""
@@ -19,7 +19,7 @@ public final class ModifierListViewModel {
     var pendingDeleteId: String?
     var shouldShowCreateSheet = false
 
-    var filteredModifiers: [ModifierModel] {
+    var filteredModifiers: [MockModifierModel] {
         let term = searchTerm.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let sorted = modifiers.sorted {
             if $0.order != $1.order { return $0.order < $1.order }
@@ -31,7 +31,7 @@ public final class ModifierListViewModel {
         }
     }
 
-    public init(apiClient: ModifierAPIClientInterface = ModifierAPIClient(),
+    public init(apiClient: MockModifierAPIClientInterface = MockModifierAPIClient(),
                 notificationManager: NotificationManagerInterface = NotificationManager.shared,
                 navigationStore: NavigationStore = .shared) {
         self.apiClient = apiClient
@@ -54,7 +54,7 @@ public final class ModifierListViewModel {
     }
 
     @MainActor
-    func setSource(_ modifier: ModifierModel, source: ModifierPreviewSource?, domain: String) async {
+    func setSource(_ modifier: MockModifierModel, source: MockModifierPreviewSource?, domain: String) async {
         var sources = Dictionary(
             modifiers.compactMap { model in model.source.map { (model.id, $0) } },
             uniquingKeysWith: { first, _ in first }
@@ -65,7 +65,7 @@ public final class ModifierListViewModel {
             sources.removeValue(forKey: modifier.id)
         }
         let activations = sources
-            .map { ModifierActivation(id: $0.key, source: $0.value) }
+            .map { MockModifierActivation(id: $0.key, source: $0.value) }
             .sorted { $0.id < $1.id }
         do {
             try await apiClient.setActiveModifiers(domain: domain, activations: activations)
@@ -94,11 +94,11 @@ public final class ModifierListViewModel {
         pendingDeleteId = nil
     }
 
-    func openDetail(id: String, previewSeed: ModifierCreationSeed? = nil) {
+    func openDetail(id: String, previewSeed: MockModifierCreationSeed? = nil) {
         navigationStore.open(.modifier(id: id, previewSeed: previewSeed))
     }
 
-    func modifier(id: ModifierModel.ID) -> ModifierModel? {
+    func modifier(id: MockModifierModel.ID) -> MockModifierModel? {
         modifiers.first { $0.id == id }
     }
 

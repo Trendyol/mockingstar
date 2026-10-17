@@ -1,7 +1,7 @@
 import Foundation
 import CommonKit
 
-public enum ModifierStoreError: LocalizedError {
+public enum MockModifierStoreError: LocalizedError {
     case alreadyExists(String)
     case notFound(String)
     case invalidId(String)
@@ -15,17 +15,17 @@ public enum ModifierStoreError: LocalizedError {
     }
 }
 
-public protocol ModifierStoreInterface {
+public protocol MockModifierStoreInterface {
     var domain: String { get }
-    func list() throws -> [ModifierModel]
-    func get(id: String) throws -> ModifierModel?
-    func get(ids: [String]) throws -> [ModifierModel]
-    func create(_ model: ModifierModel) throws
-    func update(currentId: String, with model: ModifierModel) throws
+    func list() throws -> [MockModifierModel]
+    func get(id: String) throws -> MockModifierModel?
+    func get(ids: [String]) throws -> [MockModifierModel]
+    func create(_ model: MockModifierModel) throws
+    func update(currentId: String, with model: MockModifierModel) throws
     func delete(id: String) throws
 }
 
-public final class ModifierStore: ModifierStoreInterface {
+public final class MockModifierStore: MockModifierStoreInterface {
     public let domain: String
 
     public init(domain: String,
@@ -34,32 +34,32 @@ public final class ModifierStore: ModifierStoreInterface {
         self.domain = domain
     }
 
-    public func list() throws -> [ModifierModel] {
+    public func list() throws -> [MockModifierModel] {
         []
     }
 
-    public func get(id: String) throws -> ModifierModel? {
+    public func get(id: String) throws -> MockModifierModel? {
         nil
     }
 
-    public func get(ids: [String]) throws -> [ModifierModel] {
+    public func get(ids: [String]) throws -> [MockModifierModel] {
         []
     }
 
-    public func create(_ model: ModifierModel) throws {}
+    public func create(_ model: MockModifierModel) throws {}
 
-    public func update(currentId: String, with model: ModifierModel) throws {}
+    public func update(currentId: String, with model: MockModifierModel) throws {}
 
     public func delete(id: String) throws {}
 }
 
-public actor ModifierStoreActor {
-    public static let shared = ModifierStoreActor()
-    private var stores: [String: ModifierStore] = [:]
+public actor MockModifierStoreActor {
+    public static let shared = MockModifierStoreActor()
+    private var stores: [String: MockModifierStore] = [:]
 
-    public func store(for domain: String) -> ModifierStore {
+    public func store(for domain: String) -> MockModifierStore {
         if let existing = stores[domain] { return existing }
-        let created = ModifierStore(domain: domain)
+        let created = MockModifierStore(domain: domain)
         stores[domain] = created
         return created
     }

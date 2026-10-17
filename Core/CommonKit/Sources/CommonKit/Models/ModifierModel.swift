@@ -5,13 +5,13 @@ import Foundation
 /// `id` is always the `.js` filename without extension. It is never persisted inside the JavaScript
 /// file. `enabled` is also not persisted; callers compute it from the ephemeral per-device
 /// activation set before returning models over the API.
-public struct ModifierModel: Codable, Hashable, Identifiable, Sendable {
+public struct MockModifierModel: Codable, Hashable, Identifiable, Sendable {
     public let id: String
     public var path: String
     public var method: String
     public var scenario: String?
     public var enabled: Bool
-    public var source: ModifierPreviewSource?
+    public var source: MockModifierPreviewSource?
     public var order: Int
     public var sampleMockRequestId: String?
     /// JavaScript containing `function transformer(req, chain) { ... }` (metadata is not required).
@@ -22,7 +22,7 @@ public struct ModifierModel: Codable, Hashable, Identifiable, Sendable {
                 method: String,
                 scenario: String? = nil,
                 enabled: Bool = false,
-                source: ModifierPreviewSource? = nil,
+                source: MockModifierPreviewSource? = nil,
                 order: Int = 1,
                 sampleMockRequestId: String? = nil,
                 transformerCode: String) {
@@ -39,11 +39,11 @@ public struct ModifierModel: Codable, Hashable, Identifiable, Sendable {
 }
 
 /// Activation payload for `PUT /modifiers`.
-public struct ModifierActivation: Codable, Hashable, Sendable {
+public struct MockModifierActivation: Codable, Hashable, Sendable {
     public let id: String
-    public var source: ModifierPreviewSource
+    public var source: MockModifierPreviewSource
 
-    public init(id: String, source: ModifierPreviewSource) {
+    public init(id: String, source: MockModifierPreviewSource) {
         self.id = id
         self.source = source
     }
@@ -53,7 +53,7 @@ public struct ModifierActivation: Codable, Hashable, Sendable {
 ///
 /// On create, `id` chooses the filename. On update, the path segment identifies the current
 /// modifier and a different body `id` requests a filename rename.
-public struct ModifierWriteRequest: Codable, Hashable, Sendable {
+public struct MockModifierWriteRequest: Codable, Hashable, Sendable {
     public var id: String?
     public var path: String
     public var method: String
@@ -78,8 +78,8 @@ public struct ModifierWriteRequest: Codable, Hashable, Sendable {
         self.transformerCode = transformerCode
     }
 
-    public func asModel(id: String, enabled: Bool = false) -> ModifierModel {
-        ModifierModel(id: id,
+    public func asModel(id: String, enabled: Bool = false) -> MockModifierModel {
+        MockModifierModel(id: id,
                       path: path,
                       method: method,
                       scenario: scenario,

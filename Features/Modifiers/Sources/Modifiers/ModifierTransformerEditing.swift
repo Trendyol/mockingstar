@@ -1,13 +1,13 @@
 import Foundation
 
-enum ModifierJSONPathComponent: Equatable {
+enum MockModifierJSONPathComponent: Equatable {
     case key(String)
     case index(Int)
 }
 
-enum ModifierJSONPath {
+enum MockModifierJSONPath {
     struct Resolved: Equatable {
-        let path: [ModifierJSONPathComponent]
+        let path: [MockModifierJSONPathComponent]
         let literal: String
     }
 
@@ -25,7 +25,7 @@ enum ModifierJSONPath {
     }
 
     private struct Entry {
-        let path: [ModifierJSONPathComponent]
+        let path: [MockModifierJSONPathComponent]
         let range: Range<Int>
         let literal: String
     }
@@ -52,7 +52,7 @@ enum ModifierJSONPath {
             }
         }
 
-        func scanValue(path: [ModifierJSONPathComponent]) {
+        func scanValue(path: [MockModifierJSONPathComponent]) {
             skipWhitespace()
             guard let c = peek() else { return }
             let start = pos
@@ -71,7 +71,7 @@ enum ModifierJSONPath {
             entries.append(Entry(path: path, range: range, literal: literal))
         }
 
-        private func scanObject(path: [ModifierJSONPathComponent]) {
+        private func scanObject(path: [MockModifierJSONPathComponent]) {
             pos += 1 // {
             skipWhitespace()
             if peek() == 0x7D { pos += 1; return }
@@ -95,7 +95,7 @@ enum ModifierJSONPath {
             }
         }
 
-        private func scanArray(path: [ModifierJSONPathComponent]) {
+        private func scanArray(path: [MockModifierJSONPathComponent]) {
             pos += 1 // [
             skipWhitespace()
             if peek() == 0x5D { pos += 1; return }
@@ -147,13 +147,13 @@ enum ModifierJSONPath {
     }
 }
 
-enum ModifierTransformerEditor {
+enum MockModifierTransformerEditor {
     struct Result: Equatable {
         let code: String
         let focusLine: Int?
     }
 
-    static func lhs(for path: [ModifierJSONPathComponent]) -> String {
+    static func lhs(for path: [MockModifierJSONPathComponent]) -> String {
         var result = "res.body"
         for component in path {
             switch component {
@@ -167,7 +167,7 @@ enum ModifierTransformerEditor {
     }
 
     static func applyAssignment(
-        path: [ModifierJSONPathComponent],
+        path: [MockModifierJSONPathComponent],
         valueLiteral: String,
         to code: String
     ) -> Result {

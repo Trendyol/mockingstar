@@ -2,25 +2,25 @@ import CommonKit
 import Foundation
 import JavaScriptCore
 
-enum ModifierParseError: Error, Equatable {
+enum MockModifierParseError: Error, Equatable {
     case invalidJSContext
     case missingRequiredField(String)
     case syntaxError(String)
     case invalidModifierId(String)
 }
 
-final class ModifierParser {
-    private let logger = Logger(category: "ModifierParser")
+final class MockModifierParser {
+    private let logger = Logger(category: "MockModifierParser")
 
     /// Parses modifier metadata from JavaScript, deriving `id` from `filenameId`.
     ///
     /// Legacy files may still contain `var id`, `var enabled`, and `var priority`. Those values are
     /// ignored for identity/activation (`id` comes from the filename; `enabled` defaults to false
     /// here). `priority` is mapped to `order` when `order` is absent.
-    func parse(jsCode: String, filenameId: String) throws -> ModifierModel {
+    func parse(jsCode: String, filenameId: String) throws -> MockModifierModel {
         try Self.validateModifierId(filenameId)
 
-        guard let context = JSContext() else { throw ModifierParseError.invalidJSContext }
+        guard let context = JSContext() else { throw MockModifierParseError.invalidJSContext }
 
         var syntaxErrorMessage: String?
         context.exceptionHandler = { _, exception in
@@ -30,7 +30,7 @@ final class ModifierParser {
         context.evaluateScript(jsCode)
         if let syntaxErrorMessage {
             logger.error("Modifier parse syntax error: \(syntaxErrorMessage)")
-            throw ModifierParseError.syntaxError(syntaxErrorMessage)
+            throw MockModifierParseError.syntaxError(syntaxErrorMessage)
         }
 
         func read(_ key: String) -> JSValue? {
@@ -39,11 +39,11 @@ final class ModifierParser {
         }
 
         guard let path = read("path")?.toString(), !path.isEmpty else {
-            throw ModifierParseError.missingRequiredField("path")
+            throw MockModifierParseError.missingRequiredField("path")
         }
 
         guard let method = read("method")?.toString(), !method.isEmpty else {
-            throw ModifierParseError.missingRequiredField("method")
+            throw MockModifierParseError.missingRequiredField("method")
         }
 
         func optionalString(_ key: String) -> String? {
@@ -60,7 +60,7 @@ final class ModifierParser {
             orderValue = 1
         }
 
-        return ModifierModel(
+        return MockModifierModel(
             id: filenameId,
             path: path,
             method: method.uppercased(),
@@ -73,7 +73,7 @@ final class ModifierParser {
     }
 
     /// Serializes a canonical on-disk representation without `id`, `enabled`, or legacy `priority`.
-    func serialize(_ model: ModifierModel) -> String {
+    func serialize(_ model: MockModifierModel) -> String {
         let transformerBody = Self.extractTransformerBody(from: model.transformerCode)
         return """
         // metadata
@@ -104,7 +104,7 @@ final class ModifierParser {
               !id.contains("\0"),
               id != "." ,
               id != ".." else {
-            throw ModifierParseError.invalidModifierId(id)
+            throw MockModifierParseError.invalidModifierId(id)
         }
     }
 

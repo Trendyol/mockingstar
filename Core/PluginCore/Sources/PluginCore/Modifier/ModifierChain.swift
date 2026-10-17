@@ -1,11 +1,11 @@
 import CommonKit
 import Foundation
 
-enum ModifierChainError: Error {
+enum MockModifierChainError: Error {
     case chainDeallocated
 }
 
-public enum ModifierExecutionMode: String, Sendable {
+public enum MockModifierExecutionMode: String, Sendable {
     case runtime
     case preview
 }
@@ -13,19 +13,19 @@ public enum ModifierExecutionMode: String, Sendable {
 /// Orchestrates an ordered list of already-matched modifiers around a terminal handler.
 ///
 /// Modifiers are expected to be pre-sorted (order asc, then id asc) by the caller
-/// (see `ModifierMatcher`). Index 0 is the outermost transformer; when the index reaches
+/// (see `MockModifierMatcher`). Index 0 is the outermost transformer; when the index reaches
 /// `modifiers.count`, `proceed` invokes `terminal` — the existing mock/live resolution.
-public final class ModifierChain {
-    private let modifiers: [ModifierModel]
-    private let executionMode: ModifierExecutionMode
+public final class MockModifierChain {
+    private let modifiers: [MockModifierModel]
+    private let executionMode: MockModifierExecutionMode
     private let terminal: (URLRequest) async throws -> HTTPResult
-    private let executor = ModifierExecutor()
-    private let logger = Logger(category: "ModifierChain")
+    private let executor = MockModifierExecutor()
+    private let logger = Logger(category: "MockModifierChain")
     private let lock = NSLock()
     private var index = 0
 
-    public init(modifiers: [ModifierModel],
-                executionMode: ModifierExecutionMode = .runtime,
+    public init(modifiers: [MockModifierModel],
+                executionMode: MockModifierExecutionMode = .runtime,
                 terminal: @escaping (URLRequest) async throws -> HTTPResult) {
         self.modifiers = modifiers
         self.executionMode = executionMode
@@ -47,7 +47,7 @@ public final class ModifierChain {
             executionMode: executionMode
         ) { [weak self] innerRequest in
             guard let self else {
-                throw ModifierChainError.chainDeallocated
+                throw MockModifierChainError.chainDeallocated
             }
 
             let semaphore = DispatchSemaphore(value: 0)

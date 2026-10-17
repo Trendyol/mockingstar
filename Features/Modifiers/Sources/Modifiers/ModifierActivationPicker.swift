@@ -1,22 +1,22 @@
 import CommonKit
 import SwiftUI
 
-struct ModifierActivationPicker: View {
-    let selection: ModifierPreviewSource?
-    let onChange: (ModifierPreviewSource?) -> Void
+struct MockModifierActivationPicker: View {
+    let selection: MockModifierPreviewSource?
+    let onChange: (MockModifierPreviewSource?) -> Void
 
     var body: some View {
         Picker("", selection: binding) {
-            Text("Off").tag(ModifierPreviewSource?.none)
-            Text("Mock").tag(ModifierPreviewSource?.some(.mock))
-            Text("Live").tag(ModifierPreviewSource?.some(.live))
+            Text("Off").tag(MockModifierPreviewSource?.none)
+            Text("Mock").tag(MockModifierPreviewSource?.some(.mock))
+            Text("Live").tag(MockModifierPreviewSource?.some(.live))
         }
         .labelsHidden()
         .pickerStyle(.menu)
         .fixedSize()
     }
 
-    private var binding: Binding<ModifierPreviewSource?> {
+    private var binding: Binding<MockModifierPreviewSource?> {
         Binding(
             get: { selection },
             set: { onChange($0) }

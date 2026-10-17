@@ -1,11 +1,11 @@
 import XCTest
 @testable import MockingStarCore
 
-final class ModifierActivationStoreTests: XCTestCase {
-    private var store: ModifierActivationStore!
+final class MockModifierActivationStoreTests: XCTestCase {
+    private var store: MockModifierActivationStore!
 
     override func setUp() async throws {
-        store = ModifierActivationStore()
+        store = MockModifierActivationStore()
     }
 
     func test_replaceActiveIds_ReturnsDiffAndIsolatesDevices() async {

@@ -4,9 +4,9 @@ import XCTest
 @testable import Modifiers
 
 @MainActor
-final class ModifierCreateViewModelTests: XCTestCase {
+final class MockModifierCreateViewModelTests: XCTestCase {
     func test_mockSeed_PrefillsMetadataAndPreview() {
-        let seed = ModifierCreationSeed(
+        let seed = MockModifierCreationSeed(
             mockId: "mock-1",
             url: "https://example.com/cart",
             path: "/cart",
@@ -16,9 +16,9 @@ final class ModifierCreateViewModelTests: XCTestCase {
             requestBody: "{\"id\":1}"
         )
 
-        let sut = ModifierCreateViewModel(
+        let sut = MockModifierCreateViewModel(
             seed: seed,
-            apiClient: MockModifierAPIClient(),
+            apiClient: FakeMockModifierAPIClient(),
             notificationManager: MockNotificationManager()
         )
 
@@ -29,8 +29,8 @@ final class ModifierCreateViewModelTests: XCTestCase {
     }
 
     func test_create_SendsInactivePassThroughModifierAndReturnsSeed() async {
-        let api = MockModifierAPIClient()
-        let seed = ModifierCreationSeed(
+        let api = FakeMockModifierAPIClient()
+        let seed = MockModifierCreationSeed(
             mockId: "mock-1",
             url: "https://real.example/cart?x=1",
             path: "/cart",
@@ -38,7 +38,7 @@ final class ModifierCreateViewModelTests: XCTestCase {
             requestHeadersJSON: "{\"Accept\":\"application/json\"}",
             requestBody: "{\"id\":1}"
         )
-        let sut = ModifierCreateViewModel(
+        let sut = MockModifierCreateViewModel(
             seed: seed,
             apiClient: api,
             notificationManager: MockNotificationManager()

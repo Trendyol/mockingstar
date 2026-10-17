@@ -18,12 +18,12 @@ public struct MockListView: View {
     @AppStorage("isFirstOpen") private var isFirstOpen: Bool = true
     @State private var isSearchActive: Bool = false
     @State private var shouldShowMockImportView: Bool = false
-    private let onCreateModifier: (ModifierCreationSeed) -> Void
+    private let onCreateModifier: (MockModifierCreationSeed) -> Void
     private let deeplinkStore = DeeplinkStore.shared
     
     public init(
         viewModel: MockListViewModel,
-        onCreateModifier: @escaping (ModifierCreationSeed) -> Void = { _ in }
+        onCreateModifier: @escaping (MockModifierCreationSeed) -> Void = { _ in }
     ) {
         self.viewModel = viewModel
         self.onCreateModifier = onCreateModifier
@@ -208,7 +208,7 @@ public struct MockListView: View {
                     Button("Create Modifier") {
                         guard let id = selections.first,
                               let mock = viewModel.mock(id: id) else { return }
-                        onCreateModifier(ModifierCreationSeed(mock: mock))
+                        onCreateModifier(MockModifierCreationSeed(mock: mock))
                     }
                     Divider()
                 }

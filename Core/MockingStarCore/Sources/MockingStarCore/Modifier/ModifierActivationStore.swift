@@ -10,8 +10,8 @@ import Foundation
 /// Devices that have never received an explicit `PUT /modifiers` inherit the default (`""`) set so
 /// UI-activated modifiers apply to real clients that send a `DeviceId` / `deviceId` header.
 /// Once a device has been configured (even with `[]`), that explicit set wins and no longer falls back.
-public actor ModifierActivationStore {
-    public static let shared = ModifierActivationStore()
+public actor MockModifierActivationStore {
+    public static let shared = MockModifierActivationStore()
 
     public struct ActivationDiff: Equatable, Sendable {
         public let enabledIds: [String]
@@ -23,11 +23,11 @@ public actor ModifierActivationStore {
         }
     }
 
-    private var activeSources: [String: [String: [String: ModifierPreviewSource]]] = [:]
+    private var activeSources: [String: [String: [String: MockModifierPreviewSource]]] = [:]
 
     public init() {}
 
-    public func activeModifierSources(domain: String, deviceId: String) -> [String: ModifierPreviewSource] {
+    public func activeModifierSources(domain: String, deviceId: String) -> [String: MockModifierPreviewSource] {
         let key = normalizedDeviceId(deviceId)
         let domainMap = activeSources[domain] ?? [:]
         if let specific = domainMap[key] {
@@ -41,7 +41,7 @@ public actor ModifierActivationStore {
         Set(activeModifierSources(domain: domain, deviceId: deviceId).keys)
     }
 
-    public func source(domain: String, deviceId: String, id: String) -> ModifierPreviewSource? {
+    public func source(domain: String, deviceId: String, id: String) -> MockModifierPreviewSource? {
         activeModifierSources(domain: domain, deviceId: deviceId)[id]
     }
 
@@ -51,7 +51,7 @@ public actor ModifierActivationStore {
 
     /// Atomically replaces the active set for `(domain, deviceId)`.
     @discardableResult
-    public func replaceActiveSources(domain: String, deviceId: String, sources: [String: ModifierPreviewSource]) -> ActivationDiff {
+    public func replaceActiveSources(domain: String, deviceId: String, sources: [String: MockModifierPreviewSource]) -> ActivationDiff {
         let key = normalizedDeviceId(deviceId)
         let previous = Set(activeSources[domain]?[key]?.keys ?? [:].keys)
         if activeSources[domain] == nil {
@@ -67,7 +67,7 @@ public actor ModifierActivationStore {
 
     @discardableResult
     public func replaceActiveIds(domain: String, deviceId: String, ids: Set<String>) -> ActivationDiff {
-        var sources: [String: ModifierPreviewSource] = [:]
+        var sources: [String: MockModifierPreviewSource] = [:]
         for id in ids { sources[id] = .live }
         return replaceActiveSources(domain: domain, deviceId: deviceId, sources: sources)
     }
@@ -87,7 +87,7 @@ public actor ModifierActivationStore {
         return touchedDevices.sorted()
     }
 
-    public struct ModifierRenameMigration: Equatable, Sendable {
+    public struct MockModifierRenameMigration: Equatable, Sendable {
         public let domain: String
         public let oldId: String
         public let newId: String
@@ -98,7 +98,7 @@ public actor ModifierActivationStore {
         domain: String,
         from oldId: String,
         to newId: String
-    ) -> ModifierRenameMigration {
+    ) -> MockModifierRenameMigration {
         guard var domainMap = activeSources[domain] else {
             return .init(domain: domain, oldId: oldId, newId: newId, affectedDeviceIds: [])
         }
@@ -119,7 +119,7 @@ public actor ModifierActivationStore {
         )
     }
 
-    public func commitModifierRename(_ migration: ModifierRenameMigration) {
+    public func commitModifierRename(_ migration: MockModifierRenameMigration) {
         guard var domainMap = activeSources[migration.domain] else { return }
         for deviceId in migration.affectedDeviceIds {
             guard var sources = domainMap[deviceId] else { continue }
@@ -129,7 +129,7 @@ public actor ModifierActivationStore {
         activeSources[migration.domain] = domainMap
     }
 
-    public func rollbackModifierRename(_ migration: ModifierRenameMigration) {
+    public func rollbackModifierRename(_ migration: MockModifierRenameMigration) {
         guard var domainMap = activeSources[migration.domain] else { return }
         for deviceId in migration.affectedDeviceIds {
             guard var sources = domainMap[deviceId] else { continue }

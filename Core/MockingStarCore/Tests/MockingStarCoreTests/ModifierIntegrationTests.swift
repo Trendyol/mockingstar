@@ -6,10 +6,10 @@ import CommonKitTestSupport
 import Server
 
 /// End-to-end tests for `MockingStarCore.handle(request:flags:)` modifier wiring.
-final class ModifierIntegrationTests: XCTestCase {
+final class MockModifierIntegrationTests: XCTestCase {
     private var tempWorkspaceURL: URL!
     private var previousWorkspacesData: Data?
-    private var activationStore: ModifierActivationStore!
+    private var activationStore: MockModifierActivationStore!
     private var mockURLSession: MockURLSession!
     private var core: MockingStarCore!
 
@@ -19,12 +19,12 @@ final class ModifierIntegrationTests: XCTestCase {
         previousWorkspacesData = UserDefaults.standard.data(forKey: "workspaces")
 
         tempWorkspaceURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("ModifierIntegrationTests-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("MockModifierIntegrationTests-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: tempWorkspaceURL, withIntermediateDirectories: true)
 
         setWorkspace(path: tempWorkspaceURL.path())
 
-        activationStore = ModifierActivationStore()
+        activationStore = MockModifierActivationStore()
         mockURLSession = MockURLSession()
         core = MockingStarCore(urlSession: mockURLSession, activationStore: activationStore)
     }
@@ -43,7 +43,7 @@ final class ModifierIntegrationTests: XCTestCase {
     }
 
     private func setWorkspace(path: String) {
-        let workspace = Workspace(name: "ModifierIntegrationTests", path: path, bookmark: Data())
+        let workspace = Workspace(name: "MockModifierIntegrationTests", path: path, bookmark: Data())
         workspace.isSelected = true
         let data = try? JSONEncoder().encode([workspace])
         UserDefaults.standard.setValue(data, forKey: "workspaces")
@@ -215,7 +215,7 @@ final class ModifierIntegrationTests: XCTestCase {
                 .init(id: "missing", source: .live)
             ])
             XCTFail("expected unknownIds")
-        } catch ServerModifierError.unknownIds(let ids) {
+        } catch ServerMockModifierError.unknownIds(let ids) {
             XCTAssertEqual(ids, ["missing"])
         }
     }
@@ -319,7 +319,7 @@ final class ModifierIntegrationTests: XCTestCase {
         await activationStore.replaceActiveIds(domain: domain, deviceId: "A", ids: ["old"])
         await activationStore.replaceActiveIds(domain: domain, deviceId: "B", ids: ["old"])
 
-        let model = ModifierModel(
+        let model = MockModifierModel(
             id: "new",
             path: "/cart",
             method: "GET",

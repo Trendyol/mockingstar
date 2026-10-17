@@ -3,7 +3,7 @@ import XCTest
 import CommonKit
 import CommonKitTestSupport
 
-final class ModifierOnDemandStoreTests: XCTestCase {
+final class MockModifierOnDemandStoreTests: XCTestCase {
     func test_getIds_DoesNotEnumerateFolder_AndScalesWithRequestedIds() throws {
         let fileManager = MockFileManager()
         let fileUrlBuilder = MockFileUrlBuilder()
@@ -16,7 +16,7 @@ final class ModifierOnDemandStoreTests: XCTestCase {
         function transformer(req, chain) { return chain.proceed(req) }
         """
 
-        let store = ModifierStore(domain: "Dev", fileManager: fileManager, fileUrlBuilder: fileUrlBuilder)
+        let store = MockModifierStore(domain: "Dev", fileManager: fileManager, fileUrlBuilder: fileUrlBuilder)
         let models = try store.get(ids: ["a", "b", "c"])
 
         XCTAssertEqual(models.count, 3)

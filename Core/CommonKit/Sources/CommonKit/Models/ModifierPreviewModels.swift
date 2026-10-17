@@ -1,11 +1,11 @@
 import Foundation
 
-public enum ModifierPreviewSource: String, Codable, Hashable, Sendable {
+public enum MockModifierPreviewSource: String, Codable, Hashable, Sendable {
     case mock
     case live
 }
 
-public struct ModifierPreviewHTTPRequest: Codable, Hashable, Sendable {
+public struct MockModifierPreviewHTTPRequest: Codable, Hashable, Sendable {
     public var url: URL
     public var method: String
     public var scenario: String?
@@ -27,17 +27,17 @@ public struct ModifierPreviewHTTPRequest: Codable, Hashable, Sendable {
     }
 }
 
-public struct ModifierPreviewRequest: Codable, Hashable, Sendable {
+public struct MockModifierPreviewRequest: Codable, Hashable, Sendable {
     public var currentModifierId: String
-    public var modifier: ModifierWriteRequest
-    public var request: ModifierPreviewHTTPRequest
-    public var source: ModifierPreviewSource
+    public var modifier: MockModifierWriteRequest
+    public var request: MockModifierPreviewHTTPRequest
+    public var source: MockModifierPreviewSource
 
     public init(
         currentModifierId: String,
-        modifier: ModifierWriteRequest,
-        request: ModifierPreviewHTTPRequest,
-        source: ModifierPreviewSource
+        modifier: MockModifierWriteRequest,
+        request: MockModifierPreviewHTTPRequest,
+        source: MockModifierPreviewSource
     ) {
         self.currentModifierId = currentModifierId
         self.modifier = modifier
@@ -46,7 +46,7 @@ public struct ModifierPreviewRequest: Codable, Hashable, Sendable {
     }
 }
 
-public struct ModifierPreviewResponse: Codable, Hashable, Sendable {
+public struct MockModifierPreviewResponse: Codable, Hashable, Sendable {
     public var status: Int
     public var headers: [String: String]
     public var bodyBase64: String
@@ -69,7 +69,7 @@ public struct ModifierPreviewResponse: Codable, Hashable, Sendable {
     }
 }
 
-public struct ModifierAPIErrorResponse: Codable, Hashable, Sendable {
+public struct MockModifierAPIErrorResponse: Codable, Hashable, Sendable {
     public var code: String
     public var message: String
 

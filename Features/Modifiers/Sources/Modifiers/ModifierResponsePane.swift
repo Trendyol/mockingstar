@@ -1,8 +1,8 @@
 import Editor
 import SwiftUI
 
-struct ModifierResponsePane: View {
-    @Bindable var viewModel: ModifierDetailViewModel
+struct MockModifierResponsePane: View {
+    @Bindable var viewModel: MockModifierDetailViewModel
 
     var body: some View {
         VStack(spacing: 0) {

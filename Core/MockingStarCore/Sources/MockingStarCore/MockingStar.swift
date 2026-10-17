@@ -28,18 +28,18 @@ public final class MockingStarCore {
     private let pluginActor = PluginCoreActor.shared
     private let logger = Logger(category: "MockingStarCore")
     private let urlSession: URLSessionInterface
-    private let activationStore: ModifierActivationStore
-    private let previewService: ModifierPreviewService
+    private let activationStore: MockModifierActivationStore
+    private let previewService: MockModifierPreviewService
 
     public init(
         urlSession: URLSessionInterface = URLSession.shared,
-        activationStore: ModifierActivationStore = .shared,
+        activationStore: MockModifierActivationStore = .shared,
         fileManager: FileManagerInterface = FileManager.default,
         fileUrlBuilder: FileUrlBuilderInterface = FileUrlBuilder()
     ) {
         self.urlSession = urlSession
         self.activationStore = activationStore
-        previewService = ModifierPreviewService(
+        previewService = MockModifierPreviewService(
             activationStore: activationStore,
             storedMockLoader: StoredMockLoader(
                 fileManager: fileManager,
@@ -77,9 +77,9 @@ public final class MockingStarCore {
             return try await originalHandle(request: request, flags: flags)
         }
 
-        let store = await ModifierStoreActor.shared.store(for: flags.domain)
+        let store = await MockModifierStoreActor.shared.store(for: flags.domain)
         let activeModifiers = (try? store.get(ids: Array(activeIds))) ?? []
-        let matchedModifiers = ModifierMatcher().match(modifiers: activeModifiers,
+        let matchedModifiers = MockModifierMatcher().match(modifiers: activeModifiers,
                                                        path: requestPath,
                                                        method: requestMethod,
                                                        scenario: flags.scenario)
@@ -124,7 +124,7 @@ public final class MockingStarCore {
             "terminal": .string(terminalIsMock ? "mock" : "live")
         ])
 
-        let chain = ModifierChain(modifiers: matchedModifiers) { chainRequest in
+        let chain = MockModifierChain(modifiers: matchedModifiers) { chainRequest in
             let result = try await self.originalHandle(request: chainRequest, flags: terminalFlags)
             return HTTPResult(status: result.status, body: result.body, headers: result.headers)
         }
@@ -667,10 +667,10 @@ extension MockingStarCore: ScenarioHandlerInterface {
     }
 }
 
-// MARK: - ServerModifierHandlerInterface
-extension MockingStarCore: ServerModifierHandlerInterface {
-    public func listModifiers(domain: String, deviceId: String) async throws -> [ModifierModel] {
-        let models = try await ModifierStoreActor.shared.store(for: domain).list()
+// MARK: - ServerMockModifierHandlerInterface
+extension MockingStarCore: ServerMockModifierHandlerInterface {
+    public func listModifiers(domain: String, deviceId: String) async throws -> [MockModifierModel] {
+        let models = try await MockModifierStoreActor.shared.store(for: domain).list()
         let sources = await activationStore.activeModifierSources(domain: domain, deviceId: deviceId)
         return models.map { model in
             var copy = model
@@ -680,8 +680,8 @@ extension MockingStarCore: ServerModifierHandlerInterface {
         }
     }
 
-    public func getModifier(domain: String, id: String, deviceId: String) async throws -> ModifierModel? {
-        guard var model = try await ModifierStoreActor.shared.store(for: domain).get(id: id) else {
+    public func getModifier(domain: String, id: String, deviceId: String) async throws -> MockModifierModel? {
+        guard var model = try await MockModifierStoreActor.shared.store(for: domain).get(id: id) else {
             return nil
         }
         let source = await activationStore.source(domain: domain, deviceId: deviceId, id: id)
@@ -690,9 +690,9 @@ extension MockingStarCore: ServerModifierHandlerInterface {
         return model
     }
 
-    public func createModifier(domain: String, model: ModifierModel) async throws {
+    public func createModifier(domain: String, model: MockModifierModel) async throws {
         do {
-            try await ModifierStoreActor.shared.store(for: domain).create(model)
+            try await MockModifierStoreActor.shared.store(for: domain).create(model)
             logger.info("modifier created", metadata: [
                 "modifierId": .string(model.id),
                 "domain": .string(domain)
@@ -705,9 +705,9 @@ extension MockingStarCore: ServerModifierHandlerInterface {
     public func updateModifier(
         domain: String,
         currentId: String,
-        model: ModifierModel
+        model: MockModifierModel
     ) async throws {
-        let store = await ModifierStoreActor.shared.store(for: domain)
+        let store = await MockModifierStoreActor.shared.store(for: domain)
         guard currentId != model.id else {
             do {
                 try store.update(currentId: currentId, with: model)
@@ -739,7 +739,7 @@ extension MockingStarCore: ServerModifierHandlerInterface {
 
     public func deleteModifier(domain: String, id: String) async throws {
         do {
-            try await ModifierStoreActor.shared.store(for: domain).delete(id: id)
+            try await MockModifierStoreActor.shared.store(for: domain).delete(id: id)
             let devices = await activationStore.removeModifierId(domain: domain, id: id)
             logger.info("modifier deleted", metadata: [
                 "modifierId": .string(id),
@@ -753,27 +753,27 @@ extension MockingStarCore: ServerModifierHandlerInterface {
 
     private func mapModifierStoreError(_ error: Error) -> Error {
         switch error {
-        case ModifierStoreError.alreadyExists(let id):
-            ServerModifierError.alreadyExists(id)
-        case ModifierStoreError.notFound(let id):
-            ServerModifierError.notFound(id)
-        case ModifierStoreError.invalidId(let id):
-            ServerModifierError.invalidId(id)
+        case MockModifierStoreError.alreadyExists(let id):
+            ServerMockModifierError.alreadyExists(id)
+        case MockModifierStoreError.notFound(let id):
+            ServerMockModifierError.notFound(id)
+        case MockModifierStoreError.invalidId(let id):
+            ServerMockModifierError.invalidId(id)
         default:
             error
         }
     }
 
-    public func setActiveModifiers(domain: String, deviceId: String, activations: [ModifierActivation]) async throws {
-        var sources: [String: ModifierPreviewSource] = [:]
+    public func setActiveModifiers(domain: String, deviceId: String, activations: [MockModifierActivation]) async throws {
+        var sources: [String: MockModifierPreviewSource] = [:]
         for activation in activations {
             guard sources[activation.id] == nil else {
-                throw ServerModifierError.duplicateIds
+                throw ServerMockModifierError.duplicateIds
             }
             sources[activation.id] = activation.source
         }
 
-        let store = await ModifierStoreActor.shared.store(for: domain)
+        let store = await MockModifierStoreActor.shared.store(for: domain)
         var missing: [String] = []
         for id in sources.keys {
             if try store.get(id: id) == nil {
@@ -781,7 +781,7 @@ extension MockingStarCore: ServerModifierHandlerInterface {
             }
         }
         guard missing.isEmpty else {
-            throw ServerModifierError.unknownIds(missing.sorted())
+            throw ServerMockModifierError.unknownIds(missing.sorted())
         }
 
         let diff = await activationStore.replaceActiveSources(domain: domain,
@@ -806,10 +806,10 @@ extension MockingStarCore: ServerModifierHandlerInterface {
     public func previewModifier(
         domain: String,
         deviceId: String,
-        request: ModifierPreviewRequest
-    ) async throws -> ModifierPreviewResponse {
+        request: MockModifierPreviewRequest
+    ) async throws -> MockModifierPreviewResponse {
 #if os(Linux)
-        throw ServerModifierError.previewExecutionFailed(
+        throw ServerMockModifierError.previewExecutionFailed(
             "JavaScript modifier preview is not supported on Linux"
         )
 #else
@@ -820,7 +820,7 @@ extension MockingStarCore: ServerModifierHandlerInterface {
                 preview: request
             ) { [weak self] liveRequest in
                 guard let self else {
-                    throw ModifierPreviewError.liveRequestFailed("Core deallocated")
+                    throw MockModifierPreviewError.liveRequestFailed("Core deallocated")
                 }
                 let result = try await self.proxyRequest(
                     request: liveRequest,
@@ -832,18 +832,18 @@ extension MockingStarCore: ServerModifierHandlerInterface {
                     headers: result.headers
                 )
             }
-        } catch ModifierPreviewError.invalidRequest(let message) {
-            throw ServerModifierError.previewInvalidRequest(message)
-        } catch ModifierPreviewError.currentModifierNotFound(let id) {
-            throw ServerModifierError.previewNotFound(id)
-        } catch ModifierPreviewError.mockNotFound(let id) {
-            throw ServerModifierError.previewNotFound(id)
-        } catch ModifierPreviewError.conflict(let id) {
-            throw ServerModifierError.previewConflict(id)
-        } catch ModifierPreviewError.executionFailed(let message) {
-            throw ServerModifierError.previewExecutionFailed(message)
-        } catch ModifierPreviewError.liveRequestFailed(let message) {
-            throw ServerModifierError.previewLiveRequestFailed(message)
+        } catch MockModifierPreviewError.invalidRequest(let message) {
+            throw ServerMockModifierError.previewInvalidRequest(message)
+        } catch MockModifierPreviewError.currentModifierNotFound(let id) {
+            throw ServerMockModifierError.previewNotFound(id)
+        } catch MockModifierPreviewError.mockNotFound(let id) {
+            throw ServerMockModifierError.previewNotFound(id)
+        } catch MockModifierPreviewError.conflict(let id) {
+            throw ServerMockModifierError.previewConflict(id)
+        } catch MockModifierPreviewError.executionFailed(let message) {
+            throw ServerMockModifierError.previewExecutionFailed(message)
+        } catch MockModifierPreviewError.liveRequestFailed(let message) {
+            throw ServerMockModifierError.previewLiveRequestFailed(message)
         }
 #endif
     }

@@ -6,10 +6,10 @@ import CommonKitTestSupport
 import Server
 
 /// End-to-end tests for side-effect-free draft-chain preview.
-final class ModifierPreviewTests: XCTestCase {
+final class MockModifierPreviewTests: XCTestCase {
     private var tempWorkspaceURL: URL!
     private var previousWorkspacesData: Data?
-    private var activationStore: ModifierActivationStore!
+    private var activationStore: MockModifierActivationStore!
     private var mockURLSession: MockURLSession!
     private var core: MockingStarCore!
 
@@ -19,12 +19,12 @@ final class ModifierPreviewTests: XCTestCase {
         previousWorkspacesData = UserDefaults.standard.data(forKey: "workspaces")
 
         tempWorkspaceURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("ModifierPreviewTests-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("MockModifierPreviewTests-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: tempWorkspaceURL, withIntermediateDirectories: true)
 
         setWorkspace(path: tempWorkspaceURL.path())
 
-        activationStore = ModifierActivationStore()
+        activationStore = MockModifierActivationStore()
         mockURLSession = MockURLSession()
         core = MockingStarCore(urlSession: mockURLSession, activationStore: activationStore)
     }
@@ -43,7 +43,7 @@ final class ModifierPreviewTests: XCTestCase {
     }
 
     private func setWorkspace(path: String) {
-        let workspace = Workspace(name: "ModifierPreviewTests", path: path, bookmark: Data())
+        let workspace = Workspace(name: "MockModifierPreviewTests", path: path, bookmark: Data())
         workspace.isSelected = true
         let data = try? JSONEncoder().encode([workspace])
         UserDefaults.standard.setValue(data, forKey: "workspaces")
@@ -123,10 +123,10 @@ final class ModifierPreviewTests: XCTestCase {
         order: Int = 1,
         sampleMockRequestId: String? = nil,
         transformerCode: String,
-        source: ModifierPreviewSource,
+        source: MockModifierPreviewSource,
         method: String = "GET"
-    ) -> ModifierPreviewRequest {
-        ModifierPreviewRequest(
+    ) -> MockModifierPreviewRequest {
+        MockModifierPreviewRequest(
             currentModifierId: currentModifierId,
             modifier: .init(
                 id: modifierId,
@@ -383,7 +383,7 @@ final class ModifierPreviewTests: XCTestCase {
         do {
             _ = try await core.previewModifier(domain: domain, deviceId: "", request: request)
             XCTFail("expected previewConflict")
-        } catch ServerModifierError.previewConflict(let id) {
+        } catch ServerMockModifierError.previewConflict(let id) {
             XCTAssertEqual(id, "existing")
         }
     }
@@ -408,7 +408,7 @@ final class ModifierPreviewTests: XCTestCase {
         do {
             _ = try await core.previewModifier(domain: domain, deviceId: "", request: request)
             XCTFail("expected previewInvalidRequest")
-        } catch ServerModifierError.previewInvalidRequest(let message) {
+        } catch ServerMockModifierError.previewInvalidRequest(let message) {
             XCTAssertTrue(message.contains("does not match"))
         }
     }
@@ -432,7 +432,7 @@ final class ModifierPreviewTests: XCTestCase {
         do {
             _ = try await core.previewModifier(domain: domain, deviceId: "", request: request)
             XCTFail("expected previewExecutionFailed")
-        } catch ServerModifierError.previewExecutionFailed {
+        } catch ServerMockModifierError.previewExecutionFailed {
             // expected
         }
     }
@@ -472,7 +472,7 @@ final class ModifierPreviewTests: XCTestCase {
         do {
             _ = try await core.previewModifier(domain: domain, deviceId: "", request: failureRequest)
             XCTFail("expected failure")
-        } catch ServerModifierError.previewExecutionFailed {
+        } catch ServerMockModifierError.previewExecutionFailed {
             // expected
         }
 

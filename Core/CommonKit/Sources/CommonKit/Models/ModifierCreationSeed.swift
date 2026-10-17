@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ModifierCreationSeed: Hashable, Sendable {
+public struct MockModifierCreationSeed: Hashable, Sendable {
     public var mockId: String?
     public var url: String
     public var path: String
@@ -37,5 +37,5 @@ public struct ModifierCreationSeed: Hashable, Sendable {
         requestBody = mock.requestBody
     }
 
-    public static let empty = ModifierCreationSeed()
+    public static let empty = MockModifierCreationSeed()
 }

@@ -3,14 +3,14 @@ import Foundation
 import XCTest
 @testable import PluginCore
 
-final class ModifierChainTests: XCTestCase {
+final class MockModifierChainTests: XCTestCase {
     private func request(url: String = "https://example.com/x", method: String = "GET") -> URLRequest {
         var request = URLRequest(url: URL(string: url)!)
         request.httpMethod = method
         return request
     }
 
-    private func orderAppendingModifier(id: String, order: Int) -> ModifierModel {
+    private func orderAppendingModifier(id: String, order: Int) -> MockModifierModel {
         let code = """
         function transformer(req, chain) {
           var res = chain.proceed(req);
@@ -18,11 +18,11 @@ final class ModifierChainTests: XCTestCase {
           return res;
         }
         """
-        return ModifierModel(id: id, path: "/x", method: "GET", enabled: true, order: order, transformerCode: code)
+        return MockModifierModel(id: id, path: "/x", method: "GET", enabled: true, order: order, transformerCode: code)
     }
 
     func test_chain_ZeroModifiers_CallsTerminal() async throws {
-        let chain = ModifierChain(modifiers: []) { _ in
+        let chain = MockModifierChain(modifiers: []) { _ in
             HTTPResult(status: 200, body: Data("ok".utf8), headers: [:])
         }
 
@@ -41,7 +41,7 @@ final class ModifierChainTests: XCTestCase {
             orderAppendingModifier(id: "c", order: 3),
         ]
 
-        let chain = ModifierChain(modifiers: modifiers) { _ in
+        let chain = MockModifierChain(modifiers: modifiers) { _ in
             HTTPResult(status: 200, body: Data("{\"order\":[]}".utf8), headers: [:])
         }
 
@@ -53,7 +53,7 @@ final class ModifierChainTests: XCTestCase {
     }
 
     func test_chain_InnerModifierThrows_OuterCannotHideFailure() async throws {
-        let outer = ModifierModel(
+        let outer = MockModifierModel(
             id: "outer", path: "/x", method: "GET", order: 1,
             transformerCode: """
             function transformer(req, chain) {
@@ -63,12 +63,12 @@ final class ModifierChainTests: XCTestCase {
             }
             """
         )
-        let inner = ModifierModel(
+        let inner = MockModifierModel(
             id: "inner", path: "/x", method: "GET", order: 2,
             transformerCode: "function transformer(req, chain) { throw new Error(\"boom\"); }"
         )
 
-        let chain = ModifierChain(modifiers: [outer, inner]) { _ in
+        let chain = MockModifierChain(modifiers: [outer, inner]) { _ in
             HTTPResult(status: 200, body: Data(), headers: [:])
         }
 
@@ -82,12 +82,12 @@ final class ModifierChainTests: XCTestCase {
     }
 
     func test_chain_ModifierThrows_PropagatesError() async throws {
-        let modifier = ModifierModel(
+        let modifier = MockModifierModel(
             id: "m", path: "/x", method: "GET", order: 1,
             transformerCode: "function transformer(req, chain) { throw new Error(\"boom\"); }"
         )
 
-        let chain = ModifierChain(modifiers: [modifier]) { _ in
+        let chain = MockModifierChain(modifiers: [modifier]) { _ in
             HTTPResult(status: 200, body: Data(), headers: [:])
         }
 
@@ -100,7 +100,7 @@ final class ModifierChainTests: XCTestCase {
     }
 
     func test_chain_SingleModifier_CanReturnWithoutProceed() async throws {
-        let modifier = ModifierModel(
+        let modifier = MockModifierModel(
             id: "mock", path: "/x", method: "GET", order: 1,
             transformerCode: """
             function transformer(req, chain) {
@@ -110,7 +110,7 @@ final class ModifierChainTests: XCTestCase {
         )
 
         var terminalCalled = false
-        let chain = ModifierChain(modifiers: [modifier]) { _ in
+        let chain = MockModifierChain(modifiers: [modifier]) { _ in
             terminalCalled = true
             return HTTPResult(status: 500, body: Data(), headers: [:])
         }

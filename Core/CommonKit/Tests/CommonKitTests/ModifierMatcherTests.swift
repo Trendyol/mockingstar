@@ -1,12 +1,12 @@
 import XCTest
 @testable import CommonKit
 
-final class ModifierMatcherTests: XCTestCase {
-    private let matcher = ModifierMatcher()
+final class MockModifierMatcherTests: XCTestCase {
+    private let matcher = MockModifierMatcher()
 
     private func mod(id: String, path: String = "/users", method: String = "GET",
-                     scenario: String? = nil, order: Int = 1) -> ModifierModel {
-        ModifierModel(id: id, path: path, method: method, scenario: scenario,
+                     scenario: String? = nil, order: Int = 1) -> MockModifierModel {
+        MockModifierModel(id: id, path: path, method: method, scenario: scenario,
                       enabled: true, order: order, transformerCode: "//")
     }
 
@@ -49,9 +49,9 @@ final class ModifierMatcherTests: XCTestCase {
     }
 }
 
-private extension ModifierModel {
-    func withEnabled(_ enabled: Bool) -> ModifierModel {
-        ModifierModel(id: id, path: path, method: method, scenario: scenario,
+private extension MockModifierModel {
+    func withEnabled(_ enabled: Bool) -> MockModifierModel {
+        MockModifierModel(id: id, path: path, method: method, scenario: scenario,
                       enabled: enabled, order: order, sampleMockRequestId: sampleMockRequestId,
                       transformerCode: transformerCode)
     }

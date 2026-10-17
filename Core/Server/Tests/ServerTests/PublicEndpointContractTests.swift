@@ -18,12 +18,12 @@ final class PublicEndpointContractTests: XCTestCase {
         let text = String(data: body, encoding: .utf8) ?? ""
         XCTAssertTrue(text.contains("openapi:"))
         XCTAssertTrue(text.contains("/modifiers"))
-        XCTAssertTrue(text.contains("ModifierWriteRequest"))
+        XCTAssertTrue(text.contains("MockModifierWriteRequest"))
         XCTAssertFalse(text.contains("ModifierBulkUpdate"))
         XCTAssertTrue(text.contains("/modifiers/preview"))
-        XCTAssertTrue(text.contains("ModifierPreviewRequest"))
-        XCTAssertTrue(text.contains("ModifierPreviewResponse"))
-        XCTAssertTrue(text.contains("ModifierAPIErrorResponse"))
+        XCTAssertTrue(text.contains("MockModifierPreviewRequest"))
+        XCTAssertTrue(text.contains("MockModifierPreviewResponse"))
+        XCTAssertTrue(text.contains("MockModifierAPIErrorResponse"))
         XCTAssertTrue(text.contains("execution_failed"))
     }
 }

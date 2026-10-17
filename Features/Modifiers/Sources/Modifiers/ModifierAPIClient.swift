@@ -1,7 +1,7 @@
 import CommonKit
 import Foundation
 
-enum ModifierAPIError: LocalizedError, Equatable {
+enum MockModifierAPIError: LocalizedError, Equatable {
     case serverUnavailable
     case invalidResponse(status: Int)
     case decodingFailed
@@ -25,17 +25,17 @@ enum ModifierAPIError: LocalizedError, Equatable {
     }
 }
 
-public protocol ModifierAPIClientInterface {
-    func listModifiers(domain: String) async throws -> [ModifierModel]
-    func getModifier(domain: String, id: String) async throws -> ModifierModel
-    func createModifier(domain: String, request: ModifierWriteRequest) async throws
-    func updateModifier(domain: String, id: String, request: ModifierWriteRequest) async throws
+public protocol MockModifierAPIClientInterface {
+    func listModifiers(domain: String) async throws -> [MockModifierModel]
+    func getModifier(domain: String, id: String) async throws -> MockModifierModel
+    func createModifier(domain: String, request: MockModifierWriteRequest) async throws
+    func updateModifier(domain: String, id: String, request: MockModifierWriteRequest) async throws
     func deleteModifier(domain: String, id: String) async throws
-    func setActiveModifiers(domain: String, activations: [ModifierActivation]) async throws
-    func previewModifier(domain: String, request: ModifierPreviewRequest) async throws -> ModifierPreviewResponse
+    func setActiveModifiers(domain: String, activations: [MockModifierActivation]) async throws
+    func previewModifier(domain: String, request: MockModifierPreviewRequest) async throws -> MockModifierPreviewResponse
 }
 
-public final class ModifierAPIClient: ModifierAPIClientInterface {
+public final class MockModifierAPIClient: MockModifierAPIClientInterface {
     private let urlSession: URLSessionInterface
     private let portProvider: () -> UInt16
     private let jsonEncoder = JSONEncoder()
@@ -50,24 +50,24 @@ public final class ModifierAPIClient: ModifierAPIClientInterface {
         self.portProvider = portProvider
     }
 
-    public func listModifiers(domain: String) async throws -> [ModifierModel] {
+    public func listModifiers(domain: String) async throws -> [MockModifierModel] {
         let request = try makeRequest(path: "/modifiers", method: "GET", domain: domain)
-        return try await decode([ModifierModel].self, from: request, expected: [200])
+        return try await decode([MockModifierModel].self, from: request, expected: [200])
     }
 
-    public func getModifier(domain: String, id: String) async throws -> ModifierModel {
+    public func getModifier(domain: String, id: String) async throws -> MockModifierModel {
         let request = try makeRequest(path: "/modifiers/\(id)", method: "GET", domain: domain)
-        return try await decode(ModifierModel.self, from: request, expected: [200])
+        return try await decode(MockModifierModel.self, from: request, expected: [200])
     }
 
-    public func createModifier(domain: String, request writeRequest: ModifierWriteRequest) async throws {
+    public func createModifier(domain: String, request writeRequest: MockModifierWriteRequest) async throws {
         var request = try makeRequest(path: "/modifiers", method: "POST", domain: domain)
         request.httpBody = try jsonEncoder.encode(writeRequest)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         _ = try await perform(request, expected: [201])
     }
 
-    public func updateModifier(domain: String, id: String, request writeRequest: ModifierWriteRequest) async throws {
+    public func updateModifier(domain: String, id: String, request writeRequest: MockModifierWriteRequest) async throws {
         var request = try makeRequest(path: "/modifiers/\(id)", method: "PUT", domain: domain)
         request.httpBody = try jsonEncoder.encode(writeRequest)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -79,7 +79,7 @@ public final class ModifierAPIClient: ModifierAPIClientInterface {
         _ = try await perform(request, expected: [202])
     }
 
-    public func setActiveModifiers(domain: String, activations: [ModifierActivation]) async throws {
+    public func setActiveModifiers(domain: String, activations: [MockModifierActivation]) async throws {
         var request = try makeRequest(path: "/modifiers", method: "PUT", domain: domain)
         request.httpBody = try jsonEncoder.encode(activations)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -88,8 +88,8 @@ public final class ModifierAPIClient: ModifierAPIClientInterface {
 
     public func previewModifier(
         domain: String,
-        request previewRequest: ModifierPreviewRequest
-    ) async throws -> ModifierPreviewResponse {
+        request previewRequest: MockModifierPreviewRequest
+    ) async throws -> MockModifierPreviewResponse {
         var request = try makeRequest(
             path: "/modifiers/preview",
             method: "POST",
@@ -98,7 +98,7 @@ public final class ModifierAPIClient: ModifierAPIClientInterface {
         request.httpBody = try jsonEncoder.encode(previewRequest)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         return try await decode(
-            ModifierPreviewResponse.self,
+            MockModifierPreviewResponse.self,
             from: request,
             expected: [200]
         )
@@ -107,7 +107,7 @@ public final class ModifierAPIClient: ModifierAPIClientInterface {
     private func makeRequest(path: String, method: String, domain: String, includeDeviceHeader: Bool = true) throws -> URLRequest {
         let port = portProvider()
         guard let url = URL(string: "http://localhost:\(port)\(path)?domain=\(domain.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? domain)") else {
-            throw ModifierAPIError.serverUnavailable
+            throw MockModifierAPIError.serverUnavailable
         }
         var request = URLRequest(url: url)
         request.httpMethod = method
@@ -122,35 +122,35 @@ public final class ModifierAPIClient: ModifierAPIClientInterface {
         do {
             return try jsonDecoder.decode(T.self, from: data)
         } catch {
-            throw ModifierAPIError.decodingFailed
+            throw MockModifierAPIError.decodingFailed
         }
     }
 
     private func perform(_ request: URLRequest, expected: [Int]) async throws -> Data {
         let (data, response) = try await data(for: request)
         guard let http = response as? HTTPURLResponse else {
-            throw ModifierAPIError.invalidResponse(status: 0)
+            throw MockModifierAPIError.invalidResponse(status: 0)
         }
-        let envelope = try? jsonDecoder.decode(ModifierAPIErrorResponse.self, from: data)
+        let envelope = try? jsonDecoder.decode(MockModifierAPIErrorResponse.self, from: data)
         switch http.statusCode {
         case let status where expected.contains(status):
             return data
         case 400:
-            throw ModifierAPIError.badRequest
+            throw MockModifierAPIError.badRequest
         case 404:
-            throw ModifierAPIError.notFound
+            throw MockModifierAPIError.notFound
         case 409:
-            throw ModifierAPIError.conflict
+            throw MockModifierAPIError.conflict
         case 422:
-            throw ModifierAPIError.executionFailed(
+            throw MockModifierAPIError.executionFailed(
                 envelope?.message ?? "Modifier preview execution failed"
             )
         case 502:
-            throw ModifierAPIError.liveRequestFailed(
+            throw MockModifierAPIError.liveRequestFailed(
                 envelope?.message ?? "Live preview request failed"
             )
         default:
-            throw ModifierAPIError.invalidResponse(status: http.statusCode)
+            throw MockModifierAPIError.invalidResponse(status: http.statusCode)
         }
     }
 
@@ -158,7 +158,7 @@ public final class ModifierAPIClient: ModifierAPIClientInterface {
         do {
             return try await urlSession.data(for: request)
         } catch {
-            throw ModifierAPIError.serverUnavailable
+            throw MockModifierAPIError.serverUnavailable
         }
     }
 }

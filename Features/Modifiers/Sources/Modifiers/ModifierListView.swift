@@ -2,11 +2,11 @@ import CommonKit
 import CommonViewsKit
 import SwiftUI
 
-public struct ModifierListView: View {
-    @Bindable private var viewModel: ModifierListViewModel
+public struct MockModifierListView: View {
+    @Bindable private var viewModel: MockModifierListViewModel
     @AppStorage("mockDomain") private var mockDomain: String = "Dev"
 
-    public init(viewModel: ModifierListViewModel = .init()) {
+    public init(viewModel: MockModifierListViewModel = .init()) {
         self.viewModel = viewModel
     }
 
@@ -56,7 +56,7 @@ public struct ModifierListView: View {
             Button("Cancel", role: .cancel) {}
         }
         .sheet(isPresented: $viewModel.shouldShowCreateSheet) {
-            ModifierCreateSheet(seed: .empty, domain: mockDomain) { id, previewSeed in
+            MockModifierCreateSheet(seed: .empty, domain: mockDomain) { id, previewSeed in
                 viewModel.shouldShowCreateSheet = false
                 Task { await viewModel.load(domain: mockDomain) }
                 viewModel.openDetail(id: id, previewSeed: previewSeed)
@@ -76,7 +76,7 @@ public struct ModifierListView: View {
                 description: Text("Create a modifier to transform live or mock responses.")
             )
         } else {
-            ModifierListTable(
+            MockModifierListTable(
                 viewModel: viewModel,
                 mockDomain: mockDomain
             )
@@ -84,8 +84,8 @@ public struct ModifierListView: View {
     }
 }
 
-private struct ModifierListTable: View {
-    @Bindable var viewModel: ModifierListViewModel
+private struct MockModifierListTable: View {
+    @Bindable var viewModel: MockModifierListViewModel
     let mockDomain: String
 
     var body: some View {
@@ -100,45 +100,45 @@ private struct ModifierListTable: View {
     @ViewBuilder
     private func table(requestWidthMin: CGFloat, requestWidthIdeal: CGFloat) -> some View {
         Table(viewModel.filteredModifiers, selection: $viewModel.selected) {
-            TableColumn("Active") { (modifier: ModifierModel) in
-                ModifierActivationPicker(selection: modifier.source) { newSource in
+            TableColumn("Active") { (modifier: MockModifierModel) in
+                MockModifierActivationPicker(selection: modifier.source) { newSource in
                     Task { await viewModel.setSource(modifier, source: newSource, domain: mockDomain) }
                 }
             }
             .width(90)
 
-            TableColumn("Method") { (modifier: ModifierModel) in
+            TableColumn("Method") { (modifier: MockModifierModel) in
                 HTTPMethodBadge(method: modifier.method)
             }
             .width(min: 50, ideal: 60, max: 70)
 
-            TableColumn("Request") { (modifier: ModifierModel) in
+            TableColumn("Request") { (modifier: MockModifierModel) in
                 Text(modifier.path)
                     .help(modifier.path)
                     .padding(.vertical, 8)
             }
             .width(min: requestWidthMin, ideal: requestWidthIdeal)
 
-            TableColumn("Scenario") { (modifier: ModifierModel) in
+            TableColumn("Scenario") { (modifier: MockModifierModel) in
                 Text(modifier.scenario ?? "—")
                     .font(.callout)
                     .help(modifier.scenario ?? "")
             }
             .width(min: requestWidthMin, ideal: requestWidthIdeal)
 
-            TableColumn("Order") { (modifier: ModifierModel) in
+            TableColumn("Order") { (modifier: MockModifierModel) in
                 Text("\(modifier.order)")
                     .font(.callout)
             }
             .width(60)
 
-            TableColumn("ID") { (modifier: ModifierModel) in
+            TableColumn("ID") { (modifier: MockModifierModel) in
                 Text(modifier.id)
                     .font(.callout)
                     .help(modifier.id)
             }
         }
-        .contextMenu(forSelectionType: ModifierModel.ID.self) { selections in
+        .contextMenu(forSelectionType: MockModifierModel.ID.self) { selections in
             if selections.count == 1, let id = selections.first {
                 Button("Open Modifier Detail") { viewModel.openDetail(id: id) }
                 Divider()

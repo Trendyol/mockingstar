@@ -20,8 +20,8 @@ struct AppNavigationSplitView: View {
     @Bindable private var navigationStore = NavigationStore.shared
     @AppStorage("mockDomain") var mockDomain: String = ""
     @AppStorage("isOnboardingDone") private var isOnboardingDone: Bool = false
-    @State private var modifierCreationSeed: ModifierCreationSeed?
-    @State private var modifierListViewModel = ModifierListViewModel()
+    @State private var modifierCreationSeed: MockModifierCreationSeed?
+    @State private var modifierListViewModel = MockModifierListViewModel()
     private let mockListViewModel = MockListViewModel()
     private let onboardingCompleted = OnboardingCompleted.shared
     private let deeplinkStore = DeeplinkStore.shared
@@ -56,9 +56,9 @@ struct AppNavigationSplitView: View {
                                 case .fileIntegrityCheck:
                                     FileIntegrityCheckView()
                                 case .modifiers:
-                                    ModifierListView(viewModel: modifierListViewModel)
+                                    MockModifierListView(viewModel: modifierListViewModel)
                                 case .modifier(let id, let previewSeed):
-                                    ModifierDetailRouteView(
+                                    MockModifierDetailRouteView(
                                         modifierId: id,
                                         previewSeed: previewSeed
                                     )
@@ -80,7 +80,7 @@ struct AppNavigationSplitView: View {
             )
         ) {
             if let seed = modifierCreationSeed {
-                ModifierCreateSheet(seed: seed, domain: mockDomain) { id, previewSeed in
+                MockModifierCreateSheet(seed: seed, domain: mockDomain) { id, previewSeed in
                     modifierCreationSeed = nil
                     navigationStore.open(
                         .modifier(id: id, previewSeed: previewSeed)

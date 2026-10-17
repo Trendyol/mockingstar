@@ -1,7 +1,7 @@
 import CommonKit
 import Foundation
 
-struct ModifierDetailDraft: Equatable {
+struct MockModifierDetailDraft: Equatable {
     var id: String
     var path: String
     var method: String
@@ -10,7 +10,7 @@ struct ModifierDetailDraft: Equatable {
     var sampleMockRequestId: String
     var transformerCode: String
 
-    init(model: ModifierModel) {
+    init(model: MockModifierModel) {
         id = model.id
         path = model.path
         method = model.method
@@ -20,7 +20,7 @@ struct ModifierDetailDraft: Equatable {
         transformerCode = model.transformerCode
     }
 
-    var writeRequest: ModifierWriteRequest {
+    var writeRequest: MockModifierWriteRequest {
         .init(
             id: id,
             path: path,
@@ -33,15 +33,15 @@ struct ModifierDetailDraft: Equatable {
     }
 }
 
-struct ModifierPreviewInput: Equatable, Codable {
-    var source: ModifierPreviewSource
+struct MockModifierPreviewInput: Equatable, Codable {
+    var source: MockModifierPreviewSource
     var url: String
     var method: String
     var scenario: String
     var headersJSON: String
     var body: String
 
-    static func initial(model: ModifierModel, seed: ModifierCreationSeed?) -> Self {
+    static func initial(model: MockModifierModel, seed: MockModifierCreationSeed?) -> Self {
         if let seed {
             return .init(
                 source: seed.mockId == nil ? .live : .mock,
@@ -80,13 +80,13 @@ struct ModifierPreviewInput: Equatable, Codable {
     }
 }
 
-enum ModifierPreviewInputStore {
+enum MockModifierPreviewInputStore {
     private static func key(domain: String, id: String) -> String {
         "modifier.previewInput.\(domain).\(id)"
     }
 
     static func save(
-        _ input: ModifierPreviewInput,
+        _ input: MockModifierPreviewInput,
         domain: String,
         id: String,
         defaults: UserDefaults = .standard
@@ -99,9 +99,9 @@ enum ModifierPreviewInputStore {
         domain: String,
         id: String,
         defaults: UserDefaults = .standard
-    ) -> ModifierPreviewInput? {
+    ) -> MockModifierPreviewInput? {
         guard let data = defaults.data(forKey: key(domain: domain, id: id)) else { return nil }
-        return try? JSONDecoder().decode(ModifierPreviewInput.self, from: data)
+        return try? JSONDecoder().decode(MockModifierPreviewInput.self, from: data)
     }
 
     static func remove(

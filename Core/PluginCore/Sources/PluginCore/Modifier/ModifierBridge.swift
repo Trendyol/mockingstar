@@ -2,7 +2,7 @@ import Foundation
 import JavaScriptCore
 
 @objc
-protocol JSModifierRequestExport: JSExport {
+protocol JSMockModifierRequestExport: JSExport {
     var url: String { get set }
     var method: String { get set }
     var headers: [String: String] { get set }
@@ -11,7 +11,7 @@ protocol JSModifierRequestExport: JSExport {
 
 /// Mutable request presentation exposed to JS `transformer(req, chain)` functions.
 @objc
-final class JSModifierRequest: NSObject, JSModifierRequestExport {
+final class JSMockModifierRequest: NSObject, JSMockModifierRequestExport {
     var url: String
     var method: String
     var headers: [String: String]
@@ -56,7 +56,7 @@ final class JSModifierRequest: NSObject, JSModifierRequestExport {
 }
 
 @objc
-protocol JSModifierResponseExport: JSExport {
+protocol JSMockModifierResponseExport: JSExport {
     var status: Int { get set }
     var headers: [String: String] { get set }
     var body: JSValue { get set }
@@ -69,7 +69,7 @@ protocol JSModifierResponseExport: JSExport {
 /// as a JS object/array so scripts can mutate fields directly (eg. `res.body.injected = true`).
 /// Non-JSON bodies fall back to a plain string, signalled via `contentType == "text"`.
 @objc
-final class JSModifierResponse: NSObject, JSModifierResponseExport {
+final class JSMockModifierResponse: NSObject, JSMockModifierResponseExport {
     var status: Int
     var headers: [String: String]
     var body: JSValue
@@ -82,16 +82,16 @@ final class JSModifierResponse: NSObject, JSModifierResponseExport {
         self.contentType = contentType
     }
 
-    static func from(result: HTTPResult, context: JSContext) -> JSModifierResponse {
+    static func from(result: HTTPResult, context: JSContext) -> JSMockModifierResponse {
         if !result.body.isEmpty,
            let json = try? JSONSerialization.jsonObject(with: result.body, options: [.fragmentsAllowed]),
            let jsBody = JSValue(object: json, in: context) {
-            return JSModifierResponse(status: result.status, headers: result.headers, body: jsBody, contentType: "json")
+            return JSMockModifierResponse(status: result.status, headers: result.headers, body: jsBody, contentType: "json")
         }
 
         let text = String(data: result.body, encoding: .utf8) ?? ""
         let jsBody: JSValue = JSValue(object: text, in: context)
-        return JSModifierResponse(status: result.status, headers: result.headers, body: jsBody, contentType: "text")
+        return JSMockModifierResponse(status: result.status, headers: result.headers, body: jsBody, contentType: "text")
     }
 
     func toHTTPResult() -> HTTPResult {
@@ -111,7 +111,7 @@ final class JSModifierResponse: NSObject, JSModifierResponseExport {
 
 @objc
 protocol JSChainExport: JSExport {
-    func proceed(_ request: JSModifierRequest) -> JSModifierResponse
+    func proceed(_ request: JSMockModifierRequest) -> JSMockModifierResponse
 }
 
 /// Bridges the synchronous JS `chain.proceed(req)` call to the (async) next link of the chain.
@@ -124,19 +124,19 @@ protocol JSChainExport: JSExport {
 @objc
 final class JSChain: NSObject, JSChainExport {
     private let context: JSContext
-    private let onProceed: (JSModifierRequest) throws -> JSModifierResponse
+    private let onProceed: (JSMockModifierRequest) throws -> JSMockModifierResponse
 
-    init(context: JSContext, onProceed: @escaping (JSModifierRequest) throws -> JSModifierResponse) {
+    init(context: JSContext, onProceed: @escaping (JSMockModifierRequest) throws -> JSMockModifierResponse) {
         self.context = context
         self.onProceed = onProceed
     }
 
-    func proceed(_ request: JSModifierRequest) -> JSModifierResponse {
+    func proceed(_ request: JSMockModifierRequest) -> JSMockModifierResponse {
         do {
             return try onProceed(request)
         } catch {
             context.exception = JSValue(newErrorFromMessage: "chain.proceed failed: \(error)", in: context)
-            return JSModifierResponse(status: 500, headers: [:], body: JSValue(nullIn: context), contentType: "text")
+            return JSMockModifierResponse(status: 500, headers: [:], body: JSValue(nullIn: context), contentType: "text")
         }
     }
 }

@@ -2,7 +2,7 @@ import CommonKit
 import Foundation
 import JavaScriptCore
 
-enum ModifierExecutionError: Error, Equatable {
+enum MockModifierExecutionError: Error, Equatable {
     case invalidJSContext
     case syntaxError(String)
     case missingTransformer
@@ -13,16 +13,16 @@ enum ModifierExecutionError: Error, Equatable {
 /// Runs a single modifier's `transformer(req, chain)` function against a `JSContext`.
 ///
 /// Fails closed: any JS syntax error, missing `transformer`, or runtime exception is
-/// surfaced as a thrown `ModifierExecutionError` rather than silently passing through
+/// surfaced as a thrown `MockModifierExecutionError` rather than silently passing through
 /// the pre-modifier response.
-final class ModifierExecutor {
-    private let logger = Logger(category: "ModifierExecutor")
+final class MockModifierExecutor {
+    private let logger = Logger(category: "MockModifierExecutor")
 
-    func execute(modifier: ModifierModel,
+    func execute(modifier: MockModifierModel,
                  request: URLRequest,
-                 executionMode: ModifierExecutionMode = .runtime,
+                 executionMode: MockModifierExecutionMode = .runtime,
                  chainProceed: @escaping (URLRequest) throws -> HTTPResult) throws -> HTTPResult {
-        guard let context = JSContext() else { throw ModifierExecutionError.invalidJSContext }
+        guard let context = JSContext() else { throw MockModifierExecutionError.invalidJSContext }
 
         var exceptionMessage: String?
         context.exceptionHandler = { _, exception in
@@ -32,18 +32,18 @@ final class ModifierExecutor {
         context.evaluateScript(modifier.transformerCode)
         if let exceptionMessage {
             logger.error("modifier '\(modifier.id)' failed to load: \(exceptionMessage)")
-            throw ModifierExecutionError.syntaxError(exceptionMessage)
+            throw MockModifierExecutionError.syntaxError(exceptionMessage)
         }
 
         guard let transformerFunction = context.objectForKeyedSubscript("transformer"),
               !transformerFunction.isUndefined else {
             logger.error("modifier '\(modifier.id)' is missing a transformer function")
-            throw ModifierExecutionError.missingTransformer
+            throw MockModifierExecutionError.missingTransformer
         }
 
-        let jsRequest = JSModifierRequest(request: request)
+        let jsRequest = JSMockModifierRequest(request: request)
         let chain = JSChain(context: context) { jsRequest in
-            JSModifierResponse.from(result: try chainProceed(jsRequest.asURLRequest), context: context)
+            JSMockModifierResponse.from(result: try chainProceed(jsRequest.asURLRequest), context: context)
         }
 
         exceptionMessage = nil
@@ -51,17 +51,17 @@ final class ModifierExecutor {
 
         if let exceptionMessage {
             logger.error("modifier '\(modifier.id)' threw during execution: \(exceptionMessage)")
-            throw ModifierExecutionError.jsException(exceptionMessage)
+            throw MockModifierExecutionError.jsException(exceptionMessage)
         }
 
         let httpResult: HTTPResult
-        if let response = result?.toObjectOf(JSModifierResponse.self) as? JSModifierResponse {
+        if let response = result?.toObjectOf(JSMockModifierResponse.self) as? JSMockModifierResponse {
             httpResult = response.toHTTPResult()
         } else if let coerced = Self.coercePlainObjectResponse(result) {
             httpResult = coerced
         } else {
             logger.error("modifier '\(modifier.id)' did not return a valid response")
-            throw ModifierExecutionError.invalidResponse
+            throw MockModifierExecutionError.invalidResponse
         }
 
         logger.info("modifier executed", metadata: [

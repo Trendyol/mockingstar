@@ -183,7 +183,7 @@ Example success body:
 
 ### Preview error statuses
 
-Errors return `ModifierAPIErrorResponse` (`code` + `message`):
+Errors return `MockModifierAPIErrorResponse` (`code` + `message`):
 
 | Status | `code` | Typical cause |
 | --- | --- | --- |
