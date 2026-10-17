@@ -46,4 +46,20 @@ final class FileUrlBuilderTests: XCTestCase {
         let url = try builder.modifierFileUrl(for: "LocalDevelopment", id: "test-modifier")
         XCTAssertEqual(url, URL(filePath: "/MockServer/Domains/LocalDevelopment/Modifiers/test-modifier.js"))
     }
+
+    func test_mockFilePath_UsesRequestPathScenarioAndId() throws {
+        let url = try XCTUnwrap(URL(string: "https://example.com/cart/items"))
+        XCTAssertEqual(
+            builder.mockFilePath(url: url, method: "get", scenario: "checkout", id: "mock-1"),
+            "cart/items/GET/cart+items_checkout_mock-1.json"
+        )
+    }
+
+    func test_mockFilePath_RootRequestUsesHost() throws {
+        let url = try XCTUnwrap(URL(string: "https://example.com/"))
+        XCTAssertEqual(
+            builder.mockFilePath(url: url, method: "GET", scenario: "", id: "mock-1"),
+            "example.com/GET/example.com_mock-1.json"
+        )
+    }
 }

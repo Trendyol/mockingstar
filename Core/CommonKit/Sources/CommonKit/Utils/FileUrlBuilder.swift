@@ -97,6 +97,15 @@ public protocol FileUrlBuilderInterface {
     /// - Throws: If constructing the URL encounters an error, a `FileUrlBuilderError` is thrown.
     func modifierFileUrl(for mockDomain: String, id: String) throws -> URL
 
+    /// Relative mock detail file name: encoded path, optional scenario, and mock id.
+    func mockFileName(url: URL, scenario: String, id: String) -> String
+
+    /// Relative mock folder: encoded path plus uppercased HTTP method.
+    func mockFolderPath(url: URL, method: String) -> String
+
+    /// Relative mock file path: ``mockFolderPath`` plus ``mockFileName``.
+    func mockFilePath(url: URL, method: String, scenario: String, id: String) -> String
+
     func isPathMatched(requestPath: String, configPath: String, pathMatchingRatio: Double) -> Bool
 }
 
@@ -197,6 +206,27 @@ public final class FileUrlBuilder: FileUrlBuilderInterface {
         try modifierFolderUrl(for: mockDomain).appending(path: "\(id).js")
     }
 
+    public func mockFileName(url: URL, scenario: String, id: String) -> String {
+        let path = cleanedMockPath(url: url)
+        var name = path.replacingOccurrences(of: "/", with: "+") + "_"
+        if !scenario.isEmpty {
+            name += scenario + "_"
+        }
+        name += id + ".json"
+        if name.count > 256 {
+            return (scenario.isEmpty ? "" : scenario + "_") + id + ".json"
+        }
+        return name
+    }
+
+    public func mockFolderPath(url: URL, method: String) -> String {
+        cleanedMockPath(url: url) + "/" + method.uppercased()
+    }
+
+    public func mockFilePath(url: URL, method: String, scenario: String, id: String) -> String {
+        mockFolderPath(url: url, method: method) + "/" + mockFileName(url: url, scenario: scenario, id: id)
+    }
+
     public func isPathMatched(requestPath: String, configPath: String, pathMatchingRatio: Double) -> Bool {
         guard let requestPathComponents: [String] = URL(string: requestPath)?.pathComponents.drop(while: { $0.isEmpty || $0 == "/" }).reversed(),
               let configPathComponents: [String] = URL(string: configPath)?.pathComponents.drop(while: { $0.isEmpty || $0 == "/" }).reversed() else { return false }
@@ -214,5 +244,12 @@ public final class FileUrlBuilder: FileUrlBuilderInterface {
         }
 
         return Double(controlPathComponents.count) / Double(configPathComponents.count) >= pathMatchingRatio
+    }
+
+    private func cleanedMockPath(url: URL) -> String {
+        if url.path().isEmpty || url.path() == "/" {
+            return url.host() ?? url.absoluteString
+        }
+        return url.path().encodedUrlPathValue
     }
 }

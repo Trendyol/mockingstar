@@ -14,6 +14,7 @@ import FoundationNetworking
 public typealias MockModelHeader = [String: String]
 public typealias MockModelHeaderString = String
 private let logger = Logger(category: "MockModel")
+private let mockFileUrlBuilder = FileUrlBuilder()
 
 /// A model representing a mock.
 public final class MockModel: Codable, Identifiable, NSCopying {
@@ -283,7 +284,7 @@ public extension MockModel {
     ///
     /// `request path` + `request scenario (if contains) ` + `mock id`
     var fileName: String {
-        MockFileLocation.fileName(
+        mockFileUrlBuilder.mockFileName(
             url: metaData.url,
             scenario: metaData.scenario,
             id: metaData.id
@@ -295,7 +296,7 @@ public extension MockModel {
     /// Mock Detail File path rule:
     /// `request path` + `request HTTP method`
     var folderPath: String {
-        MockFileLocation.folderPath(url: metaData.url, method: metaData.method)
+        mockFileUrlBuilder.mockFolderPath(url: metaData.url, method: metaData.method)
     }
 
     ///  Mock detail file should be proper path, it's important for find and return mocks.
@@ -304,7 +305,7 @@ public extension MockModel {
     ///
     /// ``folderPath``  + ``fileName``
     var filePath: String {
-        MockFileLocation.filePath(
+        mockFileUrlBuilder.mockFilePath(
             url: metaData.url,
             method: metaData.method,
             scenario: metaData.scenario,

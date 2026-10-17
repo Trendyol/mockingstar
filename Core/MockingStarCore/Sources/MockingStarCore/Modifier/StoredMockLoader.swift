@@ -21,7 +21,7 @@ struct StoredMockLoader {
         id: String
     ) throws -> MockModel {
         let root = try fileUrlBuilder.mocksFolderUrl(for: domain)
-        let relativePath = MockFileLocation.filePath(
+        let relativePath = fileUrlBuilder.mockFilePath(
             url: requestURL,
             method: method,
             scenario: scenario,

@@ -151,6 +151,45 @@ public final class MockFileUrlBuilder: FileUrlBuilderInterface {
         return stubbedModifierFileUrlResult
     }
 
+    public var invokedMockFileName = false
+    public var invokedMockFileNameCount = 0
+    public var invokedMockFileNameParameters: (url: URL, scenario: String, id: String, Void)?
+    public var invokedMockFileNameParametersList: [(url: URL, scenario: String, id: String, Void)] = []
+    public var stubbedMockFileNameResult: String!
+    public func mockFileName(url: URL, scenario: String, id: String) -> String {
+        invokedMockFileName = true
+        invokedMockFileNameCount += 1
+        invokedMockFileNameParameters = (url, scenario, id, ())
+        invokedMockFileNameParametersList.append((url, scenario, id, ()))
+        return stubbedMockFileNameResult
+    }
+
+    public var invokedMockFolderPath = false
+    public var invokedMockFolderPathCount = 0
+    public var invokedMockFolderPathParameters: (url: URL, method: String, Void)?
+    public var invokedMockFolderPathParametersList: [(url: URL, method: String, Void)] = []
+    public var stubbedMockFolderPathResult: String!
+    public func mockFolderPath(url: URL, method: String) -> String {
+        invokedMockFolderPath = true
+        invokedMockFolderPathCount += 1
+        invokedMockFolderPathParameters = (url, method, ())
+        invokedMockFolderPathParametersList.append((url, method, ()))
+        return stubbedMockFolderPathResult
+    }
+
+    public var invokedMockFilePath = false
+    public var invokedMockFilePathCount = 0
+    public var invokedMockFilePathParameters: (url: URL, method: String, scenario: String, id: String, Void)?
+    public var invokedMockFilePathParametersList: [(url: URL, method: String, scenario: String, id: String, Void)] = []
+    public var stubbedMockFilePathResult: String!
+    public func mockFilePath(url: URL, method: String, scenario: String, id: String) -> String {
+        invokedMockFilePath = true
+        invokedMockFilePathCount += 1
+        invokedMockFilePathParameters = (url, method, scenario, id, ())
+        invokedMockFilePathParametersList.append((url, method, scenario, id, ()))
+        return stubbedMockFilePathResult
+    }
+
     public var invokedIsPathMatched = false
     public var invokedIsPathMatchedCount = 0
     public var invokedIsPathMatchedParameters:
