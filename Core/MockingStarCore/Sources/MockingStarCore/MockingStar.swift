@@ -28,115 +28,37 @@ public final class MockingStarCore {
     private let pluginActor = PluginCoreActor.shared
     private let logger = Logger(category: "MockingStarCore")
     private let urlSession: URLSessionInterface
-    private let activationStore: MockModifierActivationStore
-    private let previewService: MockModifierPreviewService
+    private let modifierGateway: MockModifierGateway
 
     public init(
         urlSession: URLSessionInterface = URLSession.shared,
         activationStore: MockModifierActivationStore = .shared,
         fileManager: FileManagerInterface = FileManager.default,
-        fileUrlBuilder: FileUrlBuilderInterface = FileUrlBuilder()
+        fileUrlBuilder: FileUrlBuilderInterface = FileUrlBuilder(),
+        storeActor: MockModifierStoreActor = .shared
     ) {
         self.urlSession = urlSession
-        self.activationStore = activationStore
-        previewService = MockModifierPreviewService(
+        let previewService = MockModifierPreviewService(
             activationStore: activationStore,
             storedMockLoader: StoredMockLoader(
                 fileManager: fileManager,
                 fileUrlBuilder: fileUrlBuilder
-            )
+            ),
+            storeActor: storeActor
+        )
+        modifierGateway = MockModifierGateway(
+            activationStore: activationStore,
+            previewService: previewService,
+            storeActor: storeActor
         )
         logger.debug("Initialize")
     }
 
-    /// Resolves a request into a response, routing it through any active modifiers matched for
-    /// the request's path/method/scenario before falling back to the original mock/live resolution.
-    ///
-    /// Matching active modifiers wrap a terminal chosen from their sources: `.live` if any matched
-    /// modifier requested live, otherwise the stored mock. `disableLiveEnvironment=true`
-    /// (`mockSource == .onlyMock`) always forces the mock terminal. With no matching active
-    /// modifiers, existing mock-first/live-fallback behavior is preserved.
-    ///
-    /// Fails closed: if the modifier chain throws (JS syntax/runtime error, nested `chain.proceed`
-    /// failure, etc.), the request is rejected with a 500 rather than silently falling back to
-    /// ``originalHandle(request:flags:)``, since a matched-but-broken modifier should not be bypassed.
+    /// Resolves a request into a response. Modifier matching and the JS chain live in
+    /// `MockModifierGateway`; this method only supplies the mock/live terminal.
     func handle(request: URLRequest, flags: MockServerFlags) async throws -> (status: Int, body: Data, headers: [String: String]) {
-        let requestPath = request.url?.path() ?? ""
-        let requestMethod = request.httpMethod ?? ""
-        let activeSources = await activationStore.activeModifierSources(domain: flags.domain, deviceId: flags.deviceId)
-        let activeIds = Set(activeSources.keys)
-        guard !activeIds.isEmpty else {
-            logger.info("modifier skip: no active ids", metadata: [
-                "traceUrl": .string(request.url?.absoluteString ?? ""),
-                "domain": .string(flags.domain),
-                "deviceId": .string(flags.deviceId),
-                "path": .string(requestPath),
-                "method": .string(requestMethod),
-                "scenario": .string(flags.scenario ?? "")
-            ])
-            return try await originalHandle(request: request, flags: flags)
-        }
-
-        let store = await MockModifierStoreActor.shared.store(for: flags.domain)
-        let activeModifiers = (try? store.get(ids: Array(activeIds))) ?? []
-        let matchedModifiers = MockModifierMatcher().match(modifiers: activeModifiers,
-                                                       path: requestPath,
-                                                       method: requestMethod,
-                                                       scenario: flags.scenario)
-
-        guard !matchedModifiers.isEmpty else {
-            logger.info("modifier skip: no path/method/scenario match", metadata: [
-                "traceUrl": .string(request.url?.absoluteString ?? ""),
-                "domain": .string(flags.domain),
-                "deviceId": .string(flags.deviceId),
-                "path": .string(requestPath),
-                "method": .string(requestMethod),
-                "scenario": .string(flags.scenario ?? ""),
-                "activeIds": .string(activeIds.sorted().joined(separator: ","))
-            ])
-            return try await originalHandle(request: request, flags: flags)
-        }
-
-        let matchedSources = matchedModifiers.compactMap { activeSources[$0.id] }
-        let terminalIsMock = flags.mockSource == .onlyMock || !matchedSources.contains(.live)
-
-        let terminalFlags: MockServerFlags
-        if terminalIsMock {
-            terminalFlags = MockServerFlags(mockSource: .onlyMock,
-                                            scenario: flags.scenario,
-                                            domain: flags.domain,
-                                            deviceId: flags.deviceId)
-        } else {
-            terminalFlags = MockServerFlags(mockSource: .onlyLive,
-                                            scenario: flags.scenario,
-                                            domain: flags.domain,
-                                            deviceId: flags.deviceId)
-        }
-
-        logger.info("modifier chain", metadata: [
-            "traceUrl": .string(request.url?.absoluteString ?? ""),
-            "domain": .string(flags.domain),
-            "deviceId": .string(flags.deviceId),
-            "path": .string(requestPath),
-            "method": .string(requestMethod),
-            "scenario": .string(flags.scenario ?? ""),
-            "matchedIds": .string(matchedModifiers.map(\.id).joined(separator: ",")),
-            "terminal": .string(terminalIsMock ? "mock" : "live")
-        ])
-
-        let chain = MockModifierChain(modifiers: matchedModifiers) { chainRequest in
-            let result = try await self.originalHandle(request: chainRequest, flags: terminalFlags)
-            return HTTPResult(status: result.status, body: result.body, headers: result.headers)
-        }
-
-        do {
-            let result = try await chain.proceed(request)
-            return (status: result.status, body: result.body, headers: result.headers)
-        } catch {
-            logger.error("modifier chain failed, failing closed: \(error)", metadata: [
-                "traceUrl": .string(request.url?.absoluteString ?? "")
-            ])
-            return (status: 500, body: Data(), headers: [:])
+        try await modifierGateway.handle(request: request, flags: flags) { [self] request, flags in
+            try await originalHandle(request: request, flags: flags)
         }
     }
 
@@ -670,137 +592,27 @@ extension MockingStarCore: ScenarioHandlerInterface {
 // MARK: - ServerMockModifierHandlerInterface
 extension MockingStarCore: ServerMockModifierHandlerInterface {
     public func listModifiers(domain: String, deviceId: String) async throws -> [MockModifierModel] {
-        let models = try await MockModifierStoreActor.shared.store(for: domain).list()
-        let sources = await activationStore.activeModifierSources(domain: domain, deviceId: deviceId)
-        return models.map { model in
-            var copy = model
-            copy.source = sources[model.id]
-            copy.enabled = sources[model.id] != nil
-            return copy
-        }
+        try await modifierGateway.listModifiers(domain: domain, deviceId: deviceId)
     }
 
     public func getModifier(domain: String, id: String, deviceId: String) async throws -> MockModifierModel? {
-        guard var model = try await MockModifierStoreActor.shared.store(for: domain).get(id: id) else {
-            return nil
-        }
-        let source = await activationStore.source(domain: domain, deviceId: deviceId, id: id)
-        model.source = source
-        model.enabled = source != nil
-        return model
+        try await modifierGateway.getModifier(domain: domain, id: id, deviceId: deviceId)
     }
 
     public func createModifier(domain: String, model: MockModifierModel) async throws {
-        do {
-            try await MockModifierStoreActor.shared.store(for: domain).create(model)
-            logger.info("modifier created", metadata: [
-                "modifierId": .string(model.id),
-                "domain": .string(domain)
-            ])
-        } catch {
-            throw mapModifierStoreError(error)
-        }
+        try await modifierGateway.createModifier(domain: domain, model: model)
     }
 
-    public func updateModifier(
-        domain: String,
-        currentId: String,
-        model: MockModifierModel
-    ) async throws {
-        let store = await MockModifierStoreActor.shared.store(for: domain)
-        guard currentId != model.id else {
-            do {
-                try store.update(currentId: currentId, with: model)
-                return
-            } catch {
-                throw mapModifierStoreError(error)
-            }
-        }
-
-        let migration = await activationStore.prepareModifierRename(
-            domain: domain,
-            from: currentId,
-            to: model.id
-        )
-        do {
-            try store.update(currentId: currentId, with: model)
-            await activationStore.commitModifierRename(migration)
-            logger.info("modifier renamed", metadata: [
-                "oldModifierId": .string(currentId),
-                "newModifierId": .string(model.id),
-                "domain": .string(domain),
-                "deviceId": .string(migration.affectedDeviceIds.joined(separator: ","))
-            ])
-        } catch {
-            await activationStore.rollbackModifierRename(migration)
-            throw mapModifierStoreError(error)
-        }
+    public func updateModifier(domain: String, currentId: String, model: MockModifierModel) async throws {
+        try await modifierGateway.updateModifier(domain: domain, currentId: currentId, model: model)
     }
 
     public func deleteModifier(domain: String, id: String) async throws {
-        do {
-            try await MockModifierStoreActor.shared.store(for: domain).delete(id: id)
-            let devices = await activationStore.removeModifierId(domain: domain, id: id)
-            logger.info("modifier deleted", metadata: [
-                "modifierId": .string(id),
-                "domain": .string(domain),
-                "deviceId": .string(devices.joined(separator: ","))
-            ])
-        } catch {
-            throw mapModifierStoreError(error)
-        }
-    }
-
-    private func mapModifierStoreError(_ error: Error) -> Error {
-        switch error {
-        case MockModifierStoreError.alreadyExists(let id):
-            ServerMockModifierError.alreadyExists(id)
-        case MockModifierStoreError.notFound(let id):
-            ServerMockModifierError.notFound(id)
-        case MockModifierStoreError.invalidId(let id):
-            ServerMockModifierError.invalidId(id)
-        default:
-            error
-        }
+        try await modifierGateway.deleteModifier(domain: domain, id: id)
     }
 
     public func setActiveModifiers(domain: String, deviceId: String, activations: [MockModifierActivation]) async throws {
-        var sources: [String: MockModifierPreviewSource] = [:]
-        for activation in activations {
-            guard sources[activation.id] == nil else {
-                throw ServerMockModifierError.duplicateIds
-            }
-            sources[activation.id] = activation.source
-        }
-
-        let store = await MockModifierStoreActor.shared.store(for: domain)
-        var missing: [String] = []
-        for id in sources.keys {
-            if try store.get(id: id) == nil {
-                missing.append(id)
-            }
-        }
-        guard missing.isEmpty else {
-            throw ServerMockModifierError.unknownIds(missing.sorted())
-        }
-
-        let diff = await activationStore.replaceActiveSources(domain: domain,
-                                                              deviceId: deviceId,
-                                                              sources: sources)
-        for enabledId in diff.enabledIds {
-            logger.info("modifier enabled", metadata: [
-                "modifierId": .string(enabledId),
-                "domain": .string(domain),
-                "deviceId": .string(deviceId)
-            ])
-        }
-        for disabledId in diff.disabledIds {
-            logger.info("modifier disabled", metadata: [
-                "modifierId": .string(disabledId),
-                "domain": .string(domain),
-                "deviceId": .string(deviceId)
-            ])
-        }
+        try await modifierGateway.setActiveModifiers(domain: domain, deviceId: deviceId, activations: activations)
     }
 
     public func previewModifier(
@@ -808,44 +620,17 @@ extension MockingStarCore: ServerMockModifierHandlerInterface {
         deviceId: String,
         request: MockModifierPreviewRequest
     ) async throws -> MockModifierPreviewResponse {
-#if os(Linux)
-        throw ServerMockModifierError.previewExecutionFailed(
-            "JavaScript modifier preview is not supported on Linux"
-        )
-#else
-        do {
-            return try await previewService.execute(
-                domain: domain,
-                deviceId: deviceId,
-                preview: request
-            ) { [weak self] liveRequest in
-                guard let self else {
-                    throw MockModifierPreviewError.liveRequestFailed("Core deallocated")
-                }
-                let result = try await self.proxyRequest(
-                    request: liveRequest,
-                    mockDomain: domain
-                )
-                return HTTPResult(
-                    status: result.status,
-                    body: result.body,
-                    headers: result.headers
-                )
+        try await modifierGateway.previewModifier(
+            domain: domain,
+            deviceId: deviceId,
+            request: request
+        ) { [weak self] liveRequest in
+            guard let self else {
+                throw MockModifierPreviewError.liveRequestFailed("Core deallocated")
             }
-        } catch MockModifierPreviewError.invalidRequest(let message) {
-            throw ServerMockModifierError.previewInvalidRequest(message)
-        } catch MockModifierPreviewError.currentModifierNotFound(let id) {
-            throw ServerMockModifierError.previewNotFound(id)
-        } catch MockModifierPreviewError.mockNotFound(let id) {
-            throw ServerMockModifierError.previewNotFound(id)
-        } catch MockModifierPreviewError.conflict(let id) {
-            throw ServerMockModifierError.previewConflict(id)
-        } catch MockModifierPreviewError.executionFailed(let message) {
-            throw ServerMockModifierError.previewExecutionFailed(message)
-        } catch MockModifierPreviewError.liveRequestFailed(let message) {
-            throw ServerMockModifierError.previewLiveRequestFailed(message)
+            let result = try await self.proxyRequest(request: liveRequest, mockDomain: domain)
+            return HTTPResult(status: result.status, body: result.body, headers: result.headers)
         }
-#endif
     }
 }
 

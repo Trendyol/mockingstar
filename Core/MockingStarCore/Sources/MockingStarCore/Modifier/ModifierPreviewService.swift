@@ -9,21 +9,14 @@ import PluginCoreLinux
 import FoundationNetworking
 #endif
 
-private final class FirstResultCapture {
-    private let lock = NSLock()
+private actor FirstResultCapture {
     private var stored: HTTPResult?
 
     func captureIfNeeded(_ result: HTTPResult) {
-        lock.lock()
-        defer { lock.unlock() }
         if stored == nil { stored = result }
     }
 
-    var value: HTTPResult? {
-        lock.lock()
-        defer { lock.unlock() }
-        return stored
-    }
+    var value: HTTPResult? { stored }
 }
 
 enum MockModifierPreviewError: Error, Equatable {
@@ -38,6 +31,7 @@ enum MockModifierPreviewError: Error, Equatable {
 struct MockModifierPreviewService {
     let activationStore: MockModifierActivationStore
     let storedMockLoader: StoredMockLoader
+    let storeActor: MockModifierStoreActor
 
     func execute(
         domain: String,
@@ -55,7 +49,7 @@ struct MockModifierPreviewService {
             throw MockModifierPreviewError.invalidRequest("HTTP method is required")
         }
 
-        let store = await MockModifierStoreActor.shared.store(for: domain)
+        let store = await storeActor.store(for: domain)
         do {
             guard try store.get(id: preview.currentModifierId) != nil else {
                 throw MockModifierPreviewError.currentModifierNotFound(
@@ -130,13 +124,13 @@ struct MockModifierPreviewService {
                     throw MockModifierPreviewError.liveRequestFailed(error.localizedDescription)
                 }
             }
-            originalCapture.captureIfNeeded(result)
+            await originalCapture.captureIfNeeded(result)
             return result
         }
 
         do {
             let result = try await chain.proceed(request)
-            let original = originalCapture.value
+            let original = await originalCapture.value
             return MockModifierPreviewResponse(
                 status: result.status,
                 headers: result.headers,
