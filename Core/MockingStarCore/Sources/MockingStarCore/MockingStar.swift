@@ -142,7 +142,7 @@ public final class MockingStarCore {
 
     /// MockingStar device isolation uses the exact `deviceId` flag (Maestro shards).
     /// Android advertising `DeviceId` must not count — `/mock` forwards original headers.
-    static func mockingStarDeviceId(from rawFlags: [String: String]) -> String {
+    func mockingStarDeviceId(from rawFlags: [String: String]) -> String {
         rawFlags["deviceId"] ?? ""
     }
 
@@ -581,7 +581,7 @@ extension MockingStarCore: ServerMockHandlerInterface {
         // Exact key only: Android advertising sends `DeviceId`, Maestro sends `deviceId`.
         // `/mock` forwards original request headers, so case-insensitive lookup would isolate
         // every app request onto a UUID bucket instead of the UI default (`""`) set.
-        let deviceId = Self.mockingStarDeviceId(from: rawFlags)
+        let deviceId = mockingStarDeviceId(from: rawFlags)
 
         if rawFlags.caseInsensitiveSearch(for: "scenario").isNilOrEmpty {
             scenario = await scenariosActor.decider(for: mockDomain).decideScenario(request: request, deviceId: deviceId).orEmpty
@@ -625,7 +625,7 @@ extension MockingStarCore: ServerMockSearchHandlerInterface {
     ///   - `headers`: The response headers as `[String : String]`.
     public func search(path: String, method: String, scenario: String?, rawFlags: [String : String]) async throws -> (status: Int, body: Data, headers: [String : String]) {
         let mockDomain = rawFlags.caseInsensitiveSearch(for: "mockDomain") ?? "Dev"
-        let deviceId = Self.mockingStarDeviceId(from: rawFlags)
+        let deviceId = mockingStarDeviceId(from: rawFlags)
 
         let flags = MockServerFlags(mockSource: .init(from: rawFlags),
                                     scenario: scenario,
