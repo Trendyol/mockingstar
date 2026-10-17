@@ -9,13 +9,20 @@ import CommonViewsKitTestSupport
 final class MockModifierListViewModelTests: XCTestCase {
     private var api: FakeMockModifierAPIClient!
     private var notifications: MockNotificationManager!
+    private var pasteBoard: MockNSPasteboard!
     private var sut: MockModifierListViewModel!
 
     override func setUp() {
         super.setUp()
         api = FakeMockModifierAPIClient()
         notifications = MockNotificationManager()
-        sut = MockModifierListViewModel(apiClient: api, notificationManager: notifications, navigationStore: .shared)
+        pasteBoard = MockNSPasteboard()
+        sut = MockModifierListViewModel(
+            apiClient: api,
+            notificationManager: notifications,
+            navigationStore: .shared,
+            pasteBoard: pasteBoard
+        )
     }
 
     private func sampleModifier(
@@ -95,6 +102,64 @@ final class MockModifierListViewModelTests: XCTestCase {
 
         XCTAssertEqual(sut.filteredModifiers.map(\.id), ["a", "b"])
         XCTAssertEqual(sut.modifier(id: "b")?.order, 2)
+    }
+
+    func test_duplicate_CreatesCopyIdAndNextOrderWithoutActivation() async {
+        api.stubbedList = [sampleModifier(id: "discount", order: 1)]
+        await sut.load(domain: "Dev")
+
+        await sut.duplicate(id: "discount", domain: "Dev")
+
+        XCTAssertEqual(api.invokedCreate?.id, "discount-copy")
+        XCTAssertEqual(api.invokedCreate?.order, 2)
+        XCTAssertEqual(api.invokedCreate?.path, "/cart")
+        XCTAssertEqual(api.invokedCreate?.method, "GET")
+        XCTAssertEqual(
+            api.invokedCreate?.transformerCode,
+            "function transformer(req, chain) { return chain.proceed(req) }"
+        )
+        XCTAssertNil(api.invokedSetActiveActivations)
+        XCTAssertEqual(sut.selected, ["discount-copy"])
+    }
+
+    func test_duplicate_SecondCopyUsesIncrementedSuffix() async {
+        api.stubbedList = [
+            sampleModifier(id: "discount", order: 1),
+            sampleModifier(id: "discount-copy", order: 2)
+        ]
+        await sut.load(domain: "Dev")
+
+        await sut.duplicate(id: "discount", domain: "Dev")
+
+        XCTAssertEqual(api.invokedCreate?.id, "discount-copy-2")
+        XCTAssertEqual(api.invokedCreate?.order, 3)
+    }
+
+    func test_paste_IgnoresPlainTextWithoutClipboardPrefix() async {
+        api.stubbedList = [sampleModifier()]
+        await sut.load(domain: "Dev")
+        pasteBoard.stubbedString = "{\"id\":\"discount\",\"path\":\"/cart\"}"
+
+        await sut.paste(domain: "Dev")
+
+        XCTAssertNil(api.invokedCreate)
+    }
+
+    func test_copyThenPaste_CreatesDuplicateFromClipboard() async {
+        api.stubbedList = [sampleModifier(id: "discount", order: 1)]
+        await sut.load(domain: "Dev")
+        sut.selected = ["discount"]
+
+        sut.copySelected()
+        await sut.paste(domain: "Dev")
+
+        XCTAssertTrue(pasteBoard.invokedSetString)
+        XCTAssertEqual(api.invokedCreate?.id, "discount-copy")
+        XCTAssertEqual(api.invokedCreate?.order, 2)
+        XCTAssertEqual(
+            api.invokedCreate?.transformerCode,
+            "function transformer(req, chain) { return chain.proceed(req) }"
+        )
     }
 }
 
@@ -433,6 +498,9 @@ final class FakeMockModifierAPIClient: MockModifierAPIClientInterface {
     func createModifier(domain: String, request: MockModifierWriteRequest) async throws {
         if let stubbedError { throw stubbedError }
         invokedCreate = request
+        if let id = request.id {
+            stubbedList.append(request.asModel(id: id))
+        }
     }
 
     func updateModifier(domain: String, id: String, request: MockModifierWriteRequest) async throws {

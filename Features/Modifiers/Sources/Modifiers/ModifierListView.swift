@@ -1,6 +1,7 @@
 import CommonKit
 import CommonViewsKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 public struct MockModifierListView: View {
     @Bindable private var viewModel: MockModifierListViewModel
@@ -141,6 +142,9 @@ private struct MockModifierListTable: View {
         .contextMenu(forSelectionType: MockModifierModel.ID.self) { selections in
             if selections.count == 1, let id = selections.first {
                 Button("Open Modifier Detail") { viewModel.openDetail(id: id) }
+                Button("Duplicate") {
+                    Task { await viewModel.duplicate(id: id, domain: mockDomain) }
+                }
                 Divider()
             }
             Button("Delete", role: .destructive) {
@@ -151,5 +155,11 @@ private struct MockModifierListTable: View {
             guard let id = selections.first else { return }
             viewModel.openDetail(id: id)
         }
+        .onCopyCommand {
+            viewModel.copySelected()
+        }
+        .onPasteCommand(of: [.plainText], perform: { _ in
+            Task { await viewModel.paste(domain: mockDomain) }
+        })
     }
 }
