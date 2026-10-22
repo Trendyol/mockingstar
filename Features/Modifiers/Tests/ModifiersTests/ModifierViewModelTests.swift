@@ -104,6 +104,47 @@ final class MockModifierListViewModelTests: XCTestCase {
         XCTAssertEqual(sut.modifier(id: "b")?.order, 2)
     }
 
+    func test_search_FiltersEachFieldCaseInsensitively() async {
+        api.stubbedList = [
+            MockModifierModel(id: "one", path: "/Cart", method: "GET", scenario: "sale", order: 2, transformerCode: "x"),
+            MockModifierModel(id: "two", path: "/checkout", method: "POST", scenario: "cart", order: 1, transformerCode: "x")
+        ]
+        await sut.load(domain: "Dev")
+        sut.searchTerm = " CART "
+        XCTAssertEqual(sut.filteredModifiers.map(\.id), ["two", "one"])
+        sut.filterType = .path
+        XCTAssertEqual(sut.filteredModifiers.map(\.id), ["one"])
+        sut.filterType = .scenario
+        XCTAssertEqual(sut.filteredModifiers.map(\.id), ["two"])
+        sut.filterType = .method
+        sut.searchTerm = "get"
+        XCTAssertEqual(sut.filteredModifiers.map(\.id), ["one"])
+        sut.filterType = .all
+        sut.searchTerm = "two"
+        XCTAssertEqual(sut.filteredModifiers.map(\.id), ["two"])
+    }
+
+    func test_search_SupportsEveryStyleAndKeepsOrderForEmptyTerm() async {
+        api.stubbedList = [sampleModifier(id: "one", order: 2), sampleModifier(id: "two", order: 1)]
+        await sut.load(domain: "Dev")
+        sut.filterType = .path
+        let cases: [(FilterStyle, String, [String])] = [
+            (.contains, "ar", ["two", "one"]),
+            (.notContains, "cart", []),
+            (.startWith, "/ca", ["two", "one"]),
+            (.endWith, "art", ["two", "one"]),
+            (.equal, "/cart", ["two", "one"]),
+            (.notEqual, "/cart", [])
+        ]
+        for (style, term, expected) in cases {
+            sut.filterStyle = style
+            sut.searchTerm = term
+            XCTAssertEqual(sut.filteredModifiers.map(\.id), expected, "Style: \(style)")
+        }
+        sut.searchTerm = "  "
+        XCTAssertEqual(sut.filteredModifiers.map(\.id), ["two", "one"])
+    }
+
     func test_duplicate_CreatesCopyIdAndNextOrderWithoutActivation() async {
         api.stubbedList = [sampleModifier(id: "discount", order: 1)]
         await sut.load(domain: "Dev")

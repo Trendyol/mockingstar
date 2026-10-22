@@ -6,34 +6,43 @@ import UniformTypeIdentifiers
 public struct MockModifierListView: View {
     @Bindable private var viewModel: MockModifierListViewModel
     @AppStorage("mockDomain") private var mockDomain: String = "Dev"
+    @State private var isSearchActive = false
 
     public init(viewModel: MockModifierListViewModel = .init()) {
         self.viewModel = viewModel
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                TextField("Search modifiers", text: $viewModel.searchTerm)
-                    .textFieldStyle(.roundedBorder)
-                Spacer()
-            }
-            .padding()
-
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
+        content
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.background)
         .navigationTitle("Modifiers")
         .toolbar {
             ToolbarItemGroup {
+                Button(action: { isSearchActive = true }, label: EmptyView.init)
+                    .keyboardShortcut("f")
+                    .buttonStyle(.plain)
+                    .hidden()
+
+                Button(action: { Task { await viewModel.load(domain: mockDomain) } }, label: EmptyView.init)
+                    .keyboardShortcut("r")
+                    .buttonStyle(.plain)
+                    .hidden()
+
                 ToolBarButton(title: "Refresh", icon: "arrow.clockwise", backgroundColor: .gray) {
                     Task { await viewModel.load(domain: mockDomain) }
                 }
                 ToolBarButton(title: "New Modifier", icon: "plus", backgroundColor: .blue) {
                     viewModel.shouldShowCreateSheet = true
                 }
+                RichSearchBar(
+                    filterType: $viewModel.filterType,
+                    filterStyle: $viewModel.filterStyle,
+                    searchTerm: $viewModel.searchTerm,
+                    placeHolderCount: .constant(viewModel.filteredModifiers.count),
+                    isSearchActive: $isSearchActive,
+                    availableFilterTypes: [.all, .path, .scenario, .method]
+                )
             }
             .disableSharedBackground()
         }

@@ -15,6 +15,8 @@ public final class MockModifierListViewModel {
 
     var modifiers: [MockModifierModel] = []
     var searchTerm: String = ""
+    var filterType: FilterType = .all
+    var filterStyle: FilterStyle = .contains
     var selected = Set<MockModifierModel.ID>()
     var isLoading = false
     var shouldShowErrorMessage = false
@@ -36,8 +38,25 @@ public final class MockModifierListViewModel {
             return $0.id < $1.id
         }
         guard !term.isEmpty else { return sorted }
-        return sorted.filter {
-            [$0.id, $0.path, $0.method, $0.scenario ?? ""].joined(separator: " ").lowercased().contains(term)
+        return sorted.filter { modifier in
+            let fields: [String] = switch filterType {
+            case .all: [modifier.id, modifier.path, modifier.method, modifier.scenario ?? ""]
+            case .path: [modifier.path]
+            case .scenario: [modifier.scenario ?? ""]
+            case .method: [modifier.method]
+            case .query, .statusCode: []
+            }
+            return fields.contains { field in
+                let value = field.lowercased()
+                return switch filterStyle {
+                case .contains: value.contains(term)
+                case .notContains: !value.contains(term)
+                case .startWith: value.starts(with: term)
+                case .endWith: value.hasSuffix(term)
+                case .equal: value == term
+                case .notEqual: value != term
+                }
+            }
         }
     }
 
