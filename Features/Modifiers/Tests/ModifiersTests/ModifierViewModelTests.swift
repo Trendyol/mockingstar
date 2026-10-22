@@ -17,6 +17,8 @@ final class MockModifierListViewModelTests: XCTestCase {
         api = FakeMockModifierAPIClient()
         notifications = MockNotificationManager()
         pasteBoard = MockNSPasteboard()
+        pasteBoard.stubbedClearContentsResult = 0
+        pasteBoard.stubbedSetStringResult = true
         sut = MockModifierListViewModel(
             apiClient: api,
             notificationManager: notifications,
@@ -252,6 +254,52 @@ final class MockModifierDetailViewModelTests: XCTestCase {
             order: order,
             transformerCode: "function transformer(req, chain) { return chain.proceed(req) }"
         )
+    }
+
+    func test_copyPreviewCURL_UsesUnsavedRequestWithoutRunningOrSaving() throws {
+        let pasteBoard = MockNSPasteboard()
+        pasteBoard.stubbedClearContentsResult = 0
+        pasteBoard.stubbedSetStringResult = true
+        let notifications = MockNotificationManager()
+        sut = MockModifierDetailViewModel(
+            modifierId: "discount", apiClient: api,
+            notificationManager: notifications, pasteBoard: pasteBoard
+        )
+        sut.previewInput = .init(
+            source: .mock, url: "https://example.com/cart?q=1", method: "post",
+            scenario: "sale", headersJSON: "{\"X-Test\":\"one\"}", body: "{\"name\":\"O'Reilly\"}"
+        )
+        sut.copyPreviewCURL()
+        let curl = try XCTUnwrap(pasteBoard.stubbedString)
+        XCTAssertTrue(curl.contains("--request 'POST'"))
+        XCTAssertTrue(curl.contains("--url 'https://example.com/cart?q=1'"))
+        XCTAssertTrue(curl.contains("--header 'X-Test: one'"))
+        XCTAssertTrue(curl.contains("O'\\''Reilly"))
+        XCTAssertNil(api.invokedPreview)
+        XCTAssertNil(api.invokedUpdate)
+        XCTAssertEqual(notifications.invokedShowParameters?.color, .green)
+    }
+
+    func test_copyPreviewCURL_InvalidInputPreservesClipboardAndShowsRedError() {
+        let pasteBoard = MockNSPasteboard()
+        pasteBoard.stubbedString = "existing clipboard"
+        let notifications = MockNotificationManager()
+        sut = MockModifierDetailViewModel(
+            modifierId: "discount", apiClient: api,
+            notificationManager: notifications, pasteBoard: pasteBoard
+        )
+        sut.previewInput.url = "/relative"
+        sut.copyPreviewCURL()
+        XCTAssertEqual(pasteBoard.stubbedString, "existing clipboard")
+        XCTAssertNotNil(sut.fieldErrors[.url])
+        XCTAssertEqual(notifications.invokedShowParameters?.color, .red)
+        sut.previewInput.url = "https://example.com"
+        sut.previewInput.headersJSON = "{\"X-Test\":1}"
+        sut.copyPreviewCURL()
+        XCTAssertNil(sut.fieldErrors[.url])
+        XCTAssertNotNil(sut.fieldErrors[.headers])
+        XCTAssertEqual(pasteBoard.stubbedString, "existing clipboard")
+        XCTAssertEqual(notifications.invokedShowParameters?.color, .red)
     }
 
     func test_load_AppliesModel() async {

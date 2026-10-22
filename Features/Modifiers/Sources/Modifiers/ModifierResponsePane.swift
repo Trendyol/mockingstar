@@ -27,12 +27,7 @@ struct MockModifierResponsePane: View {
                 Spacer()
                 Button("Copy") { viewModel.copyPreviewResponse() }
                     .disabled(viewModel.previewStatus == nil)
-                Menu("Headers") {
-                    Text(viewModel.previewResponseHeaders.isEmpty
-                         ? "No response headers"
-                         : viewModel.previewResponseHeaders)
-                }
-                .disabled(viewModel.previewStatus == nil)
+                Button("Copy cURL") { viewModel.copyPreviewCURL() }
             }
             .padding(10)
 

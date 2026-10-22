@@ -271,6 +271,26 @@ public final class MockModifierDetailViewModel {
         pasteBoard.setString(value, forType: .string)
     }
 
+    @MainActor
+    func copyPreviewCURL() {
+        fieldErrors.removeValue(forKey: .url)
+        fieldErrors.removeValue(forKey: .headers)
+        guard let input = validatePreviewRequest() else {
+            notificationManager.show(
+                title: fieldErrors[.url] ?? fieldErrors[.headers] ?? "Invalid preview request",
+                color: .red
+            )
+            return
+        }
+        var request = URLRequest(url: input.url)
+        request.httpMethod = previewInput.method.uppercased()
+        request.allHTTPHeaderFields = input.headers
+        request.httpBody = Data(previewInput.body.utf8)
+        pasteBoard.clearContents()
+        pasteBoard.setString(request.cURL(pretty: true), forType: .string)
+        notificationManager.show(title: "Request copied to clipboard", color: .green)
+    }
+
     private func refreshDirtyState() {
         shouldShowUnsavedIndicator = draft != savedSnapshot
     }
@@ -315,6 +335,14 @@ public final class MockModifierDetailViewModel {
         headers: [String: String]
     )? {
         _ = validateDocument()
+        guard let input = validatePreviewRequest() else { return nil }
+        if previewInput.source == .mock && draft.sampleMockRequestId.isEmpty {
+            fieldErrors[.sampleMockId] = "Select a sample mock"
+        }
+        return fieldErrors.isEmpty ? input : nil
+    }
+
+    private func validatePreviewRequest() -> (url: URL, headers: [String: String])? {
         guard let url = URL(string: previewInput.url),
               ["http", "https"].contains(url.scheme?.lowercased() ?? ""),
               url.host() != nil else {
@@ -326,10 +354,7 @@ public final class MockModifierDetailViewModel {
             fieldErrors[.headers] = "Headers must be a JSON string dictionary"
             return nil
         }
-        if previewInput.source == .mock && draft.sampleMockRequestId.isEmpty {
-            fieldErrors[.sampleMockId] = "Select a sample mock"
-        }
-        return fieldErrors.isEmpty ? (url, headers) : nil
+        return (url, headers)
     }
 
     private func applyPreview(_ result: MockModifierPreviewResponse) {
