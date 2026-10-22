@@ -2,11 +2,18 @@ import XCTest
 @testable import CommonViewsKit
 
 final class CommonViewsKitTests: XCTestCase {
-    func testExample() throws {
-        // XCTest Documentation
-        // https://developer.apple.com/documentation/xctest
+    func test_replaceLast_ReplacesOnlyFinalRoute() {
+        let store = NavigationStore()
+        store.path = [.modifiers, .modifier(id: "old")]
 
-        // Defining Test Cases and Test Methods
-        // https://developer.apple.com/documentation/xctest/defining_test_cases_and_test_methods
+        store.replaceLast(with: .modifier(id: "new"))
+
+        XCTAssertEqual(store.path, [.modifiers, .modifier(id: "new")])
+    }
+
+    func test_replaceLast_EmptyPathOpensRoute() {
+        let store = NavigationStore()
+        store.replaceLast(with: .modifier(id: "new"))
+        XCTAssertEqual(store.path, [.modifier(id: "new")])
     }
 }

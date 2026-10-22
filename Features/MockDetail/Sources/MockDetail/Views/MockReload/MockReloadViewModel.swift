@@ -142,7 +142,7 @@ final class MockReloadViewModel {
                 pasteBoard.clearContents()
                 pasteBoard.setString(content, forType: .string)
             } catch {
-                notificationManager.show(title: "Failed to encode mock", color: .red)
+                return notificationManager.show(title: "Failed to encode mock", color: .red)
             }
         }
         notificationManager.show(title: "Request copied to clipboard", color: .green)

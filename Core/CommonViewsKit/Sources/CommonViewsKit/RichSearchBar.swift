@@ -10,6 +10,7 @@ import SwiftUI
 
 public struct RichSearchBar: View {
     private let filterTypeDisabled: Bool
+    private let availableFilterTypes: [FilterType]
     @Binding private var filterType: FilterType
     @Binding private var filterStyle: FilterStyle
     @Binding private var searchTerm: String
@@ -20,8 +21,10 @@ public struct RichSearchBar: View {
                 filterStyle: Binding<FilterStyle>,
                 searchTerm: Binding<String>,
                 placeHolderCount: Binding<Int>,
-                isSearchActive: Binding<Bool>) {
+                isSearchActive: Binding<Bool>,
+                availableFilterTypes: [FilterType] = FilterType.allCases) {
         self.filterTypeDisabled = filterType == nil
+        self.availableFilterTypes = availableFilterTypes
         self._filterType = filterType ?? .constant(.all)
         self._filterStyle = filterStyle
         self._searchTerm = searchTerm
@@ -33,7 +36,7 @@ public struct RichSearchBar: View {
         HStack(spacing: .zero) {
             VStack(spacing: .zero) {
                 Menu {
-                    ForEach(FilterType.allCases, id: \.self) { type in
+                    ForEach(availableFilterTypes, id: \.self) { type in
                         Button {
                             filterType = type
                         } label: {

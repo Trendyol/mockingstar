@@ -17,7 +17,6 @@ final class FileIntegrityCheckViewModelTests: XCTestCase {
     private var viewModel: FileIntegrityCheckViewModel!
     private var fileManager: MockFileManager!
     private var mockDiscover: MockMockDiscover!
-    private let exp = XCTestExpectation(description: "MockListViewModelTests")
     private var mockDiscoverResult: AsyncStream<MockDiscoverResult>!
     private var mockDiscoverResultContinuation: AsyncStream<MockDiscoverResult>.Continuation!
 
@@ -28,12 +27,20 @@ final class FileIntegrityCheckViewModelTests: XCTestCase {
         fileManager = .init()
         mockDiscover = .init()
         mockDiscover.stubbedMockDiscoverResult = mockDiscoverResult
-        fileManager.stubbedReadJSONFileError = NSError(domain: "", code: -2)
+        fileManager.stubbedReadJSONFileWithUserInfoError = NSError(domain: "", code: -2)
 
         viewModel = .init(fileManager: fileManager,
                           mockDiscover: mockDiscover)
+        mockDiscoverResultContinuation.yield(.loading)
+        await waitUntil { self.viewModel.isLoading }
         mockDiscoverResultContinuation.yield(.result(mockModels))
-        await waitUntil { !self.viewModel.violatedMocks.isEmpty }
+        await waitUntil { !self.viewModel.isLoading }
+        XCTAssertEqual(fileManager.invokedReadJSONFileWithUserInfoCount, mockModels.count)
+    }
+
+    override func tearDown() async throws {
+        mockDiscoverResultContinuation.finish()
+        try await super.tearDown()
     }
 
     func test_searchFileViolates_isLoading() async {
@@ -50,7 +57,7 @@ final class FileIntegrityCheckViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.violatedMocks.count, 0)
 
         mockDiscoverResultContinuation.yield(.result(mockModels))
-        await waitUntil { self.viewModel.violatedMocks.count == 2 }
+        await waitUntil { !self.viewModel.isLoading }
 
         XCTAssertEqual(viewModel.violatedMocks.count, 2)
     }
@@ -71,11 +78,14 @@ final class FileIntegrityCheckViewModelTests: XCTestCase {
         XCTAssertEqual(fileManager.invokedUpdateFileContentParametersList.map(\.path), ["/MockServerDomains//Mocks/product/102030/PUT/product+102030_EmptyCase_9271C0BE-9326-443F-97B8-1ECA29571FC3.json"])
     }
 
-    private func waitUntil(_ condition: @escaping () -> Bool) async {
+    private func waitUntil(_ condition: @escaping () -> Bool,
+                           file: StaticString = #filePath,
+                           line: UInt = #line) async {
         let timeout = Date().addingTimeInterval(5)
         while !condition(), Date() < timeout {
             try? await Task.sleep(nanoseconds: 10_000_000)
         }
+        XCTAssertTrue(condition(), "Timed out waiting for file integrity check", file: file, line: line)
     }
 
 }

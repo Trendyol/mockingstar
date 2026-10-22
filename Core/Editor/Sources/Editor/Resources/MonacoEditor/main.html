@@ -98,6 +98,20 @@
 				monaco.editor.setModelLanguage(monacoEditor.getModel(), language);
 			}
 		}
+
+		function setReadOnly(readOnly) {
+			if (monacoEditor) {
+				monacoEditor.updateOptions({ readOnly: readOnly });
+			}
+		}
+
+		function revealLine(line) {
+			if (monacoEditor) {
+				monacoEditor.revealLineInCenter(line);
+				monacoEditor.setPosition({ lineNumber: line, column: 1 });
+				monacoEditor.focus();
+			}
+		}
 	</script>
 </body>
 

@@ -88,7 +88,7 @@ public struct NotificationBannerView: View {
         .onHover { hovering in
             onHover = hovering
         }
-        .background(Color.green)
+        .background(notification.color)
         .clipShape(.rect(cornerRadius: 10))
     }
 }

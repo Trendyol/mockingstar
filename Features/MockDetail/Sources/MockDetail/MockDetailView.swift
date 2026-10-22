@@ -30,7 +30,7 @@ public struct MockDetailView: View {
     public var body: some View {
         VStack(spacing: .zero) {
             MockDetailEditorTypeButton(selectedEditorType: $viewModel.selectedEditorType)
-            JsonEditorCache.shared.editor
+            EditorView(session: viewModel.editorSession)
                 .focused($isEditorFocused)
         }
         .navigationTitle(viewModel.mockModel.metaData.url.path())
