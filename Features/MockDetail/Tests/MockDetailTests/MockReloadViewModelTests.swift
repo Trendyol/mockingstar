@@ -94,6 +94,15 @@ final class MockReloadViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.mockReloadSelectedInspectorState, .response)
     }
 
+    func test_shareButtonTapped_EncodingFailureShowsOnlyRedError() {
+        viewModel.mockModel.requestHeader = "{invalid JSON}"
+        viewModel.shareButtonTapped(shareStyle: .file)
+        XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.title), ["Failed to encode mock"])
+        XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.color), [.red])
+        XCTAssertFalse(pasteBoard.invokedClearContents)
+        XCTAssertFalse(pasteBoard.invokedSetString)
+    }
+
     func test_shareButtonTapped_Curl_CopyExport() {
         pasteBoard.stubbedClearContentsResult = 0
         pasteBoard.stubbedSetStringResult = true

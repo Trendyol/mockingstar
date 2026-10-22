@@ -276,6 +276,18 @@ Error Domain=Failed Code=-1 "(null)"
         XCTAssertEqual(mockDiscover.invokedUpdateMockDomainParametersList.map(\.mockDomain), ["New Domain"])
     }
 
+    func test_shareButtonTapped_EncodingFailureShowsOnlyRedError() throws {
+        let id = "9271C0BE-9326-443F-97B8-1ECA29571FC3"
+        let mock = try XCTUnwrap(viewModel.mock(id: id))
+        mock.requestHeader = "{invalid JSON}"
+        viewModel.selected = [id]
+        viewModel.shareButtonTapped(shareStyle: .file)
+        XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.title), ["Failed to encode mock"])
+        XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.color), [.red])
+        XCTAssertFalse(pasteBoard.invokedClearContents)
+        XCTAssertFalse(pasteBoard.invokedSetString)
+    }
+
     func test_shareButtonTapped_copyCurl() {
         viewModel.selected = ["9271C0BE-9326-443F-97B8-1ECA29571FC3"]
 
