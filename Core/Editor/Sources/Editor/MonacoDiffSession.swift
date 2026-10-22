@@ -12,6 +12,11 @@ public final class MonacoDiffSession {
         set { bridge.onEditPath = newValue }
     }
 
+    public var onCopyObjectNotation: ((Int) -> Void)? {
+        get { bridge.onCopyObjectNotation }
+        set { bridge.onCopyObjectNotation = newValue }
+    }
+
     public init() {
         bridge = MonacoDiffWebView()
     }
@@ -24,6 +29,7 @@ public final class MonacoDiffSession {
 final class MonacoDiffWebView: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
     let webView: WKWebView
     var onEditPath: ((Int) -> Void)?
+    var onCopyObjectNotation: ((Int) -> Void)?
 
     private var pendingOriginal = ""
     private var pendingModified = ""
@@ -38,11 +44,13 @@ final class MonacoDiffWebView: NSObject, WKNavigationDelegate, WKScriptMessageHa
         webView.load(URLRequest(url: url))
         webView.configuration.userContentController.removeAllScriptMessageHandlers()
         webView.configuration.userContentController.add(self, name: "editPath")
+        webView.configuration.userContentController.add(self, name: "copyObjectNotation")
         webView.isInspectable = true
     }
 
     deinit {
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "editPath")
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "copyObjectNotation")
     }
 
     func setDiff(original: String, modified: String, language: String) {
@@ -66,7 +74,7 @@ final class MonacoDiffWebView: NSObject, WKNavigationDelegate, WKScriptMessageHa
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard message.name == "editPath" else { return }
+        guard message.name == "editPath" || message.name == "copyObjectNotation" else { return }
         let offset: Int?
         if let number = message.body as? NSNumber {
             offset = number.intValue
@@ -76,7 +84,11 @@ final class MonacoDiffWebView: NSObject, WKNavigationDelegate, WKScriptMessageHa
             offset = nil
         }
         guard let offset else { return }
-        onEditPath?(offset)
+        if message.name == "editPath" {
+            onEditPath?(offset)
+        } else {
+            onCopyObjectNotation?(offset)
+        }
     }
 }
 

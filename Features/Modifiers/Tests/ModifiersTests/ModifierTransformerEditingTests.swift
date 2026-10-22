@@ -9,6 +9,35 @@ final class MockModifierJSONPathTests: XCTestCase {
         return range.location + range.length / 2
     }
 
+    func test_resolveObject_ScalarFieldSelectsItsEnclosingWidget() {
+        let json = #"{"widgets":[{"name":"first"},{"name":"second","child":{"id":3}}]}"#
+
+        let widget = MockModifierJSONPath.resolveObject(json: json, utf16Offset: offset(of: "second", in: json))
+        let child = MockModifierJSONPath.resolveObject(json: json, utf16Offset: offset(of: "\"id\"", in: json))
+
+        XCTAssertEqual(widget?.path, [.key("widgets"), .index(1)])
+        XCTAssertEqual(widget?.literal, #"{"name":"second","child":{"id":3}}"#)
+        XCTAssertEqual(child?.path, [.key("widgets"), .index(1), .key("child")])
+    }
+
+    func test_resolveObject_ObjectKeySelectsTheObjectValue() {
+        let json = #"{"nested":{"id":3},"other":true}"#
+
+        let resolved = MockModifierJSONPath.resolveObject(json: json, utf16Offset: offset(of: "nested", in: json))
+
+        XCTAssertEqual(resolved?.path, [.key("nested")])
+        XCTAssertEqual(resolved?.literal, #"{"id":3}"#)
+    }
+
+    func test_resolveObject_RootAndEmojiOffsetsAreSupported() {
+        let json = #"{"emoji":"👋","items":[{"id":42}]}"#
+
+        XCTAssertEqual(MockModifierJSONPath.resolveObject(json: json, utf16Offset: 0)?.path, [])
+        XCTAssertEqual(MockModifierJSONPath.resolveObject(json: json, utf16Offset: offset(of: "42", in: json))?.path,
+                       [.key("items"), .index(0)])
+        XCTAssertNil(MockModifierJSONPath.resolveObject(json: "[1,2]", utf16Offset: 1))
+    }
+
     func test_resolve_NestedArrayAndObject_ReturnsPathAndLiteral() {
         let json = """
         {

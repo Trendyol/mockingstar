@@ -74,6 +74,23 @@
             });
 
             modifiedEditor.addAction({
+                id: 'modifier-copy-object-notation',
+                label: 'Copy Object Notation',
+                precondition: 'editorLangId == json',
+                contextMenuGroupId: 'navigation',
+                contextMenuOrder: 2,
+                run: function (ed) {
+                    var position = contextMenuPosition || ed.getPosition();
+                    contextMenuPosition = null;
+                    if (!position) { return; }
+                    var offset = ed.getModel().getOffsetAt(position);
+                    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.copyObjectNotation) {
+                        window.webkit.messageHandlers.copyObjectNotation.postMessage(String(offset));
+                    }
+                }
+            });
+
+            modifiedEditor.addAction({
                 id: 'modifier-edit-in-js',
                 label: 'Edit in JavaScript',
                 contextMenuGroupId: 'navigation',

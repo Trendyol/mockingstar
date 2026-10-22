@@ -24,6 +24,20 @@ enum MockModifierJSONPath {
         return Resolved(path: best.path, literal: best.literal)
     }
 
+    /// A click on an object key selects its value; a scalar click selects its enclosing object.
+    static func resolveObject(json: String, utf16Offset offset: Int) -> Resolved? {
+        let scanner = Scanner(text: json)
+        scanner.scanValue(path: [])
+        let containing = scanner.entries.filter {
+            ($0.range.contains(offset) || $0.range.upperBound == offset)
+                && $0.literal.first == "{"
+        }
+        guard let best = containing.min(by: {
+            $0.literal.utf16.count < $1.literal.utf16.count
+        }) else { return nil }
+        return Resolved(path: best.path, literal: best.literal)
+    }
+
     private struct Entry {
         let path: [MockModifierJSONPathComponent]
         let range: Range<Int>
