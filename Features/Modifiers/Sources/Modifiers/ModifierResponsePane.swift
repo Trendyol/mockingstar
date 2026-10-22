@@ -1,5 +1,6 @@
 import Editor
 import SwiftUI
+import TipKit
 
 struct MockModifierResponsePane: View {
     @Bindable var viewModel: MockModifierDetailViewModel
@@ -30,6 +31,9 @@ struct MockModifierResponsePane: View {
                 Button("Copy cURL") { viewModel.copyPreviewCURL() }
             }
             .padding(10)
+
+            TipView(ModifierResponseTip())
+                .padding(.horizontal, 10)
 
             Group {
                 if viewModel.previewStatus == nil && !viewModel.isPreviewLoading {

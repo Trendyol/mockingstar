@@ -2,6 +2,7 @@ import CommonKit
 import CommonViewsKit
 import Editor
 import SwiftUI
+import TipKit
 
 /// Owns a stable ViewModel so NavigationStack parent re-renders do not wipe preview seed/state.
 public struct MockModifierDetailRouteView: View {
@@ -57,6 +58,9 @@ public struct MockModifierDetailView: View {
                             .disabled(viewModel.isPreviewLoading)
                         }
                         .padding(10)
+
+                        TipView(ModifierJavaScriptTip())
+                            .padding(.horizontal, 10)
 
                         EditorView(session: viewModel.javaScriptEditorSession)
                             .focused($isEditorFocused)
@@ -200,6 +204,8 @@ private struct MockModifierDetailInspectorPane: View {
 
             GroupBox {
                 VStack(alignment: .leading, spacing: 0) {
+                    TipView(ModifierPreviewRequestTip())
+
                     LabeledContent("Source") {
                         MockModifierSourcePicker(selection: viewModel.activeSource) { newSource in
                             Task { await viewModel.setSource(newSource, domain: mockDomain) }
