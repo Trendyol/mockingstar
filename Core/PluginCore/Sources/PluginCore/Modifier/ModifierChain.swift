@@ -41,33 +41,42 @@ public final class MockModifierChain {
 
         let modifier = modifiers[currentIndex]
 
-        return try executor.execute(
-            modifier: modifier,
-            request: request,
-            executionMode: executionMode
-        ) { [weak self] innerRequest in
-            guard let self else {
-                throw MockModifierChainError.chainDeallocated
-            }
-
-            let semaphore = DispatchSemaphore(value: 0)
-            var outcome: Result<HTTPResult, Error> = .success(HTTPResult(status: 500, body: Data(), headers: [:]))
-
-            Task {
+        // JS chain.proceed is synchronous and waits for an async terminal. Run each
+        // transformer on Dispatch so those waits cannot exhaust Swift's cooperative pool.
+        return try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async { [self] in
                 do {
-                    outcome = .success(try await self.proceed(innerRequest))
-                } catch {
-                    self.logger.error("modifier chain proceed failed: \(error)")
-                    outcome = .failure(error)
-                }
-                semaphore.signal()
-            }
+                    let result = try executor.execute(
+                        modifier: modifier,
+                        request: request,
+                        executionMode: executionMode
+                    ) { [weak self] innerRequest in
+                        guard let self else {
+                            throw MockModifierChainError.chainDeallocated
+                        }
 
-            semaphore.wait()
-            // Rethrow on failure (rather than returning a dummy 500 HTTPResult) so the
-            // JS bridge (`JSChain`) can surface this as a JS exception, preventing the
-            // *outer* transformer from mutating/hiding the failure behind a success response.
-            return try outcome.get()
+                        let semaphore = DispatchSemaphore(value: 0)
+                        var outcome: Result<HTTPResult, Error> = .success(HTTPResult(status: 500, body: Data(), headers: [:]))
+
+                        Task {
+                            do {
+                                outcome = .success(try await self.proceed(innerRequest))
+                            } catch {
+                                self.logger.error("modifier chain proceed failed: \(error)")
+                                outcome = .failure(error)
+                            }
+                            semaphore.signal()
+                        }
+
+                        semaphore.wait()
+                        // Propagate errors through JSChain so outer modifiers cannot hide a failure.
+                        return try outcome.get()
+                    }
+                    continuation.resume(returning: result)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
         }
     }
 

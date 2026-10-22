@@ -52,6 +52,49 @@ final class MockModifierChainTests: XCTestCase {
         XCTAssertEqual(result.status, 200)
     }
 
+    @MainActor
+    func test_chain_DeepChainWithAsyncMainActorTerminalCompletesInOrder() async throws {
+        let ids = (0..<16).map { "modifier-\($0)" }
+        let chain = MockModifierChain(modifiers: ids.enumerated().map {
+            orderAppendingModifier(id: $0.element, order: $0.offset + 1)
+        }) { _ in
+            await Task.yield()
+            return await MainActor.run {
+                HTTPResult(status: 200, body: Data(#"{"order":[]}"#.utf8), headers: [:])
+            }
+        }
+
+        let result = try await chain.proceed(request())
+
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: result.body) as? [String: Any])
+        XCTAssertEqual(json["order"] as? [String], Array(ids.reversed()))
+    }
+
+    func test_chain_ConcurrentRequestsWithAsyncTerminalsCompleteIndependently() async throws {
+        let input = request()
+        let modifiers = (0..<4).map { orderAppendingModifier(id: "modifier-\($0)", order: $0 + 1) }
+        let results = try await withThrowingTaskGroup(of: HTTPResult.self) { group in
+            for _ in 0..<8 {
+                group.addTask {
+                    let chain = MockModifierChain(modifiers: modifiers) { _ in
+                        await Task.yield()
+                        return HTTPResult(status: 200, body: Data(#"{"order":[]}"#.utf8), headers: [:])
+                    }
+                    return try await chain.proceed(input)
+                }
+            }
+            var results: [HTTPResult] = []
+            for try await result in group { results.append(result) }
+            return results
+        }
+
+        XCTAssertEqual(results.count, 8)
+        for result in results {
+            let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: result.body) as? [String: Any])
+            XCTAssertEqual(json["order"] as? [String], ["modifier-3", "modifier-2", "modifier-1", "modifier-0"])
+        }
+    }
+
     func test_chain_InnerModifierThrows_OuterCannotHideFailure() async throws {
         let outer = MockModifierModel(
             id: "outer", path: "/x", method: "GET", order: 1,
