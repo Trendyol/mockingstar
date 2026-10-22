@@ -291,7 +291,7 @@ Error Domain=Failed Code=-1 "(null)"
         XCTAssertTrue(pasteBoard.invokedClearContents)
         XCTAssertTrue(pasteBoard.invokedSetString)
         XCTAssertTrue(notificationManager.invokedShow)
-        XCTAssertEqual(pasteBoard.invokedSetStringParametersList.map(\.string), ["curl --request GET \\\n--url \'https://www.trendyol.com/aboutus\' \\\n"])
+        XCTAssertEqual(pasteBoard.invokedSetStringParametersList.map(\.string), ["curl --request 'GET' \\\n--url \'https://www.trendyol.com/aboutus\' \\\n"])
         XCTAssertEqual(pasteBoard.invokedSetStringParametersList.map(\.dataType), [.string])
         XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.title), ["Request copied to clipboard"])
         XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.color), [.green])
