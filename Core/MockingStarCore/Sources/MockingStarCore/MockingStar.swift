@@ -56,9 +56,9 @@ public final class MockingStarCore {
 
     /// Resolves a request into a response. Modifier matching and the JS chain live in
     /// `MockModifierGateway`; this method only supplies the mock/live terminal.
-    func handle(request: URLRequest, flags: MockServerFlags) async throws -> (status: Int, body: Data, headers: [String: String]) {
+    func handle(request: URLRequest, flags: MockServerFlags, startedAt: ContinuousClock.Instant = ContinuousClock().now) async throws -> (status: Int, body: Data, headers: [String: String]) {
         try await modifierGateway.handle(request: request, flags: flags) { [self] request, flags in
-            try await originalHandle(request: request, flags: flags)
+            try await originalHandle(request: request, flags: flags, startedAt: startedAt)
         }
     }
 
@@ -68,45 +68,37 @@ public final class MockingStarCore {
         rawFlags["deviceId"] ?? ""
     }
 
-    private func originalHandle(request: URLRequest, flags: MockServerFlags) async throws -> (status: Int, body: Data, headers: [String: String]) {
+    private func originalHandle(request: URLRequest, flags: MockServerFlags, startedAt: ContinuousClock.Instant) async throws -> (status: Int, body: Data, headers: [String: String]) {
         let decider = try await deciderActor.decider(for: flags.domain)
         let result = try await decider.decideMock(request: request, flags: flags)
 
         switch result {
         case .useMock where flags.mockSource == .onlyLive:
-            logger.info("Mock Trace", metadata: [
-                "traceUrl": .string(request.url?.absoluteString ?? ""),
-                "responseType": "live request"
-            ])
             logger.info("Mock found but onlyLive requested, proxying live server", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
-            return try await proxyRequest(request: request, mockDomain: flags.domain)
+            let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
+            logMockTrace(request: request, responseType: "live request", startedAt: startedAt)
+            return liveResult
         case .useMock(mock: let mock):
-            logger.info("Mock Trace", metadata: [
-                "traceUrl": .string(request.url?.absoluteString ?? ""),
-                "responseType": "mock"
-            ])
             logger.info("Mock found, waiting response time", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
 
             try await Task.sleep(for: .seconds(mock.metaData.responseTime))
+            logMockTrace(request: request, responseType: "mock", startedAt: startedAt)
 
             let bodyData = mock.responseBody.data(using: .utf8) ?? .init()
             return (status: mock.metaData.httpStatus,
                     body: bodyData,
                     headers: try mock.responseHeader.asDictionary())
         case .mockNotFound where flags.mockSource == .default || flags.mockSource == .onlyLive:
-            logger.info("Mock Trace", metadata: [
-                "traceUrl": .string(request.url?.absoluteString ?? ""),
-                "responseType": "live request"
-            ])
             logger.info("Mock not found, trying to request live server: \(request.url?.path() ?? .init())", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
 
             let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
+            logMockTrace(request: request, responseType: "live request", startedAt: startedAt)
             if flags.mockSource == .default {
                 Task {
                     try await saveFileIfNeeded(request: request,
@@ -119,25 +111,19 @@ public final class MockingStarCore {
             }
             return liveResult
         case .mockNotFound:
-            logger.info("Mock Trace", metadata: [
-                "traceUrl": .string(request.url?.absoluteString ?? ""),
-                "responseType": "no mock and disabled live request"
-            ])
             logger.warning("Mock not found and disable live environment: \(request.url?.path() ?? .init())", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
             let pluginMessage = try await pluginActor.pluginCore(for: flags.domain).mockErrorPlugin(message: "Mock not found and disable live environment: \(request.url?.path() ?? .init())")
+            logMockTrace(request: request, responseType: "no mock and disabled live request", startedAt: startedAt)
             return (404, pluginMessage.data(using: .utf8) ?? .init(), [:])
         case .scenarioNotFound where flags.mockSource == .default || flags.mockSource == .onlyLive:
-            logger.info("Mock Trace", metadata: [
-                "traceUrl": .string(request.url?.absoluteString ?? ""),
-                "responseType": "scenario not found and live request"
-            ])
             logger.info("Scenario not found, trying to request live server", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
 
             let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
+            logMockTrace(request: request, responseType: "scenario not found and live request", startedAt: startedAt)
             if flags.mockSource == .default {
                 Task {
                     try await saveFileIfNeeded(request: request,
@@ -150,24 +136,39 @@ public final class MockingStarCore {
             }
             return liveResult
         case .scenarioNotFound:
-            logger.info("Mock Trace", metadata: [
-                "traceUrl": .string(request.url?.absoluteString ?? ""),
-                "responseType": "scenario not found and disabled live request"
-            ])
             logger.warning("Scenario not found and disable live environment", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
             let pluginMessage = try await pluginActor.pluginCore(for: flags.domain).mockErrorPlugin(message: "Scenario not found and disable live environment")
+            logMockTrace(request: request, responseType: "scenario not found and disabled live request", startedAt: startedAt)
             return (404, pluginMessage.data(using: .utf8) ?? .init(), [:])
         case .ignoreDomain:
-            logger.info("Mock Trace", metadata: [
-                "traceUrl": .string(request.url?.absoluteString ?? ""),
-                "responseType": "ignored domain and live request"
-            ])
             logger.info("Ignoring domain: \(request.url?.host() ?? "_")", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
-            return try await proxyRequest(request: request)
+            let liveResult = try await proxyRequest(request: request)
+            logMockTrace(request: request, responseType: "ignored domain and live request", startedAt: startedAt)
+            return liveResult
+        }
+    }
+
+    private func logMockTrace(request: URLRequest, responseType: String, startedAt: ContinuousClock.Instant, errorMessage: String? = nil) {
+        let duration = String(format: "%.4f", (ContinuousClock().now - startedAt) / .seconds(1))
+        if let errorMessage {
+            logger.info("Mock Trace", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? ""),
+                "responseType": .string(responseType),
+                "duration": .string(duration),
+                "method": .string(request.httpMethod ?? ""),
+                "errorMessage": .string(errorMessage)
+            ])
+        } else {
+            logger.info("Mock Trace", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? ""),
+                "responseType": .string(responseType),
+                "duration": .string(duration),
+                "method": .string(request.httpMethod ?? "")
+            ])
         }
     }
 
@@ -520,14 +521,11 @@ extension MockingStarCore: ServerMockHandlerInterface {
             "traceUrl": .string(url.absoluteString)
         ])
 
+        let startedAt = ContinuousClock().now
         do {
-            return try await handle(request: request, flags: flags)
+            return try await handle(request: request, flags: flags, startedAt: startedAt)
         } catch {
-            logger.info("Mock Trace", metadata: [
-                "traceUrl": .string(request.url?.absoluteString ?? ""),
-                "responseType": "error",
-                "errorMessage": "\(error.localizedDescription)",
-            ])
+            logMockTrace(request: request, responseType: "error", startedAt: startedAt, errorMessage: error.localizedDescription)
             throw error
         }
     }

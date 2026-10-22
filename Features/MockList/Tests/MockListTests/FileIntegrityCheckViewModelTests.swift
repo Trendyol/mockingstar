@@ -21,8 +21,8 @@ final class FileIntegrityCheckViewModelTests: XCTestCase {
     private var mockDiscoverResult: AsyncStream<MockDiscoverResult>!
     private var mockDiscoverResultContinuation: AsyncStream<MockDiscoverResult>.Continuation!
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
+    override func setUp() async throws {
+        try await super.setUp()
         (mockDiscoverResult, mockDiscoverResultContinuation) = AsyncStream<MockDiscoverResult>.makeStream()
 
         fileManager = .init()
@@ -32,36 +32,25 @@ final class FileIntegrityCheckViewModelTests: XCTestCase {
 
         viewModel = .init(fileManager: fileManager,
                           mockDiscover: mockDiscover)
+        mockDiscoverResultContinuation.yield(.result(mockModels))
+        await waitUntil { !self.viewModel.violatedMocks.isEmpty }
     }
 
-    func test_searchFileViolates_isLoading() {
+    func test_searchFileViolates_isLoading() async {
         XCTAssertFalse(viewModel.isLoading)
 
         mockDiscoverResultContinuation.yield(.loading)
+        await waitUntil { self.viewModel.isLoading }
 
-        let exp = XCTestExpectation(description: "FileIntegrityCheckViewModelTests")
-
-        Task {
-            while !viewModel.isLoading {
-                try? await Task.sleep(nanoseconds: 50_000_000)
-            }
-
-            exp.fulfill()
-        }
-
-        wait(for: [exp], timeout: 10)
         XCTAssertTrue(viewModel.isLoading)
     }
 
     func test_searchFileViolates_NoResult() async {
+        await viewModel.searchFileViolates("Dev")
         XCTAssertEqual(viewModel.violatedMocks.count, 0)
 
-        await viewModel.searchFileViolates("Dev")
         mockDiscoverResultContinuation.yield(.result(mockModels))
-
-        while viewModel.violatedMocks.isEmpty {
-            try? await Task.sleep(nanoseconds: 50_000_000)
-        }
+        await waitUntil { self.viewModel.violatedMocks.count == 2 }
 
         XCTAssertEqual(viewModel.violatedMocks.count, 2)
     }
@@ -70,23 +59,9 @@ final class FileIntegrityCheckViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isLoading)
         XCTAssertFalse(fileManager.invokedMoveFile)
         XCTAssertFalse(fileManager.invokedUpdateFileContent)
-
-        mockDiscoverResultContinuation.yield(.result(mockModels))
-
-        let exp = XCTestExpectation(description: "FileIntegrityCheckViewModelTests")
-
-        Task {
-            while viewModel.violatedMocks.isEmpty {
-                try? await Task.sleep(nanoseconds: 50_000_000)
-            }
-
-            exp.fulfill()
-        }
-
-        wait(for: [exp], timeout: 10)
+        XCTAssertFalse(viewModel.violatedMocks.isEmpty)
 
         viewModel.fixViolations()
-
 
         XCTAssertFalse(viewModel.isLoading)
         XCTAssertTrue(fileManager.invokedMoveFile)
@@ -94,6 +69,13 @@ final class FileIntegrityCheckViewModelTests: XCTestCase {
         XCTAssertEqual(fileManager.invokedMoveFileParametersList.map(\.path), ["/foo/bar/file/path/mock.json", "/MockServerDomains//Mocks/product/102030/PUT/product+102030_EmptyCase_9271C0BE-9326-443F-97B8-1ECA29571FC3.json"])
         XCTAssertEqual(fileManager.invokedMoveFileParametersList.map(\.newPath).count, 2)
         XCTAssertEqual(fileManager.invokedUpdateFileContentParametersList.map(\.path), ["/MockServerDomains//Mocks/product/102030/PUT/product+102030_EmptyCase_9271C0BE-9326-443F-97B8-1ECA29571FC3.json"])
+    }
+
+    private func waitUntil(_ condition: @escaping () -> Bool) async {
+        let timeout = Date().addingTimeInterval(5)
+        while !condition(), Date() < timeout {
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
     }
 
 }

@@ -16,7 +16,7 @@ You can use all operations independently of the UI with the Mocking Star CLI. Fe
 YusufOzgul@macOS Debug % ./MockingStar help start
 OVERVIEW: Start mock server
 
-USAGE: ./MockingStar start [--logs-folder <logs-folder>] [--port <port>] <folder>
+USAGE: ./MockingStar start [--logs-folder <logs-folder>] [--port <port>] [--trace-export <trace-export>] <folder>
 
 ARGUMENTS:
     <folder>                Mocks folder path
@@ -25,6 +25,8 @@ OPTIONS:
     -l, --logs-folder <logs-folder>
                             Logs folder
     -p, --port <port>       HTTP Server Port (default: 8008)
+    -t, --trace-export <trace-export>
+                            Export Mock Trace JSONL to this file or directory (default: ./MockingStarTrace.json)
     -h, --help              Show help information.
 ```
 
@@ -35,6 +37,12 @@ To achieve this, you need to add the header `disableLiveEnvironment=true` to you
 
 > Tip:
 Mocking Star allows multiple applications to use the same mock folder. For example, if you are running your application with multiple instances/simulators/emulators, a single Mocking Star instance is sufficient.
+
+> Tip:
+Every request is exported as a Mock Trace entry (URL, method, response type, duration in seconds) to a JSONL file.
+By default this is `./MockingStarTrace.json` in the current working directory.
+Use `--trace-export` to override the path.
+`--logs-folder` only affects general log files (`MockingStar.log`), not the Mock Trace export.
 
 > Warning:
 Linux CLI version does not support Plugins due to JavaScriptCore not available on Linux.
