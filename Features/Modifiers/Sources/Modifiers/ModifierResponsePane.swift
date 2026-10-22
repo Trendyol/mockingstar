@@ -7,28 +7,38 @@ struct MockModifierResponsePane: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Text("Response").font(.headline)
-                if let status = viewModel.previewStatus {
-                    Text("\(status)")
-                        .font(.caption.monospacedDigit())
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(.quaternary, in: Capsule())
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Response").font(.headline)
+                    if let status = viewModel.previewStatus {
+                        Text("\(status)")
+                            .font(.caption.monospacedDigit())
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(.quaternary, in: Capsule())
+                    }
+                    if viewModel.previewIsStale {
+                        Text("Stale").foregroundStyle(.orange)
+                    }
+                    if viewModel.previewStatus != nil && !viewModel.hasPreviewOriginal {
+                        Text("No original")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .help("The transformer did not call chain.proceed, so there is no original response to diff against.")
+                    }
+                    Spacer()
                 }
-                if viewModel.previewIsStale {
-                    Text("Stale").foregroundStyle(.orange)
+                HStack {
+                    Spacer()
+                    Button("Copy") { viewModel.copyPreviewResponse() }
+                        .disabled(viewModel.previewStatus == nil)
+                    if viewModel.previewStatus != nil {
+                        Button("Copy Object Notation") { viewModel.copyObjectNotation() }
+                            .disabled(!viewModel.canCopyObjectNotation)
+                            .help("Copy the merged response structure. Right-click a response field to copy only its object and path.")
+                    }
+                    Button("Copy cURL") { viewModel.copyPreviewCURL() }
                 }
-                if viewModel.previewStatus != nil && !viewModel.hasPreviewOriginal {
-                    Text("No original")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .help("The transformer did not call chain.proceed, so there is no original response to diff against.")
-                }
-                Spacer()
-                Button("Copy") { viewModel.copyPreviewResponse() }
-                    .disabled(viewModel.previewStatus == nil)
-                Button("Copy cURL") { viewModel.copyPreviewCURL() }
             }
             .padding(10)
 

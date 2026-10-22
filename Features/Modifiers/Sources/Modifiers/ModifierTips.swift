@@ -4,7 +4,7 @@ import TipKit
 struct ModifierResponseTip: Tip {
     var title: Text { Text("Edit one response field") }
     var message: Text? {
-        Text("Run a preview to compare the original response on the left with the transformed response on the right. Right-click a key or value on the right and choose Edit in JavaScript to change just that field.")
+        Text("Run a preview to compare the original response on the left with the transformed response on the right. Right-click a key or value on the right: Edit in JavaScript changes that field; Copy Object Notation copies its enclosing object structure and path.")
     }
     var image: Image? { Image(systemName: "curlybraces") }
     var options: [TipOption] { MaxDisplayCount(1) }

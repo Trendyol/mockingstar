@@ -68,6 +68,10 @@ public final class MockModifierDetailViewModel {
         responseEditorSession.content.content
     }
 
+    var canCopyObjectNotation: Bool {
+        previewStatus != nil && previewModifiedType == .json && !isPreviewLoading
+    }
+
     public init(modifierId: String,
                 previewSeed: MockModifierCreationSeed? = nil,
                 apiClient: MockModifierAPIClientInterface = MockModifierAPIClient(),
@@ -104,6 +108,9 @@ public final class MockModifierDetailViewModel {
         self.draft = initialDraft
         self.diffEditorSession.onEditPath = { [weak self] offset in
             Task { @MainActor in self?.editPreviewPath(offset: offset) }
+        }
+        self.diffEditorSession.onCopyObjectNotation = { [weak self] offset in
+            Task { @MainActor in self?.copyObjectNotation(offset: offset) }
         }
     }
 
@@ -269,6 +276,50 @@ public final class MockModifierDetailViewModel {
         let value = String(data: data, encoding: .utf8) ?? previewBodyBase64
         pasteBoard.clearContents()
         pasteBoard.setString(value, forType: .string)
+    }
+
+    @MainActor
+    func copyObjectNotation() {
+        guard canCopyObjectNotation else { return }
+        do {
+            let data = Data(base64Encoded: previewBodyBase64) ?? Data()
+            let notation = try MockModifierObjectNotation.make(from: data)
+            pasteBoard.clearContents()
+            pasteBoard.setString(notation, forType: .string)
+            notificationManager.show(title: "Object notation copied to clipboard", color: .green)
+        } catch {
+            present(error)
+        }
+    }
+
+    @MainActor
+    func copyObjectNotation(offset: Int) {
+        guard canCopyObjectNotation else { return }
+        guard let object = MockModifierJSONPath.resolveObject(json: previewModifiedText, utf16Offset: offset) else {
+            notificationManager.show(title: "Right-click an object or one of its fields", color: .red)
+            return
+        }
+        do {
+            // Resolve against the displayed text, but infer from the original JSON to preserve number types.
+            var value = try JSONSerialization.jsonObject(with: Data(base64Encoded: previewBodyBase64) ?? Data())
+            for component in object.path {
+                switch component {
+                case .key(let key):
+                    guard let child = (value as? [String: Any])?[key] else { return }
+                    value = child
+                case .index(let index):
+                    guard let array = value as? [Any], array.indices.contains(index) else { return }
+                    value = array[index]
+                }
+            }
+            let notation = try MockModifierObjectNotation.make(from: value)
+            let path = MockModifierTransformerEditor.lhs(for: object.path)
+            pasteBoard.clearContents()
+            pasteBoard.setString("Path: \(path)\n\(notation)", forType: .string)
+            notificationManager.show(title: "Object notation copied to clipboard", color: .green)
+        } catch {
+            present(error)
+        }
     }
 
     @MainActor

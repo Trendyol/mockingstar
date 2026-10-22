@@ -78,6 +78,28 @@ Preview request fields (URL, method, scenario, headers, body) and the preview re
 
 `sampleMockRequestId` is an optional string on the modifier definition. It is a UI/preview reference to a mock id — it does not change `/mock` matching by itself. When source is `mock`, the server loads that id via the stored-mock loader; a missing or unknown id fails the preview.
 
+### Copy Object Notation
+
+After running a JSON preview, **Copy Object Notation** in the response toolbar copies the
+transformed response structure with `int`, `double`, `string`, `bool`, and `null` type names.
+Objects in the same array are merged recursively into one shape: fields missing from some
+objects are marked optional, and scalar types are joined with `|`.
+
+For example, `[{"a":1},{"a":null,"b":"x"}]` becomes
+`[{"a":"int|null","b":"string (optional)"}]`.
+Optional object/array fields use `{"$optional": ...}` to retain their structure.
+Fields containing both containers and scalars use `{"$types": [...]}`.
+These describe the observed preview response, rather than a complete API contract.
+
+To copy only the part you need, right-click a field in the transformed response and choose
+**Copy Object Notation**. A scalar field selects its nearest enclosing object; an object key
+selects that object. The clipboard includes its JavaScript path, followed by its notation:
+
+```text
+Path: res.body.widgets[1]
+{"name":"string","products":[{"id":"int|null","label":"string (optional)"}]}
+```
+
 ### Save and rename
 
 **Save** persists metadata + transformer code. If the draft `id` differs from the path `{id}`, the update is a rename:

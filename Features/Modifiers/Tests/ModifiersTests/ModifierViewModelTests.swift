@@ -302,6 +302,154 @@ final class MockModifierDetailViewModelTests: XCTestCase {
         XCTAssertEqual(notifications.invokedShowParameters?.color, .red)
     }
 
+    func test_copyObjectNotation_CopiesModifiedResponseTypesAndMergedShapes() async throws {
+        let pasteBoard = MockNSPasteboard()
+        pasteBoard.stubbedClearContentsResult = 0
+        pasteBoard.stubbedSetStringResult = true
+        let notifications = MockNotificationManager()
+        sut = MockModifierDetailViewModel(
+            modifierId: "discount", apiClient: api,
+            notificationManager: notifications, pasteBoard: pasteBoard
+        )
+        api.stubbedGet = sampleModifier()
+        api.stubbedPreview = .init(
+            status: 200,
+            headers: [:],
+            bodyBase64: Data(#"{"a":1,"b":"hello","c":[{"d":2},{"d":3}],"decimal":1.0}"#.utf8).base64EncodedString(),
+            originalBodyBase64: Data(#"{"original":true}"#.utf8).base64EncodedString()
+        )
+        await sut.load(domain: "Dev")
+        XCTAssertFalse(sut.canCopyObjectNotation)
+        await sut.runPreview(domain: "Dev")
+
+        XCTAssertTrue(sut.canCopyObjectNotation)
+        sut.copyObjectNotation()
+
+        XCTAssertEqual(pasteBoard.stubbedString, #"{"a":"int","b":"string","c":[{"d":"int"}],"decimal":"double"}"#)
+        XCTAssertEqual(pasteBoard.invokedSetStringParameters?.dataType, .string)
+        XCTAssertEqual(notifications.invokedShowParameters?.title, "Object notation copied to clipboard")
+        XCTAssertEqual(notifications.invokedShowParameters?.color, .green)
+        XCTAssertNil(api.invokedUpdate)
+    }
+
+    func test_copyObjectNotationAtOffset_CopiesOnlyClickedObjectAndPath() async throws {
+        let pasteBoard = MockNSPasteboard()
+        pasteBoard.stubbedClearContentsResult = 0
+        pasteBoard.stubbedSetStringResult = true
+        sut = MockModifierDetailViewModel(
+            modifierId: "discount", apiClient: api,
+            notificationManager: MockNotificationManager(), pasteBoard: pasteBoard
+        )
+        api.stubbedGet = sampleModifier()
+        api.stubbedPreview = .init(
+            status: 200, headers: [:],
+            bodyBase64: Data(#"{"widgets":[{"name":"first"},{"name":"second","price":1.0,"products":[{"id":1},{"id":null,"label":"x"}]}]}"#.utf8).base64EncodedString()
+        )
+        await sut.load(domain: "Dev")
+        await sut.runPreview(domain: "Dev")
+        let offset = (sut.previewModifiedText as NSString).range(of: "second").location
+
+        sut.copyObjectNotation(offset: offset)
+
+        XCTAssertEqual(pasteBoard.stubbedString,
+                       "Path: res.body.widgets[1]\n" + #"{"name":"string","price":"double","products":[{"id":"int|null","label":"string (optional)"}]}"#)
+        XCTAssertNil(api.invokedUpdate)
+    }
+
+    func test_copyObjectNotationAtOffset_EscapesObjectKeysInPath() async {
+        let pasteBoard = MockNSPasteboard()
+        pasteBoard.stubbedClearContentsResult = 0
+        pasteBoard.stubbedSetStringResult = true
+        sut = MockModifierDetailViewModel(
+            modifierId: "discount", apiClient: api,
+            notificationManager: MockNotificationManager(), pasteBoard: pasteBoard
+        )
+        api.stubbedGet = sampleModifier()
+        api.stubbedPreview = .init(
+            status: 200, headers: [:],
+            bodyBase64: Data(#"{"foo-bar":{"id":3}}"#.utf8).base64EncodedString()
+        )
+        await sut.load(domain: "Dev")
+        await sut.runPreview(domain: "Dev")
+        let offset = (sut.previewModifiedText as NSString).range(of: "foo-bar").location
+
+        sut.copyObjectNotation(offset: offset)
+
+        XCTAssertEqual(pasteBoard.stubbedString, #"Path: res.body["foo-bar"]"# + "\n" + #"{"id":"int"}"#)
+    }
+
+    func test_copyObjectNotationAtOffset_WithoutEnclosingObjectPreservesClipboard() async {
+        let pasteBoard = MockNSPasteboard()
+        pasteBoard.stubbedString = "existing clipboard"
+        let notifications = MockNotificationManager()
+        sut = MockModifierDetailViewModel(
+            modifierId: "discount", apiClient: api,
+            notificationManager: notifications, pasteBoard: pasteBoard
+        )
+        api.stubbedGet = sampleModifier()
+        api.stubbedPreview = .init(
+            status: 200, headers: [:],
+            bodyBase64: Data("[1,2]".utf8).base64EncodedString()
+        )
+        await sut.load(domain: "Dev")
+        await sut.runPreview(domain: "Dev")
+
+        sut.copyObjectNotation(offset: (sut.previewModifiedText as NSString).range(of: "1").location)
+
+        XCTAssertEqual(pasteBoard.stubbedString, "existing clipboard")
+        XCTAssertFalse(pasteBoard.invokedClearContents)
+        XCTAssertEqual(notifications.invokedShowParameters?.color, .red)
+    }
+
+    func test_copyObjectNotation_WithoutJSONPreviewPreservesClipboard() async {
+        let pasteBoard = MockNSPasteboard()
+        pasteBoard.stubbedString = "existing clipboard"
+        sut = MockModifierDetailViewModel(
+            modifierId: "discount", apiClient: api,
+            notificationManager: MockNotificationManager(), pasteBoard: pasteBoard
+        )
+        sut.copyObjectNotation()
+        XCTAssertFalse(pasteBoard.invokedClearContents)
+        api.stubbedGet = sampleModifier()
+        await sut.load(domain: "Dev")
+
+        for body in ["plain text", "{invalid JSON}", ""] {
+            api.stubbedPreview = .init(
+                status: 200, headers: [:],
+                bodyBase64: Data(body.utf8).base64EncodedString()
+            )
+            await sut.runPreview(domain: "Dev")
+            XCTAssertFalse(sut.canCopyObjectNotation)
+            sut.copyObjectNotation()
+            XCTAssertFalse(pasteBoard.invokedClearContents)
+            XCTAssertEqual(pasteBoard.stubbedString, "existing clipboard")
+        }
+    }
+
+    func test_copyObjectNotation_WhilePreviewIsLoadingPreservesClipboard() async {
+        let pasteBoard = MockNSPasteboard()
+        pasteBoard.stubbedString = "existing clipboard"
+        sut = MockModifierDetailViewModel(
+            modifierId: "discount", apiClient: api,
+            notificationManager: MockNotificationManager(), pasteBoard: pasteBoard
+        )
+        api.stubbedGet = sampleModifier()
+        api.stubbedPreview = .init(
+            status: 200, headers: [:],
+            bodyBase64: Data(#"{"a":1}"#.utf8).base64EncodedString()
+        )
+        await sut.load(domain: "Dev")
+        await sut.runPreview(domain: "Dev")
+        XCTAssertTrue(sut.canCopyObjectNotation)
+        sut.isPreviewLoading = true
+
+        sut.copyObjectNotation()
+
+        XCTAssertFalse(sut.canCopyObjectNotation)
+        XCTAssertFalse(pasteBoard.invokedClearContents)
+        XCTAssertEqual(pasteBoard.stubbedString, "existing clipboard")
+    }
+
     func test_load_AppliesModel() async {
         api.stubbedGet = sampleModifier(id: "discount", order: 3).with(enabled: true)
         await sut.load(domain: "Dev")
