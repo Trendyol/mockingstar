@@ -109,7 +109,11 @@ public final class MockFileManager: FileManagerInterface {
     public var invokedReadJSONFileWithUserInfoParametersList: [(url: URL, Void)] = []
     public var stubbedReadJSONFileWithUserInfoResult: Any!
     public var stubbedReadJSONFileWithUserInfoError: Error? = nil
+    private let readJSONFileWithUserInfoLock = NSLock()
     public func readJSONFile<T>(at url: URL, userInfo: [CodingUserInfoKey : any Sendable]) throws -> T where T : Decodable {
+        readJSONFileWithUserInfoLock.lock()
+        defer { readJSONFileWithUserInfoLock.unlock() }
+
         invokedReadJSONFileWithUserInfo = true
         invokedReadJSONFileWithUserInfoCount += 1
         invokedReadJSONFileWithUserInfoParameters = (url, ())
