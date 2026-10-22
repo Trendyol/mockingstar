@@ -20,7 +20,7 @@ enum MockModifierJSONPath {
         let best = containing.min { lhs, rhs in
             (lhs.range.upperBound - lhs.range.lowerBound) < (rhs.range.upperBound - rhs.range.lowerBound)
         }
-        guard let best else { return nil }
+        guard let best, !best.path.isEmpty else { return nil }
         return Resolved(path: best.path, literal: best.literal)
     }
 

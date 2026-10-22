@@ -61,14 +61,33 @@
             modifiedModel = monaco.editor.createModel("", currentLanguage);
             diffEditor.setModel({ original: originalModel, modified: modifiedModel });
 
-            diffEditor.getModifiedEditor().addAction({
+            var modifiedEditor = diffEditor.getModifiedEditor();
+            var contextMenuPosition = null;
+            modifiedEditor.onMouseDown(function () {
+                contextMenuPosition = null;
+            });
+            modifiedEditor.onContextMenu(function (event) {
+                contextMenuPosition = event.target.position;
+            });
+            modifiedEditor.onDidChangeModelContent(function () {
+                contextMenuPosition = null;
+            });
+
+            modifiedEditor.addAction({
                 id: 'modifier-edit-in-js',
                 label: 'Edit in JavaScript',
                 contextMenuGroupId: 'navigation',
                 contextMenuOrder: 1,
                 run: function (ed) {
-                    var position = ed.getPosition();
+                    var position = contextMenuPosition || ed.getPosition();
+                    contextMenuPosition = null;
                     if (!position) { return; }
+                    // Right-clicking within selected text must use the clicked field,
+                    // not the selection's trailing cursor (which can be the whole body).
+                    ed.setSelections([new monaco.Selection(
+                        position.lineNumber, position.column,
+                        position.lineNumber, position.column
+                    )]);
                     var offset = ed.getModel().getOffsetAt(position);
                     if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.editPath) {
                         window.webkit.messageHandlers.editPath.postMessage(String(offset));

@@ -35,6 +35,26 @@ final class MockModifierJSONPathTests: XCTestCase {
         XCTAssertEqual(resolved?.literal, "42")
     }
 
+    func test_resolve_RootAndDocumentEnd_DoNotSelectWholeBody() {
+        let json = "{\"a\": 1, \"b\": 2}"
+        XCTAssertNil(MockModifierJSONPath.resolve(json: json, utf16Offset: 0))
+        XCTAssertNil(MockModifierJSONPath.resolve(json: json, utf16Offset: (json as NSString).length))
+    }
+
+    func test_resolve_ObjectFieldStillCopiesThatSingleObject() {
+        let json = "{\"item\": {\"name\": \"test\"}, \"other\": 2}"
+        let resolved = MockModifierJSONPath.resolve(json: json, utf16Offset: offset(of: "item", in: json))
+        XCTAssertEqual(resolved?.path, [.key("item")])
+        XCTAssertEqual(resolved?.literal, "{\"name\": \"test\"}")
+    }
+
+    func test_resolve_UTF16OffsetWithEmoji_ResolvesClickedField() {
+        let json = "{\"emoji\": \"👋\", \"count\": 42}"
+        let resolved = MockModifierJSONPath.resolve(json: json, utf16Offset: offset(of: "count", in: json))
+        XCTAssertEqual(resolved?.path, [.key("count")])
+        XCTAssertEqual(resolved?.literal, "42")
+    }
+
     func test_resolve_BooleanValue() {
         let json = """
         {
