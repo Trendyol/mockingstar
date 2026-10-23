@@ -22,10 +22,7 @@ jobs:
       run: swift build -c release --package-path ./MockingStarExecutable      
 
     - name: Create Zip
-      run: |
-            mkdir .build || echo "build folder created"
-            cp MockingStarExecutable/.build/release/MockingStar ./.build/MockingStar 
-            cd ./.build/ && zip -r MockingStar-CLI.zip MockingStar
+      run: python3 MockingStarExecutable/scripts/package.py --skip-build --output .build/MockingStar-CLI.zip
 
     - name: Notarize CLI
       run: |

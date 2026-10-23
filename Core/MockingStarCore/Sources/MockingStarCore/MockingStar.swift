@@ -20,21 +20,41 @@ public protocol MockingStarCoreInterface {
 }
 
 public final class MockingStarCore {
-    private let deciderActor = MockDeciderActor()
-    private let scenariosActor = ScenarioDecidersActor()
-    private let saverActor = FileSaverActor()
+    private let deciderActor: MockDeciderActor
+    private let scenariosActor: ScenarioDecidersActor
+    private let saverActor: FileSaverActor
     private let jsonEncoder = JSONEncoder.shared
     private let jsonDecoder = JSONDecoder.shared
-    private let pluginActor = PluginCoreActor.shared
+    private let pluginActor: PluginCoreActor
+    private let ruleIndex: RuleIndex
+    private let journal: RequestJournal?
+    private let recordLive: Bool
+    private let workspace: MockWorkspace?
     private let logger = Logger(category: "MockingStarCore")
 
-    public init() {
+    public init(root: URL? = nil, recordLive: Bool = true) {
+        @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
+        let resolvedRoot = root ?? URL(filePath: workspaces.current?.path ?? "/MockServer")
+        let builder = FileUrlBuilder(root: root)
+        deciderActor = MockDeciderActor(fileStructureHelper: FileStructureHelper(root: root), fileUrlBuilder: builder)
+        scenariosActor = ScenarioDecidersActor(fileUrlBuilder: builder, root: root)
+        saverActor = FileSaverActor(fileUrlBuilder: builder, workspace: root.map { MockWorkspace(root: $0) })
+        pluginActor = root == nil ? PluginCoreActor.shared : PluginCoreActor(fileUrlBuilder: builder, settingsRoot: root)
+        ruleIndex = RuleIndex(root: resolvedRoot)
+        journal = root.map { RequestJournal(root: $0) }
+        self.recordLive = recordLive
+        workspace = root.map { MockWorkspace(root: $0) }
         logger.debug("Initialize")
     }
 
-    func handle(request: URLRequest, flags: MockServerFlags, startedAt: ContinuousClock.Instant) async throws -> (status: Int, body: Data, headers: [String: String]) {
-        let decider = try await deciderActor.decider(for: flags.domain)
-        let result = try await decider.decideMock(request: request, flags: flags)
+    func handle(request: URLRequest, flags: MockServerFlags, startedAt: ContinuousClock.Instant, requestId: String? = nil) async throws -> (status: Int, body: Data, headers: [String: String]) {
+        let (result, decision) = await select(request: request, flags: flags)
+        let outcome = decision.mockId != nil ? "mock" : flags.mockSource == .onlyMock ? "blocked" : "live"
+        if let requestId {
+            do { try await journal?.decision(requestId, decision, outcome: outcome) }
+            catch { logJournalFailure(requestId: requestId, stage: "decision", error: error) }
+        }
+        logger.info("Match decision", metadata: ["requestId": .string(requestId ?? ""), "reason": .string(decision.reason), "mockId": .string(decision.mockId ?? ""), "candidates": .array(decision.candidates.map { .string($0.mockId) }), "traceUrl": .string(request.url?.absoluteString ?? "")])
 
         switch result {
         case .useMock(mock: let mock):
@@ -43,26 +63,26 @@ public final class MockingStarCore {
             ])
 
             try await Task.sleep(for: .seconds(mock.metaData.responseTime))
-            logMockTrace(request: request, responseType: "mock", startedAt: startedAt)
+            logMockTrace(request: request, responseType: "mock", startedAt: startedAt, requestId: requestId)
 
             let bodyData = mock.responseBody.data(using: .utf8) ?? .init()
             return (status: mock.metaData.httpStatus,
                     body: bodyData,
                     headers: try mock.responseHeader.asDictionary())
-        case .mockNotFound where flags.mockSource == .default:
+        case .mockNotFound where flags.mockSource != .onlyMock:
             logger.info("Mock not found, trying to request live server: \(request.url?.path() ?? .init())", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
 
             let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
-            logMockTrace(request: request, responseType: "live request", startedAt: startedAt)
-            Task {
-                try await saveFileIfNeeded(request: request,
+            logMockTrace(request: request, responseType: "live request", startedAt: startedAt, requestId: requestId)
+            if recordLive, let decider = try? await deciderActor.decider(for: flags.domain) {
+                do { try await saveFileIfNeeded(request: request,
                                            flags: flags,
                                            status: liveResult.status,
                                            body: liveResult.body,
                                            headers: liveResult.headers,
-                                           decider: decider)
+                                           decider: decider) } catch { logger.error("Live recording failed: \(error)") }
             }
             return liveResult
         case .mockNotFound:
@@ -70,7 +90,7 @@ public final class MockingStarCore {
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
             let pluginMessage = try await pluginActor.pluginCore(for: flags.domain).mockErrorPlugin(message: "Mock not found and disable live environment: \(request.url?.path() ?? .init())")
-            logMockTrace(request: request, responseType: "no mock and disabled live request", startedAt: startedAt)
+            logMockTrace(request: request, responseType: "no mock and disabled live request", startedAt: startedAt, requestId: requestId)
             return (404, pluginMessage.data(using: .utf8) ?? .init(), [:])
         case .scenarioNotFound where flags.mockSource == .default:
             logger.info("Scenario not found, trying to request live server", metadata: [
@@ -78,14 +98,14 @@ public final class MockingStarCore {
             ])
 
             let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
-            logMockTrace(request: request, responseType: "scenario not found and live request", startedAt: startedAt)
-            Task {
-                try await saveFileIfNeeded(request: request,
+            logMockTrace(request: request, responseType: "scenario not found and live request", startedAt: startedAt, requestId: requestId)
+            if recordLive, let decider = try? await deciderActor.decider(for: flags.domain) {
+                do { try await saveFileIfNeeded(request: request,
                                            flags: flags,
                                            status: liveResult.status,
                                            body: liveResult.body,
                                            headers: liveResult.headers,
-                                           decider: decider)
+                                           decider: decider) } catch { logger.error("Live recording failed: \(error)") }
             }
             return liveResult
         case .scenarioNotFound:
@@ -93,25 +113,26 @@ public final class MockingStarCore {
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
             let pluginMessage = try await pluginActor.pluginCore(for: flags.domain).mockErrorPlugin(message: "Scenario not found and disable live environment")
-            logMockTrace(request: request, responseType: "scenario not found and disabled live request", startedAt: startedAt)
+            logMockTrace(request: request, responseType: "scenario not found and disabled live request", startedAt: startedAt, requestId: requestId)
             return (404, pluginMessage.data(using: .utf8) ?? .init(), [:])
         case .ignoreDomain:
             logger.info("Ignoring domain: \(request.url?.host() ?? "_")", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
             let liveResult = try await proxyRequest(request: request)
-            logMockTrace(request: request, responseType: "ignored domain and live request", startedAt: startedAt)
+            logMockTrace(request: request, responseType: "ignored domain and live request", startedAt: startedAt, requestId: requestId)
             return liveResult
         }
     }
 
-    private func logMockTrace(request: URLRequest, responseType: String, startedAt: ContinuousClock.Instant, errorMessage: String? = nil) {
+    private func logMockTrace(request: URLRequest, responseType: String, startedAt: ContinuousClock.Instant, requestId: String? = nil, errorMessage: String? = nil) {
         let duration = String(format: "%.4f", (ContinuousClock().now - startedAt) / .seconds(1))
         if let errorMessage {
             logger.info("Mock Trace", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? ""),
                 "responseType": .string(responseType),
                 "duration": .string(duration),
+                "requestId": .string(requestId ?? ""),
                 "method": .string(request.httpMethod ?? ""),
                 "errorMessage": .string(errorMessage)
             ])
@@ -120,9 +141,14 @@ public final class MockingStarCore {
                 "traceUrl": .string(request.url?.absoluteString ?? ""),
                 "responseType": .string(responseType),
                 "duration": .string(duration),
+                "requestId": .string(requestId ?? ""),
                 "method": .string(request.httpMethod ?? "")
             ])
         }
+    }
+
+    private func logJournalFailure(requestId: String, stage: String, error: Error) {
+        logger.error("Request journal write failed", metadata: ["requestId": .string(requestId), "stage": .string(stage), "errorCode": .string("journal_write_failed"), "reason": .string(error.localizedDescription)])
     }
 
     /// Send request to real server, it uses multiple scenarios:
@@ -181,8 +207,6 @@ public final class MockingStarCore {
         logger.debug("Checking mock should save", metadata: [
             "traceUrl": .string(request.url?.absoluteString ?? "")
         ])
-        var request = request
-
         let shouldSave = executeMockFilterForShouldSave(for: request, scenario: flags.scenario ?? "", statusCode: status, mockFilters: decider.mockFilters)
 
         if let pathComponents = request.url?.pathComponents, pathComponents.count >= 10 {
@@ -448,6 +472,8 @@ extension MockingStarCore: ServerMockHandlerInterface {
     /// - Returns: A tuple containing the HTTP status code, response body, and headers.
     /// - Throws: If any error occurs during the handling process, it is thrown.
     public func handle(url: URL, method: String, headers: [String : String], body: Data?, rawFlags: [String: String]) async throws -> (status: Int, body: Data, headers: [String : String]) {
+        try workspace?.checkDomain(rawFlags.caseInsensitiveSearch(for: "mockDomain") ?? "Dev")
+        guard ["http", "https"].contains(url.scheme?.lowercased() ?? ""), url.host != nil else { throw WorkspaceFailure("invalid_url", "Request requires an HTTP(S) URL") }
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.allHTTPHeaderFields = headers
@@ -473,10 +499,25 @@ extension MockingStarCore: ServerMockHandlerInterface {
         ])
 
         let startedAt = ContinuousClock().now
+        let requestId = journal == nil ? nil : UUID().uuidString
+        if let requestId {
+            do { _ = try await journal?.begin(domain: mockDomain, request: MatchingRequest(url: url, method: method, headers: headers, body: body, scenario: scenario, deviceId: deviceId), id: requestId) }
+            catch { logJournalFailure(requestId: requestId, stage: "begin", error: error) }
+        }
         do {
-            return try await handle(request: request, flags: flags, startedAt: startedAt)
+            var result = try await handle(request: request, flags: flags, startedAt: startedAt, requestId: requestId)
+            if let requestId {
+                do { try await journal?.finish(requestId, status: result.status) }
+                catch { logJournalFailure(requestId: requestId, stage: "finish", error: error) }
+            }
+            if let requestId { result.headers["X-Mockingstar-Request-Id"] = requestId }
+            return result
         } catch {
-            logMockTrace(request: request, responseType: "error", startedAt: startedAt, errorMessage: error.localizedDescription)
+            if let requestId {
+                do { try await journal?.finish(requestId, status: nil, error: error.localizedDescription, errorCode: "live_request_failed") }
+                catch { logJournalFailure(requestId: requestId, stage: "finish", error: error) }
+            }
+            logMockTrace(request: request, responseType: "error", startedAt: startedAt, requestId: requestId, errorMessage: error.localizedDescription)
             throw error
         }
     }
@@ -496,6 +537,7 @@ extension MockingStarCore: ServerMockSearchHandlerInterface {
     ///   - `headers`: The response headers as `[String : String]`.
     public func search(path: String, method: String, scenario: String?, rawFlags: [String : String]) async throws -> (status: Int, body: Data, headers: [String : String]) {
         let mockDomain = rawFlags.caseInsensitiveSearch(for: "mockDomain") ?? "Dev"
+        try workspace?.checkDomain(mockDomain)
         let deviceId = rawFlags.caseInsensitiveSearch(for: "deviceId").orEmpty
 
         let flags = MockServerFlags(mockSource: .init(from: rawFlags),
@@ -530,11 +572,13 @@ extension MockingStarCore: ServerMockSearchHandlerInterface {
 // MARK: - ScenarioHandlerInterface
 extension MockingStarCore: ScenarioHandlerInterface {
     public func addScenario(scenario: ScenarioModel) async throws {
-        await scenariosActor.decider(for: scenario.mockDomain).addNewScenario(scenario)
+        try workspace?.checkDomain(scenario.mockDomain)
+        try await scenariosActor.decider(for: scenario.mockDomain).addNewScenario(scenario)
     }
     
     public func removeScenario(scenario: ScenarioModel) async throws {
-        await scenariosActor.decider(for: scenario.mockDomain).removeScenarios(deviceId: scenario.deviceId)
+        try workspace?.checkDomain(scenario.mockDomain)
+        try await scenariosActor.decider(for: scenario.mockDomain).removeScenarios(deviceId: scenario.deviceId)
     }
 }
 
@@ -564,6 +608,48 @@ extension MockingStarCore: MockingStarCoreInterface {
             return .mocked
         case .ignoreDomain:
             return .domainIgnoredByConfigs
+        }
+    }
+}
+
+public extension MockingStarCore {
+    func listScenarios(domain: String) async throws -> [ScenarioModel] {
+        try workspace?.checkDomain(domain)
+        return try await scenariosActor.decider(for: domain).listScenarios()
+    }
+    func explain(request: MatchingRequest, domain: String) async throws -> MatchDecision {
+        try workspace?.checkDomain(domain)
+        var urlRequest = URLRequest(url: request.url)
+        urlRequest.httpMethod = request.method; urlRequest.allHTTPHeaderFields = request.headers; urlRequest.httpBody = request.body
+        return await select(request: urlRequest, flags: .init(mockSource: .default, scenario: request.scenario, domain: domain, deviceId: request.deviceId)).1
+    }
+}
+
+private extension MockingStarCore {
+    func select(request: URLRequest, flags: MockServerFlags) async -> (MockDecision, MatchDecision) {
+        let input = MatchingRequest(url: request.url!, method: request.httpMethod ?? "GET", headers: request.allHTTPHeaderFields ?? [:], body: request.httpBody, scenario: flags.scenario ?? "", deviceId: flags.deviceId)
+        var decision = MatchDecision()
+        if flags.mockSource == .onlyLive { decision.reason = "live_requested"; return (.mockNotFound, decision) }
+        do {
+            let mocks = try await ruleIndex.mocks(domain: flags.domain)
+            decision = RuleMatcher.decide(request: input, mocks: mocks)
+            let failures = await ruleIndex.failures(domain: flags.domain)
+            decision.candidates += failures
+            if decision.mockId == nil && !failures.isEmpty { decision.reason = "mock_load_failed" }
+            if let id = decision.mockId, let mock = mocks.first(where: { $0.id == id }) { return (.useMock(mock: mock), decision) }
+            let decider = try await deciderActor.decider(for: flags.domain)
+            let result = try await decider.decideMock(request: request, flags: flags)
+            if case .useMock(let mock) = result {
+                decision.mockId = mock.id; decision.reason = "legacy_matched"
+                decision.candidates.append(.init(mockId: mock.id, priority: 0, matched: true, failures: []))
+            } else if case .ignoreDomain = result { decision.reason = "domain_ignored" }
+            else if case .scenarioNotFound = result, decision.candidates.isEmpty { decision.reason = "scenario_not_found" }
+            return (result, decision)
+        } catch {
+            decision.mockId = nil; decision.reason = "mock_load_failed"
+            decision.candidates.append(.init(mockId: "", priority: 0, matched: false, failures: [.init(field: "workspace", reason: error.localizedDescription)]))
+            logger.error("Mock selection failed; continuing live: \(error)")
+            return (.mockNotFound, decision)
         }
     }
 }

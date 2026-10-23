@@ -24,6 +24,6 @@ final class ConsoleLogHandler: LogHandler {
                 output += " \(extras)"
             }
         }
-        print(output)
+        FileHandle.standardError.write(Data((output + "\n").utf8))
     }
 }

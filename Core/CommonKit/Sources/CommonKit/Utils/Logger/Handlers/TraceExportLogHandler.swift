@@ -12,6 +12,7 @@ final class TraceExportLogHandler: LogHandler {
     static let shared = TraceExportLogHandler()
     private let fileHandle: FileHandle?
     private let jsonEncoder = JSONEncoder()
+    private let lock = NSLock()
 
     init(fileManager: FileManagerInterface = FileManager.default) {
         let fileURL: URL
@@ -20,11 +21,9 @@ final class TraceExportLogHandler: LogHandler {
 
         if pathExists.isExist && pathExists.isDirectory {
             fileURL = URL(filePath: exportPath).appending(path: "MockingStarTrace.json")
-            fileManager.createFile(atPath: fileURL.path(), contents: nil)
+            if !fileManager.fileOrDirectoryExists(atPath: fileURL.path()).isExist { fileManager.createFile(atPath: fileURL.path(), contents: nil) }
         } else if pathExists.isExist {
             fileURL = URL(filePath: exportPath)
-            try? fileManager.removeFile(at: fileURL.path())
-            fileManager.createFile(atPath: fileURL.path(), contents: nil)
         } else {
             fileURL = URL(filePath: exportPath)
             let directory = fileURL.deletingLastPathComponent()
@@ -42,6 +41,7 @@ final class TraceExportLogHandler: LogHandler {
 
     func log(level: Logging.Logger.Level, message: Logging.Logger.Message, metadata: Logging.Logger.Metadata?, source: String, file: String, function: String, line: UInt) {
         guard "\(message)" == "Mock Trace" else { return }
+        lock.lock(); defer { lock.unlock() }
 
         let metadata: [String: String] = (metadata?.map { ($0, $1.description) } ?? []).reduce(into: [:]) { $0[$1.0] = $1.1 }
         let log = LogModel(severity: .severity(from: level),

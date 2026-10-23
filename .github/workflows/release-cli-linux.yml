@@ -7,7 +7,7 @@ on:
 jobs:
   test:
     name: 'Release Linux CLI App'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
 
@@ -17,40 +17,21 @@ jobs:
 
     - uses: swift-actions/setup-swift@v2
       with:
-        swift-version: "5"
+        swift-version: "6.2.3"
 
     - name: Set env
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
     - name: Prepare Dependencies
       run: |
-            sudo apt update
-            sudo NEEDRESTART_MODE=a apt-get install \
-                  binutils \
-                  git \
-                  gnupg2 \
-                  libc6-dev \
-                  libcurl4-openssl-dev \
-                  libedit2 \
-                  libgcc-9-dev \
-                  libpython3.8 \
-                  libsqlite3-0 \
-                  libstdc++-9-dev \
-                  libxml2-dev \
-                  libz3-dev \
-                  pkg-config \
-                  tzdata \
-                  unzip \
-                  zlib1g-dev -y
+            sudo apt-get update
+            sudo apt-get install -y libcurl4-openssl-dev libedit-dev libsqlite3-dev libxml2-dev libicu-dev zlib1g-dev pkg-config
 
     - name: Build Mocking Star CLI
       run: swift build -c release --package-path ./MockingStarExecutable --static-swift-stdlib
 
     - name: Create Zip
-      run: |
-            mkdir .build || echo "build folder created"
-            cp MockingStarExecutable/.build/release/MockingStar ./.build/MockingStar
-            cd ./.build/ && zip -r MockingStar-Linux-CLI.zip MockingStar
+      run: python3 MockingStarExecutable/scripts/package.py --skip-build --output .build/MockingStar-Linux-CLI.zip
 
     - name: Create a Release
       uses: ncipollo/release-action@v1

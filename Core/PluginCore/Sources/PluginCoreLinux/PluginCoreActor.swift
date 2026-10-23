@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CommonKit
 
 public protocol PluginCoreActorInterface {
     func pluginCore(for mockDomain: String) async -> PluginInterface
@@ -15,6 +16,11 @@ public protocol PluginCoreActorInterface {
 public actor PluginCoreActor: PluginCoreActorInterface {
     private var plugins: [String: Plugin] = [:]
     public static let shared = PluginCoreActor()
+    private let fileUrlBuilder: FileUrlBuilderInterface
+    private let settingsRoot: URL?
+    public init(fileUrlBuilder: FileUrlBuilderInterface = FileUrlBuilder(), settingsRoot: URL? = nil) {
+        self.fileUrlBuilder = fileUrlBuilder; self.settingsRoot = settingsRoot
+    }
     
     /// Plugins for given domain
     /// - Parameter mockDomain: Current mock domain
@@ -24,7 +30,7 @@ public actor PluginCoreActor: PluginCoreActorInterface {
             return plugin
         }
 
-        let plugin = Plugin(mockDomain: mockDomain)
+        let plugin = Plugin(fileUrlBuilder: fileUrlBuilder, settingsRoot: settingsRoot, mockDomain: mockDomain)
         plugins[mockDomain] = plugin
         return plugin
     }

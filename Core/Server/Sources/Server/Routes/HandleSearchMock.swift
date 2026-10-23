@@ -25,13 +25,15 @@ public protocol ServerMockSearchHandlerInterface {
 
 final class HandleSearchMock: HTTPHandler {
     static var handler: ServerMockSearchHandlerInterface?
+    private let instanceHandler: ServerMockSearchHandlerInterface?
+    init(handler: ServerMockSearchHandlerInterface? = nil) { instanceHandler = handler }
     private let jsonDecoder = JSONDecoder()
     private let logger = Logger(category: "HandleSearchMock")
 
     func handleRequest(_ request: HTTPRequest) async throws -> HTTPResponse {
         logger.debug("New request handled")
 
-        guard let handler = HandleSearchMock.handler else {
+        guard let handler = instanceHandler ?? HandleSearchMock.handler else {
             logger.fault("Handler not registered, you should register handler before handling requests")
             return .init(statusCode: .notImplemented)
         }

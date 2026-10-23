@@ -13,6 +13,7 @@ extension Logger {
         static let subsystem = "com.trendyol.MockingStar"
         public static var customLogFolderPath: String = ""
         public static var enableConsoleLogging: Bool = false
+        public static var headless: Bool = false
         public static var traceExportPath: String = ""
     }
 }
@@ -61,11 +62,13 @@ public final class Logger {
             var logHandlers: [LogHandler] = []
 
 #if os(macOS)
-            logHandlers.append(JSONFileLogHandler.shared)
-            logHandlers.append(LogStreamHandler.shared)
+            if !Constant.headless {
+                logHandlers.append(JSONFileLogHandler.shared)
+                logHandlers.append(LogStreamHandler.shared)
+            }
 
 #if DEBUG
-            logHandlers.append(OSLogHandler(category: category))
+            if !Constant.headless { logHandlers.append(OSLogHandler(category: category)) }
 #endif
             if Constant.enableConsoleLogging {
                 logHandlers.append(ConsoleLogHandler())
@@ -82,6 +85,7 @@ public final class Logger {
                 logHandlers.append(TraceExportLogHandler.shared)
             }
 
+            if logHandlers.isEmpty { return SwiftLogNoOpLogHandler() }
             return MultiplexLogHandler(logHandlers)
         })
         logger[metadataKey: "subsystem"] = .init(stringLiteral: Logger.Constant.subsystem)

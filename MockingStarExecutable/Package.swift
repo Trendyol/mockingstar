@@ -6,25 +6,19 @@ import PackageDescription
 let package = Package(
     name: "MockingStarExecutable",
     platforms: [
-        .macOS(.v14)
+        .macOS(.v13)
+    ],
+    products: [
+        .executable(name: "mockingstar", targets: ["MockingStar"]),
     ],
     dependencies: [
-        .package(path: "../Core/CommonKit"),
-        .package(path: "../Core/PluginCore"),
-        .package(path: "../Core/MockingStarCore"),
-        .package(path: "../Core/Server"),
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.5.0"),
+        .package(path: ".."),
     ],
     targets: [
         .executableTarget(
             name: "MockingStar",
             dependencies: [
-                "CommonKit",
-                .product(name: "PluginCore", package: "PluginCore", condition: .when(platforms: [.macOS])),
-                .product(name: "PluginCoreLinux", package: "PluginCore", condition: .when(platforms: [.linux])),
-                "MockingStarCore",
-                "Server",
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "MockingstarEngine", package: "mockingstar"),
             ]),
     ]
 )

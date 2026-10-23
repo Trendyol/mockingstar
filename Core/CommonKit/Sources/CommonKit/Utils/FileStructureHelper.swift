@@ -51,10 +51,7 @@ public protocol FileStructureHelperInterface {
 }
 
 public final class FileStructureHelper {
-    private let mockFolderFilePath = {
-        @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
-        return workspaces.current?.path ?? "/MockServer"
-    }()
+    private let mockFolderFilePath: String
     private let folderPaths: [String] = [
         "Domains",
         "Plugins",
@@ -69,7 +66,10 @@ public final class FileStructureHelper {
     ]
     private let fileManager: FileManagerInterface
 
-    public init(fileManager: FileManagerInterface = FileManager.default) {
+    public init(fileManager: FileManagerInterface = FileManager.default, root: URL? = nil) {
+        @UserDefaultStorage("workspaces") var workspaces: [Workspace] = []
+        let path = root?.path ?? workspaces.current?.path ?? "/MockServer"
+        self.mockFolderFilePath = path.hasSuffix("/") ? path : path + "/"
         self.fileManager = fileManager
     }
 }

@@ -80,6 +80,7 @@ final class MockDecider {
                            pathConfigs: [PathConfigModel],
                            queryConfigs: [QueryConfigModel],
                            headerConfigs: [HeaderConfigModel]) throws -> Bool {
+        guard mock.matching == nil else { return false }
         guard let url = request.url else {
             logger.fault("Handled request has no url", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")

@@ -24,6 +24,7 @@ public final class MockModel: Codable, Identifiable, NSCopying {
     public var responseHeader: MockModelHeaderString
     public var requestBody: String
     public var responseBody: String
+    public var matching: MockMatching?
     public var fileURL: URL?
 
     public init(
@@ -32,7 +33,8 @@ public final class MockModel: Codable, Identifiable, NSCopying {
         responseHeader: MockModelHeaderString,
         requestBody: String,
         responseBody: String,
-        fileURL: URL? = nil
+        fileURL: URL? = nil,
+        matching: MockMatching? = nil
     ) {
         self.metaData = metaData
         self.requestHeader = requestHeader
@@ -40,21 +42,24 @@ public final class MockModel: Codable, Identifiable, NSCopying {
         self.requestBody = requestBody
         self.responseBody = responseBody
         self.fileURL = fileURL
+        self.matching = matching
     }
 
     enum CodingKeys: String, CodingKey {
         case metaData
+        case matching
         case requestHeader
         case responseHeader
         case requestBody
         case responseBody
 
-        static let allFieldsWithoutResponseBody: [CodingKeys] = [.metaData, .responseHeader, .requestHeader, .requestBody]
+        static let allFieldsWithoutResponseBody: [CodingKeys] = [.metaData, .responseHeader, .requestHeader, .requestBody, .matching]
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         metaData = try container.decode(MockModelMetaData.self, forKey: .metaData)
+        matching = try container.decodeIfPresent(MockMatching.self, forKey: .matching)
         let requestHeader: MockModelHeader = try container.decode(MockModelHeader.self, forKey: .requestHeader)
         let responseHeader: MockModelHeader = try container.decode(MockModelHeader.self, forKey: .responseHeader)
         let requestBody: MockModelBody = try container.decode(MockModelBody.self, forKey: .requestBody)
@@ -76,6 +81,7 @@ public final class MockModel: Codable, Identifiable, NSCopying {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(metaData, forKey: .metaData)
+        try container.encodeIfPresent(matching, forKey: .matching)
 
         let requestBody: MockModelBody = try .from(string: self.requestBody)
         let responseBody: MockModelBody = try .from(string: self.responseBody)
@@ -96,7 +102,7 @@ public final class MockModel: Codable, Identifiable, NSCopying {
                   responseHeader: responseHeader,
                   requestBody: requestBody,
                   responseBody: responseBody,
-                  fileURL: fileURL)
+                  fileURL: fileURL, matching: matching)
     }
 }
 
@@ -153,6 +159,7 @@ extension MockModel: LazyDecodingModel {
 // MARK: - Equatable
 extension MockModel: Equatable {
     public static func == (lhs: MockModel, rhs: MockModel) -> Bool {
+        lhs.matching == rhs.matching &&
         lhs.metaData == rhs.metaData &&
         lhs.requestHeader == rhs.requestHeader &&
         lhs.responseHeader == rhs.responseHeader &&

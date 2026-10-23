@@ -193,6 +193,7 @@ public final class MockDetailViewModel {
         originalMockModel.responseHeader = copy.responseHeader
         originalMockModel.requestBody = copy.requestBody
         originalMockModel.responseBody = copy.responseBody
+        originalMockModel.matching = copy.matching
 
         guard let path = mockModel.fileURL?.path(percentEncoded: false) else { return }
 

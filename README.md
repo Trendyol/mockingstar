@@ -19,6 +19,12 @@ You can download the latest version at the following link:
 
 The latest binary can also be found on the releases page or clone and compile in Xcode.
 
+### Headless CLI
+
+`mockingstar` manages workspaces, mock bundles, matching rules, scenarios, plugins and the server without opening the macOS app. JSON output supports agents and automation; `--human` provides readable output. Unmatched requests continue live, and live capture is opt-in. See [CLI guide and agent workflow](docs/CLI.md) and [pagination package](docs/examples/page-one.json).
+
+The root Swift package exports `MockingstarEngine` for embedding the same commands and server into another CLI executable. See [host integration](docs/CLI.md#import-into-another-cli).
+
 ### Key Features
 
 - **Mocking Requests**: Easily mock requests and test different cases with scenarios.

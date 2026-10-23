@@ -15,6 +15,8 @@ public protocol ServerMockHandlerInterface {
 
 final class HandleMock: HTTPHandler {
     static var handler: ServerMockHandlerInterface?
+    private let instanceHandler: ServerMockHandlerInterface?
+    init(handler: ServerMockHandlerInterface? = nil) { instanceHandler = handler }
     private let jsonDecoder = JSONDecoder()
     private let logger = Logger(category: "HandleMock")
 
@@ -94,7 +96,7 @@ final class HandleMock: HTTPHandler {
     }
 
     private func handleMock(mockRequest: MockServerRequestModel, rawFlags: [String: String]) async throws -> HTTPResponse {
-        guard let handler = HandleMock.handler else {
+        guard let handler = instanceHandler ?? HandleMock.handler else {
             logger.fault("Handler not registered, you should register handler before handling requests")
             return .init(statusCode: .notImplemented)
         }

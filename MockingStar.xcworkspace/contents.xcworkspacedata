@@ -4,9 +4,6 @@
    <FileRef
       location = "group:MockingStar/MockingStar.xcodeproj">
    </FileRef>
-   <FileRef
-      location = "group:MockingStarExecutable">
-   </FileRef>
    <Group
       location = "container:"
       name = "Core">

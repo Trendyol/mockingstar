@@ -23,6 +23,7 @@ public final class Plugin {
     private var commonFileStructureMonitor: FileStructureMonitorInterface
     private let mockDomain: String
     private var plugins: [PluginType: String] = [:]
+    private let settingsRoot: URL?
     var storage: [PluginType: UserDefaultStorage<[PluginConfiguration]>] = [:]
     
     /// Initializer of Plugin class
@@ -36,12 +37,14 @@ public final class Plugin {
          fileManager: FileManagerInterface = FileManager.default,
          domainFileStructureMonitor: FileStructureMonitorInterface = FileStructureMonitor(),
          commonFileStructureMonitor: FileStructureMonitorInterface = FileStructureMonitor(),
+         settingsRoot: URL? = nil,
          mockDomain: String) {
         self.fileManager = fileManager
         self.fileUrlBuilder = fileUrlBuilder
         self.domainFileStructureMonitor = domainFileStructureMonitor
         self.commonFileStructureMonitor = commonFileStructureMonitor
         self.mockDomain = mockDomain
+        self.settingsRoot = settingsRoot
         loadAllPlugins()
         watchDomainPlugins()
         watchCommonPlugins()
@@ -117,8 +120,10 @@ public final class Plugin {
     ///  ⚠️ App always prefer mock domain plugins
     private func loadPlugin(type: PluginType) {
         guard plugins[type] == nil else { return }
-        @UserDefaultStorage(mockDomain + type.rawValue) var configStorage: [PluginConfiguration] = []
-        storage[type] = _configStorage
+        if settingsRoot == nil {
+            @UserDefaultStorage(mockDomain + type.rawValue) var configStorage: [PluginConfiguration] = []
+            storage[type] = _configStorage
+        }
 
         let fileURL: URL
 
@@ -177,7 +182,7 @@ extension Plugin: PluginInterface {
         plugin.loadFrom(jsCode: pluginCode)
         plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
 
-        if let configs = storage[.requestReloader]?.wrappedValue {
+        if let configs = savedSettings(.requestReloader) {
             try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
         }
 
@@ -194,7 +199,7 @@ extension Plugin: PluginInterface {
         plugin.loadFrom(jsCode: pluginCode)
         plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
 
-        if let configs = storage[.liveRequestUpdater]?.wrappedValue {
+        if let configs = savedSettings(.liveRequestUpdater) {
             try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
         }
 
@@ -211,7 +216,7 @@ extension Plugin: PluginInterface {
         plugin.loadFrom(jsCode: pluginCode)
         plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
 
-        if let configs = storage[.mockError]?.wrappedValue {
+        if let configs = savedSettings(.mockError) {
             try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
         }
 
@@ -228,7 +233,7 @@ extension Plugin: PluginInterface {
         plugin.loadFrom(jsCode: pluginCode)
         plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
 
-        if let configs = storage[.mockDetailMessages]?.wrappedValue {
+        if let configs = savedSettings(.mockDetailMessages) {
             try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
         }
 
@@ -250,11 +255,17 @@ extension Plugin: PluginInterface {
         plugin.loadFrom(jsCode: pluginCode)
         plugin.jsContext.setObject(PluginsUtil(context: plugin.jsContext), forKeyedSubscript: "util" as NSString)
 
-        if let configs = storage[.mockDetailMessages]?.wrappedValue {
+        if let configs = savedSettings(.mockDetailMessages) {
             try plugin.setConfig(filterConfigs(storageConfigs: configs, defaultConfigs: try plugin.config))
         }
 
         return try await plugin.asyncMockDetailMessages(mock: mock)
+    }
+
+    private func savedSettings(_ type: PluginType) -> [PluginConfiguration]? {
+        guard let settingsRoot else { return storage[type]?.wrappedValue }
+        let url = settingsRoot.appendingPathComponent("Domains").appendingPathComponent(mockDomain).appendingPathComponent("Configs/plugin-settings-" + type.rawValue + ".json")
+        return (try? fileManager.readJSONFile(at: url)) ?? []
     }
 
     private func filterConfigs(storageConfigs: [PluginConfiguration], defaultConfigs: [PluginConfiguration]) -> [PluginConfiguration] {

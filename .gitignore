@@ -93,3 +93,4 @@ iOSInjectionProject/
 .vscode
 fastlaneRunner/.swiftpm/*
 .swiftpm
+__pycache__/

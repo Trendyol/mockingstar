@@ -1,0 +1,22 @@
+{
+  "name": "pagination",
+  "mocks": [
+    {
+      "id": "items-page-one",
+      "url": "https://api.example.com/items?page=1",
+      "method": "GET",
+      "matching": {
+        "priority": 10,
+        "endpoint": {"method": "GET", "host": "api.example.com", "path": {"style": "exact", "value": "/items"}},
+        "conditions": {"predicate": {"source": "query", "key": "page", "op": "equals", "value": "1"}}
+      },
+      "response": {"status": 200, "headers": {"Content-Type": "application/json"}, "body": {"items": [{"id": 1}], "source": "mock"}}
+    },
+    {
+      "id": "profile",
+      "url": "https://api.example.com/profile",
+      "method": "GET",
+      "response": {"status": 200, "body": {"name": "CLI test"}}
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "pins" : [
+    {
+      "identity" : "anycodable",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/yusufozgul/AnyCodable",
+      "state" : {
+        "revision" : "5ba97c1cf8bb630becc1864d728dce54225c4e3c",
+        "version" : "1.1.4"
+      }
+    },
+    {
+      "identity" : "filemonitor",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/aus-der-Technik/FileMonitor.git",
+      "state" : {
+        "revision" : "ef22f1487d07fbff0a7a5f743d42611bfd03b5e8",
+        "version" : "1.2.0"
+      }
+    },
+    {
+      "identity" : "flyingfox",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swhitty/FlyingFox.git",
+      "state" : {
+        "revision" : "00e4d51c57b4fbe4f011650f2f965d3bea1ba7c1",
+        "version" : "0.13.0"
+      }
+    },
+    {
+      "identity" : "swift-log",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-log.git",
+      "state" : {
+        "revision" : "c9c6bb9d275ec0d95c3ad16391f3f045dc623104",
+        "version" : "1.16.2"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-syntax.git",
+      "state" : {
+        "revision" : "64889f0c732f210a935a0ad7cda38f77f876262d",
+        "version" : "509.1.1"
+      }
+    },
+    {
+      "identity" : "swiftyjs",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/yusufozgul/SwiftyJS",
+      "state" : {
+        "revision" : "cfc81d2074a43d654b5cea705daf09b356584bef",
+        "version" : "0.0.4"
+      }
+    }
+  ],
+  "version" : 2
+}

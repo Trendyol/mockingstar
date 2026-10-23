@@ -137,9 +137,7 @@ extension FileManager: FileManagerInterface {
         do {
             let data = try JSONEncoder.shared.encode(model)
             try createDirectory(at: url, withIntermediateDirectories: true)
-            guard createFile(atPath: url.path(percentEncoded: false) + "/" + fileName, contents: data) else {
-                throw FileManagerError.fileSaveError
-            }
+            try data.write(to: url.appendingPathComponent(fileName), options: .atomic)
         } catch where error is EncodingError {
             throw FileManagerError.modelEncodingError(error)
         } catch {
