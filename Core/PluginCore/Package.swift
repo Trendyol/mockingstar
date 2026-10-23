@@ -20,7 +20,7 @@ let package = Package(
             targets: ["PluginCoreTestSupport"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/yusufozgul/SwiftyJS", .upToNextMinor(from: "0.0.4")),
+        .package(url: "https://github.com/baris-cakmak/SwiftyJS.git", revision: "b39e24e84c23196b63a4f4f8c096c3f2e221d69a"),
         .package(url: "https://github.com/yusufozgul/AnyCodable", .upToNextMajor(from: "1.1.4")),
         .package(path: "../CommonKit"),
     ],

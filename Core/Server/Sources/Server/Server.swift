@@ -1,6 +1,10 @@
 import FlyingFox
+import FlyingSocks
 import CommonKit
 import Foundation
+#if os(Linux)
+import Glibc
+#endif
 
 public protocol ServerInterface {
     var id: UUID { get }
@@ -18,6 +22,13 @@ public protocol ServerInterface {
 public final class Server: ServerInterface {
     private let logger = Logger(category: "Server")
     private let server: HTTPServer
+    private let control: HTTPServer?
+    private let token: String?
+    private var mockHandler: ServerMockHandlerInterface?
+    private var searchHandler: ServerMockSearchHandlerInterface?
+    private var scenarioHandler: ScenarioHandlerInterface?
+    private var controlHandler: ServerControlHandlerInterface?
+    private let requests = RequestDrain()
     private var task: Task<(), Never>? = nil
 #if os(macOS)
     private var serverActivity: NSObjectProtocol? = nil
@@ -27,18 +38,33 @@ public final class Server: ServerInterface {
     public var serverType: String { "HTTP" }
 
 
-    public init(port: UInt16 = 8008) {
-        server = .init(port: port, logger: Logger(category: "Server"))
+    public init(port: UInt16 = 8008, controlPort: UInt16? = nil, token: String? = nil) {
+        server = .init(port: port, timeout: 120, logger: Logger(category: "Server"))
+        self.token = token
+        control = controlPort.map {
+            var address = sockaddr_in.inet(port: $0)
+            address.sin_addr.s_addr = UInt32(0x7f000001).bigEndian
+            return HTTPServer(address: address, logger: Logger(category: "Control"))
+        }
         logger.debug("Server initialized on \(port)")
         address = "localhost:\(port)"
     }
 
     func prepareServer() async {
-        await server.appendRoute("POST /mock", to: HandleMock())
-        await server.appendRoute("GET /mock", to: HandleMock())
-        await server.appendRoute("POST /search", to: HandleSearchMock())
-        await server.appendRoute("/scenario", to: HandleScenario())
+        await requests.openAdmission()
+        await server.appendRoute("POST /mock", to: DrainingHandler(next: HandleMock(handler: mockHandler), drain: requests))
+        await server.appendRoute("GET /mock", to: DrainingHandler(next: HandleMock(handler: mockHandler), drain: requests))
+        await server.appendRoute("POST /search", to: DrainingHandler(next: HandleSearchMock(handler: searchHandler), drain: requests))
+        await server.appendRoute("/scenario", to: DrainingHandler(next: HandleScenario(handler: scenarioHandler), drain: requests))
         await server.appendRoute("GET /hello") { _ in return .init(statusCode: .teapot) }
+        if let control {
+            await control.appendRoute("/*") { [weak self] request in
+                guard let self, let token = self.token, request.headers[HTTPHeader("Authorization")] == "Bearer " + token else { return .init(statusCode: .unauthorized) }
+                guard let handler = self.controlHandler else { return .init(statusCode: .notImplemented) }
+                let result = await handler.control(path: request.path, method: request.method.rawValue, body: (try? await request.bodyData) ?? Data())
+                return .init(statusCode: .init(result.status, phrase: ""), headers: [.contentType: "application/json"], body: result.body)
+            }
+        }
     }
 
     public func startServer(onError: @escaping (Error) -> Void) {
@@ -58,7 +84,7 @@ public final class Server: ServerInterface {
                                                                        reason: "Mock Server")
 #endif
                 await prepareServer()
-                try await server.start()
+                try await runListeners()
             } catch {
                 guard !(error is CancellationError) else { return }
                 logger.critical("Server starting error: \(error)")
@@ -82,7 +108,7 @@ public final class Server: ServerInterface {
                                                                    reason: "Mock Server")
 #endif
             await prepareServer()
-            try await server.start()
+            try await runListeners()
         } catch {
             guard !(error is CancellationError) else { return }
             logger.critical("Server starting error: \(error)")
@@ -91,34 +117,73 @@ public final class Server: ServerInterface {
     }
 
     public func stopServer() {
-        logger.debug("Server stopping...")
+        Task { await shutdown() }
+    }
 
-        guard !(task?.isCancelled ?? true) else {
-            logger.notice("Server already stopped")
-            return
-        }
-
+    public func shutdown(timeout: TimeInterval = 120) async {
+        await requests.closeAdmission()
+        let start = Date()
+        while await requests.count > 0, Date().timeIntervalSince(start) < timeout { try? await Task.sleep(for: .milliseconds(25)) }
+        await server.stop(timeout: 1)
+        await control?.stop(timeout: 1)
         task?.cancel()
 #if os(macOS)
-        if let serverActivity = serverActivity {
-            ProcessInfo.processInfo.endActivity(serverActivity)
-            self.serverActivity = nil
-        }
+        if let serverActivity { ProcessInfo.processInfo.endActivity(serverActivity); self.serverActivity = nil }
 #endif
+    }
+
+    public func isReady() async -> Bool {
+        guard await server.listeningAddress != nil else { return false }
+        if let control { return await control.listeningAddress != nil }
+        return true
+    }
+
+    public func registerControlHandler(_ handler: ServerControlHandlerInterface) { controlHandler = handler }
+
+    private func runListeners() async throws {
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask { try await self.server.start() }
+            if let control { group.addTask { try await control.start() } }
+            defer { group.cancelAll() }
+            try await group.next()
+        }
     }
 
     public func registerMockHandler(_ handler: ServerMockHandlerInterface) {
         logger.debug("Server register handler \(String(describing: handler))")
-        HandleMock.handler = handler
+        mockHandler = handler
     }
 
     public func registerMockSearchHandler(_ handler: ServerMockSearchHandlerInterface) {
         logger.debug("Server register handler \(String(describing: handler))")
-        HandleSearchMock.handler = handler
+        searchHandler = handler
     }
 
     public func registerScenarioHandler(_ handler: ScenarioHandlerInterface) {
         logger.debug("Server register handler \(String(describing: handler))")
-        HandleScenario.handler = handler
+        scenarioHandler = handler
+    }
+}
+
+public protocol ServerControlHandlerInterface {
+    func control(path: String, method: String, body: Data) async -> (status: Int, body: Data)
+}
+
+private actor RequestDrain {
+    private var accepting = true
+    private(set) var count = 0
+    func begin() -> Bool { guard accepting else { return false }; count += 1; return true }
+    func end() { count -= 1 }
+    func closeAdmission() { accepting = false }
+    func openAdmission() { accepting = true }
+}
+
+private struct DrainingHandler: HTTPHandler {
+    let next: HTTPHandler
+    let drain: RequestDrain
+    func handleRequest(_ request: HTTPRequest) async throws -> HTTPResponse {
+        guard await drain.begin() else { return .init(statusCode: .serviceUnavailable) }
+        do { let response = try await next.handleRequest(request); await drain.end(); return response }
+        catch { await drain.end(); throw error }
     }
 }

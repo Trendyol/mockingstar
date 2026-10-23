@@ -16,15 +16,13 @@ public actor FileSaverActor: FileSaverActorInterface {
     private let logger = Logger(category: "FileSaverActor")
     private let fileManager: FileManagerInterface
     public static let shared = FileSaverActor()
-    @UserDefaultStorage("workspaces") private var workspaces: [Workspace] = []
-    private var folderPath: String {
-        let mockFolderFilePath = workspaces.current?.path ?? "/MockServer"
-        if mockFolderFilePath.hasSuffix("/") { return mockFolderFilePath }
-        return mockFolderFilePath + "/"
-    }
+    private let fileUrlBuilder: FileUrlBuilderInterface
+    private let workspace: MockWorkspace?
 
-    init(fileManager: FileManagerInterface = FileManager.default) {
+    public init(fileManager: FileManagerInterface = FileManager.default, fileUrlBuilder: FileUrlBuilderInterface = FileUrlBuilder(), workspace: MockWorkspace? = nil) {
         self.fileManager = fileManager
+        self.fileUrlBuilder = fileUrlBuilder
+        self.workspace = workspace
     }
 
     /// Saves a `MockModel` to a file within the specified mock domain's "Mocks" folder.
@@ -39,13 +37,14 @@ public actor FileSaverActor: FileSaverActorInterface {
     ///   - mockDomain: The mock domain under which the mock is saved.
     /// - Throws: If writing the file encounters an error, it is thrown.
     public func saveFile(mock: MockModel, mockDomain: String) throws {
-        let filePath = folderPath + "Domains/" + mockDomain + "/Mocks/" + mock.folderPath
+        let filePath = try fileUrlBuilder.mocksFolderUrl(for: mockDomain).appending(path: mock.folderPath).path()
 
         guard !fileManager.fileExist(atPath: filePath) else {
             logger.info("Mock Already Saved at: \(filePath)")
             return
         }
 
-        try fileManager.write(to: URL(filePath: filePath), fileName: mock.fileName, model: mock)
+        if let workspace { try workspace.apply([mock], domain: mockDomain) }
+        else { try fileManager.write(to: URL(filePath: filePath), fileName: mock.fileName, model: mock) }
     }
 }

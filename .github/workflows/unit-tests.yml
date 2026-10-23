@@ -19,9 +19,22 @@ jobs:
     - name: Run Xcode Unit Tests
       run: set -o pipefail && xcodebuild test -workspace MockingStar.xcworkspace -scheme MockingStar -testPlan TestPlan -skipMacroValidation | xcbeautify --renderer github-actions
 
+    - name: Run Headless Core Tests
+      run: swift test --package-path Core/MockingStarCore
+
+    - name: Test Importable Engine and Host Integration
+      run: |
+        swift test
+        python3 MockingStarEngine/Tests/consumer.py
+
+    - name: Build and Exercise CLI
+      run: |
+        swift build --package-path MockingStarExecutable
+        python3 MockingStarExecutable/Tests/integration.py
+
   linux-test:
     name: 'Linux Build Check'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Check out Repository
@@ -31,28 +44,22 @@ jobs:
 
     - uses: swift-actions/setup-swift@v2
       with:
-        swift-version: "5"
+        swift-version: "6.2.3"
 
     - name: Prepare Dependencies
       run: |
-            sudo apt update
-            sudo NEEDRESTART_MODE=a apt-get install \
-                  binutils \
-                  git \
-                  gnupg2 \
-                  libc6-dev \
-                  libcurl4-openssl-dev \
-                  libedit2 \
-                  libgcc-9-dev \
-                  libpython3.8 \
-                  libsqlite3-0 \
-                  libstdc++-9-dev \
-                  libxml2-dev \
-                  libz3-dev \
-                  pkg-config \
-                  tzdata \
-                  unzip \
-                  zlib1g-dev -y
+            sudo apt-get update
+            sudo apt-get install -y libcurl4-openssl-dev libedit-dev libsqlite3-dev libxml2-dev libicu-dev zlib1g-dev pkg-config
 
     - name: Linux Build Check
       run: swift build -c release --package-path ./MockingStarExecutable
+
+    - name: Linux CLI Integration
+      env:
+        MOCKINGSTAR_BINARY: MockingStarExecutable/.build/release/mockingstar
+      run: python3 MockingStarExecutable/Tests/integration.py
+
+    - name: Linux Engine and Consumer Tests
+      run: |
+        swift test
+        python3 MockingStarEngine/Tests/consumer.py

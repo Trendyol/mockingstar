@@ -25,7 +25,7 @@ public final class Plugin {
     ///   - domainFileStructureMonitor: File change observer of domain plugins
     ///   - commonFileStructureMonitor: File change observer of common plugins
     ///   - mockDomain: Selected mock domain
-    init(mockDomain: String) {
+    init(fileUrlBuilder: FileUrlBuilderInterface = FileUrlBuilder(), settingsRoot: URL? = nil, mockDomain: String) {
         self.mockDomain = mockDomain
     }
     

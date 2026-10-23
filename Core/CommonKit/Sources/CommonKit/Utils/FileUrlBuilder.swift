@@ -96,24 +96,26 @@ public enum FileUrlBuilderError: LocalizedError {
 
 public final class FileUrlBuilder: FileUrlBuilderInterface {
     @UserDefaultStorage("workspaces") private var workspaces: [Workspace] = []
-    var mocksFolderPath: String { workspaces.current?.path ?? "/MockServer" }
+    private let root: URL?
+    var mocksFolderPath: String { root?.path ?? workspaces.current?.path ?? "/MockServer" }
 
     private var folderPath: String {
         if mocksFolderPath.hasSuffix("/") { return mocksFolderPath }
         return mocksFolderPath + "/"
     }
 
-    public init() {}
+    public init(root: URL? = nil) { self.root = root?.standardizedFileURL }
 
     public func domainsFolderUrl() throws -> URL {
-        guard let url = URL(string: folderPath + "Domains/") else {
+        let candidate = root == nil ? URL(string: folderPath + "Domains/") : URL(fileURLWithPath: folderPath).appendingPathComponent("Domains", isDirectory: true)
+        guard let url = candidate else {
             throw FileUrlBuilderError.urlError
         }
         return url
     }
 
     public func domainFolder(for mockDomain: String) throws -> URL {
-        guard let url = URL(string: try domainsFolderUrl().absoluteString + mockDomain) else {
+        guard let url = Optional(try domainsFolderUrl().appendingPathComponent(mockDomain, isDirectory: true)) else {
             throw FileUrlBuilderError.urlError
         }
         return url
@@ -146,7 +148,7 @@ public final class FileUrlBuilder: FileUrlBuilderInterface {
     }
 
     public func configsFolderUrl(for mockDomain: String) throws -> URL {
-        guard let url = URL(string: folderPath + "Domains/" + mockDomain + "/Configs") else {
+        guard let url = Optional(URL(fileURLWithPath: folderPath).appendingPathComponent("Domains").appendingPathComponent(mockDomain).appendingPathComponent("Configs")) else {
             throw FileUrlBuilderError.urlError
         }
         return URL(filePath: url.path())
@@ -157,14 +159,14 @@ public final class FileUrlBuilder: FileUrlBuilderInterface {
     }
 
     public func pluginFolderUrl(for mockDomain: String) throws -> URL {
-        guard let url = URL(string: folderPath + "Domains/" + mockDomain + "/Plugins") else {
+        guard let url = Optional(URL(fileURLWithPath: folderPath).appendingPathComponent("Domains").appendingPathComponent(mockDomain).appendingPathComponent("Plugins")) else {
             throw FileUrlBuilderError.urlError
         }
         return URL(filePath: url.path())
     }
 
     public func commonPluginFolderUrl() throws -> URL {
-        guard let url = URL(string: folderPath + "Plugins") else {
+        guard let url = Optional(URL(fileURLWithPath: folderPath).appendingPathComponent("Plugins")) else {
             throw FileUrlBuilderError.urlError
         }
         return URL(filePath: url.path())

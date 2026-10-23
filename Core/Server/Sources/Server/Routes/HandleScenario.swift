@@ -16,13 +16,15 @@ public protocol ScenarioHandlerInterface {
 
 final class HandleScenario: HTTPHandler {
     static var handler: ScenarioHandlerInterface?
+    private let instanceHandler: ScenarioHandlerInterface?
+    init(handler: ScenarioHandlerInterface? = nil) { instanceHandler = handler }
     private let jsonDecoder = JSONDecoder()
     private let logger = Logger(category: "HandleScenario")
 
     func handleRequest(_ request: HTTPRequest) async throws -> HTTPResponse {
         logger.debug("New request handled")
 
-        guard let handler = HandleScenario.handler else {
+        guard let handler = instanceHandler ?? HandleScenario.handler else {
             logger.fault("Handler not registered, you should register handler before handling requests")
             return .init(statusCode: .notImplemented)
         }
