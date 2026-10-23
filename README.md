@@ -25,6 +25,8 @@ The latest binary can also be found on the releases page or clone and compile in
 
 The root Swift package exports `MockingstarEngine` for embedding the same commands and server into another CLI executable. See [host integration](docs/CLI.md#import-into-another-cli).
 
+On macOS, the root package and `PluginCore` pin the SwiftSyntax 602-compatible [SwiftyJS fork](https://github.com/baris-cakmak/SwiftyJS). This keeps the existing JavaScript macros and value codec while allowing hosts that already use SwiftSyntax 602 to resolve one package graph. Linux retains its existing plugin implementation.
+
 ### Key Features
 
 - **Mocking Requests**: Easily mock requests and test different cases with scenarios.

@@ -57,19 +57,18 @@
     {
       "identity" : "swift-syntax",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-syntax.git",
+      "location" : "https://github.com/swiftlang/swift-syntax.git",
       "state" : {
-        "revision" : "6ad4ea24b01559dde0773e3d091f1b9e36175036",
-        "version" : "509.0.2"
+        "revision" : "4799286537280063c85a32f09884cfbca301b1a1",
+        "version" : "602.0.0"
       }
     },
     {
       "identity" : "swiftyjs",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/yusufozgul/SwiftyJS",
+      "location" : "https://github.com/baris-cakmak/SwiftyJS.git",
       "state" : {
-        "revision" : "cfc81d2074a43d654b5cea705daf09b356584bef",
-        "version" : "0.0.4"
+        "revision" : "b39e24e84c23196b63a4f4f8c096c3f2e221d69a"
       }
     }
   ],

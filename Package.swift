@@ -5,7 +5,7 @@ import PackageDescription
 #if os(macOS)
 let plugins: [Target.Dependency] = ["PluginCore"]
 let pluginTarget = Target.target(name: "PluginCore", dependencies: ["CommonKit", .product(name: "AnyCodable", package: "AnyCodable"), .product(name: "SwiftyJS", package: "SwiftyJS")], path: "Core/PluginCore/Sources/PluginCore")
-let javascriptDependencies: [Package.Dependency] = [.package(url: "https://github.com/yusufozgul/SwiftyJS", exact: "0.0.4")]
+let javascriptDependencies: [Package.Dependency] = [.package(url: "https://github.com/baris-cakmak/SwiftyJS.git", revision: "b39e24e84c23196b63a4f4f8c096c3f2e221d69a")]
 #else
 let plugins: [Target.Dependency] = ["PluginCoreLinux"]
 let pluginTarget = Target.target(name: "PluginCoreLinux", dependencies: ["CommonKit", .product(name: "AnyCodable", package: "AnyCodable")], path: "Core/PluginCore/Sources/PluginCoreLinux")
