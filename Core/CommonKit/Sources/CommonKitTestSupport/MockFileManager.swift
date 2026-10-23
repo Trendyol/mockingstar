@@ -9,6 +9,7 @@ import Foundation
 @testable import CommonKit
 
 public final class MockFileManager: FileManagerInterface {
+    private let readLock = NSLock()
     public init() { }
     
     public var invokedCreateDirectory = false
@@ -69,6 +70,8 @@ public final class MockFileManager: FileManagerInterface {
     public var stubbedReadJSONFileResult: Any!
     public var stubbedReadJSONFileError: Error? = nil
     public func readJSONFile<T>(at url: URL) throws -> T {
+        readLock.lock()
+        defer { readLock.unlock() }
         invokedReadJSONFile = true
         invokedReadJSONFileCount += 1
         invokedReadJSONFileParameters = (url, ())
@@ -88,6 +91,8 @@ public final class MockFileManager: FileManagerInterface {
     public var stubbedReadJSONFileWithUserInfoResult: Any!
     public var stubbedReadJSONFileWithUserInfoError: Error? = nil
     public func readJSONFile<T>(at url: URL, userInfo: [CodingUserInfoKey : any Sendable]) throws -> T where T : Decodable {
+        readLock.lock()
+        defer { readLock.unlock() }
         invokedReadJSONFileWithUserInfo = true
         invokedReadJSONFileWithUserInfoCount += 1
         invokedReadJSONFileWithUserInfoParameters = (url, ())
