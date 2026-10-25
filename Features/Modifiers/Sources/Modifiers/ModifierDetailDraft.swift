@@ -54,7 +54,7 @@ struct MockModifierPreviewInput: Equatable, Codable {
         }
         return .init(
             source: model.sampleMockRequestId == nil ? .live : .mock,
-            url: "https://example.com\(model.path)",
+            url: "",
             method: model.method,
             scenario: model.scenario ?? "",
             headersJSON: "{}",

@@ -11,7 +11,7 @@ public struct MockModifierCreationSeed: Hashable, Sendable {
 
     public init(
         mockId: String? = nil,
-        url: String = "https://example.com/",
+        url: String,
         path: String = "/",
         method: String = "GET",
         scenario: String = "",
@@ -37,5 +37,5 @@ public struct MockModifierCreationSeed: Hashable, Sendable {
         requestBody = mock.requestBody
     }
 
-    public static let empty = MockModifierCreationSeed()
+    public static let empty = MockModifierCreationSeed(url: "")
 }
