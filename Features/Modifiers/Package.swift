@@ -16,6 +16,8 @@ let package = Package(
         .package(path: "../../Core/CommonKit"),
         .package(path: "../../Core/CommonViewsKit"),
         .package(path: "../../Core/Editor"),
+        .package(path: "../../Core/MockingStarCore"),
+        .package(path: "../../Core/Server"),
     ],
     targets: [
         .target(
@@ -24,6 +26,8 @@ let package = Package(
                 "CommonKit",
                 "CommonViewsKit",
                 "Editor",
+                "MockingStarCore",
+                "Server",
             ]),
         .testTarget(
             name: "ModifiersTests",
