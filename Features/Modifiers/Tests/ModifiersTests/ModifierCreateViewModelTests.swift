@@ -5,6 +5,21 @@ import XCTest
 
 @MainActor
 final class MockModifierCreateViewModelTests: XCTestCase {
+    func test_create_WithoutMockLeavesPreviewURLBlank() async {
+        let sut = MockModifierCreateViewModel(
+            seed: .empty,
+            apiClient: FakeMockModifierAPIClient(),
+            notificationManager: MockNotificationManager()
+        )
+        sut.modifierId = "product"
+        sut.path = "/products/42"
+
+        let result = await sut.create(domain: "Dev")
+
+        XCTAssertEqual(result?.seed.url, "")
+        XCTAssertEqual(result?.seed.path, "/products/42")
+    }
+
     func test_mockSeed_PrefillsMetadataAndPreview() {
         let seed = MockModifierCreationSeed(
             mockId: "mock-1",

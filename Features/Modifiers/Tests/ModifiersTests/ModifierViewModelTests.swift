@@ -226,6 +226,24 @@ final class MockModifierListViewModelTests: XCTestCase {
 
 @MainActor
 final class MockModifierDetailViewModelTests: XCTestCase {
+    private func runPreview() async {
+        if sut.previewInput.url.isEmpty {
+            sut.previewInput.url = "https://example.com/cart"
+        }
+        await sut.runPreview(domain: "Dev")
+    }
+
+    func test_preview_WithoutSeedRequiresUserURLBeforeCallingAPI() async {
+        api.stubbedGet = sampleModifier()
+        await sut.load(domain: "Dev")
+        XCTAssertEqual(sut.previewInput.url, "")
+
+        await sut.runPreview(domain: "Dev")
+
+        XCTAssertNil(api.invokedPreview)
+        XCTAssertEqual(sut.fieldErrors[.url], "Enter an absolute HTTP or HTTPS URL")
+    }
+
     private var api: FakeMockModifierAPIClient!
     private var sut: MockModifierDetailViewModel!
     private var navigationStore: NavigationStore!
@@ -320,7 +338,7 @@ final class MockModifierDetailViewModelTests: XCTestCase {
         )
         await sut.load(domain: "Dev")
         XCTAssertFalse(sut.canCopyObjectNotation)
-        await sut.runPreview(domain: "Dev")
+        await runPreview()
 
         XCTAssertTrue(sut.canCopyObjectNotation)
         sut.copyObjectNotation()
@@ -346,7 +364,7 @@ final class MockModifierDetailViewModelTests: XCTestCase {
             bodyBase64: Data(#"{"widgets":[{"name":"first"},{"name":"second","price":1.0,"products":[{"id":1},{"id":null,"label":"x"}]}]}"#.utf8).base64EncodedString()
         )
         await sut.load(domain: "Dev")
-        await sut.runPreview(domain: "Dev")
+        await runPreview()
         let offset = (sut.previewModifiedText as NSString).range(of: "second").location
 
         sut.copyObjectNotation(offset: offset)
@@ -370,7 +388,7 @@ final class MockModifierDetailViewModelTests: XCTestCase {
             bodyBase64: Data(#"{"foo-bar":{"id":3}}"#.utf8).base64EncodedString()
         )
         await sut.load(domain: "Dev")
-        await sut.runPreview(domain: "Dev")
+        await runPreview()
         let offset = (sut.previewModifiedText as NSString).range(of: "foo-bar").location
 
         sut.copyObjectNotation(offset: offset)
@@ -392,7 +410,7 @@ final class MockModifierDetailViewModelTests: XCTestCase {
             bodyBase64: Data("[1,2]".utf8).base64EncodedString()
         )
         await sut.load(domain: "Dev")
-        await sut.runPreview(domain: "Dev")
+        await runPreview()
 
         sut.copyObjectNotation(offset: (sut.previewModifiedText as NSString).range(of: "1").location)
 
@@ -418,7 +436,7 @@ final class MockModifierDetailViewModelTests: XCTestCase {
                 status: 200, headers: [:],
                 bodyBase64: Data(body.utf8).base64EncodedString()
             )
-            await sut.runPreview(domain: "Dev")
+            await runPreview()
             XCTAssertFalse(sut.canCopyObjectNotation)
             sut.copyObjectNotation()
             XCTAssertFalse(pasteBoard.invokedClearContents)
@@ -439,7 +457,7 @@ final class MockModifierDetailViewModelTests: XCTestCase {
             bodyBase64: Data(#"{"a":1}"#.utf8).base64EncodedString()
         )
         await sut.load(domain: "Dev")
-        await sut.runPreview(domain: "Dev")
+        await runPreview()
         XCTAssertTrue(sut.canCopyObjectNotation)
         sut.isPreviewLoading = true
 
@@ -491,7 +509,7 @@ final class MockModifierDetailViewModelTests: XCTestCase {
         await sut.load(domain: "Dev")
         sut.draft.transformerCode = "function transformer(req, chain) { return { body: { draft: true } } }"
 
-        await sut.runPreview(domain: "Dev")
+        await runPreview()
 
         XCTAssertNil(api.invokedUpdate)
         XCTAssertEqual(api.invokedPreview?.modifier.transformerCode, sut.draft.transformerCode)
@@ -686,9 +704,9 @@ final class MockModifierDetailViewModelTests: XCTestCase {
             }
         }
 
-        let first = Task { await sut.runPreview(domain: "Dev") }
+        let first = Task { await runPreview() }
         while box.values.count < 1 { await Task.yield() }
-        let second = Task { await sut.runPreview(domain: "Dev") }
+        let second = Task { await runPreview() }
         while box.values.count < 2 { await Task.yield() }
 
         box.values[1].resume(returning: .init(

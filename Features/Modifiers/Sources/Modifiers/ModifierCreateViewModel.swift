@@ -73,17 +73,9 @@ public final class MockModifierCreateViewModel {
 
     /// Keeps mock URL/headers/body from the creation seed and syncs form metadata.
     private func makePreviewSeed() -> MockModifierCreationSeed {
-        let resolvedURL: String
-        if seed.mockId != nil || seed.url != MockModifierCreationSeed.empty.url {
-            resolvedURL = seed.url
-        } else {
-            // Preview needs an absolute URL. A modifier created without a mock only has a path.
-            let normalizedPath = path.hasPrefix("/") ? path : "/" + path
-            resolvedURL = "https://example.com\(normalizedPath)"
-        }
         return MockModifierCreationSeed(
             mockId: sampleMockRequestId.isEmpty ? nil : sampleMockRequestId,
-            url: resolvedURL,
+            url: seed.url,
             path: path,
             method: method,
             scenario: scenario,
