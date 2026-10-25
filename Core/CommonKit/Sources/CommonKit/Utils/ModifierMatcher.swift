@@ -10,10 +10,11 @@ public struct MockModifierMatcher {
                       path: String,
                       method: String,
                       scenario: String?) -> [MockModifierModel] {
-        modifiers
-            .filter { $0.path == path }
-            .filter { $0.method.uppercased() == method.uppercased() }
+        let requestMethod = method.uppercased()
+        return modifiers
             .filter { modifier in
+                guard modifier.path == path,
+                      modifier.method.uppercased() == requestMethod else { return false }
                 guard let modifierScenario = modifier.scenario, !modifierScenario.isEmpty else { return true }
                 return modifierScenario == scenario
             }
