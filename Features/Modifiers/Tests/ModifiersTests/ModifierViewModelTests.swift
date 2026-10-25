@@ -88,11 +88,11 @@ final class MockModifierListViewModelTests: XCTestCase {
         ])
     }
 
-    func test_load_ServerUnavailable_ShowsError() async {
-        api.stubbedError = MockModifierAPIError.serverUnavailable
+    func test_load_OperationFailure_ShowsError() async {
+        api.stubbedError = MockModifierAPIError.executionFailed("Failed to read modifiers")
         await sut.load(domain: "Dev")
         XCTAssertTrue(sut.shouldShowErrorMessage)
-        XCTAssertEqual(sut.errorMessage, MockModifierAPIError.serverUnavailable.localizedDescription)
+        XCTAssertEqual(sut.errorMessage, MockModifierAPIError.executionFailed("Failed to read modifiers").localizedDescription)
     }
 
     func test_modifierLookupAndDefaultOrderSupportTableSelection() async {

@@ -63,7 +63,7 @@ The modifier detail screen uses a horizontal split:
 
 ### Run (preview)
 
-**Run** (`⌘↩`) calls `POST /modifiers/preview` with the current unsaved draft. It does **not** write the `.js` file.
+**Run** (`⌘↩`) evaluates the current unsaved draft directly in the macOS app. It does **not** write the `.js` file. API clients can run the same preview through `POST /modifiers/preview`.
 
 Preview request fields (URL, method, scenario, headers, body) and the preview response are **ephemeral**. They are not written to disk. The only preview-related field persisted on the modifier definition is `sampleMockRequestId`.
 
