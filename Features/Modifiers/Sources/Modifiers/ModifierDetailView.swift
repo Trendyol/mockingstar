@@ -1,0 +1,320 @@
+import CommonKit
+import CommonViewsKit
+import Editor
+import SwiftUI
+import TipKit
+
+/// Owns a stable ViewModel so NavigationStack parent re-renders do not wipe preview seed/state.
+public struct MockModifierDetailRouteView: View {
+    @State private var viewModel: MockModifierDetailViewModel
+
+    public init(modifierId: String, previewSeed: MockModifierCreationSeed? = nil) {
+        _viewModel = State(
+            initialValue: MockModifierDetailViewModel(
+                modifierId: modifierId,
+                previewSeed: previewSeed
+            )
+        )
+    }
+
+    public var body: some View {
+        MockModifierDetailView(viewModel: viewModel)
+    }
+}
+
+public struct MockModifierDetailView: View {
+    @Bindable private var viewModel: MockModifierDetailViewModel
+    @AppStorage("mockDomain") private var mockDomain: String = "Dev"
+    @FocusState private var isEditorFocused: Bool
+
+    public init(viewModel: MockModifierDetailViewModel) {
+        self.viewModel = viewModel
+    }
+
+    public var body: some View {
+        Group {
+            if viewModel.isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                HSplitView {
+                    MockModifierResponsePane(viewModel: viewModel)
+                        .frame(minWidth: 420)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text("JavaScript").font(.headline)
+                            Spacer()
+                            if viewModel.isPreviewLoading {
+                                ProgressView().controlSize(.small)
+                            }
+                            Button {
+                                Task { await viewModel.runPreview(domain: mockDomain) }
+                            } label: {
+                                Label("Run", systemImage: "play.fill")
+                            }
+                            .keyboardShortcut(.return, modifiers: [.command])
+                            .disabled(viewModel.isPreviewLoading)
+                        }
+                        .padding(10)
+
+                        TipView(ModifierJavaScriptTip())
+                            .padding(.horizontal, 10)
+
+                        EditorView(session: viewModel.javaScriptEditorSession)
+                            .focused($isEditorFocused)
+                            .frame(minHeight: 220)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                        MockModifierDetailInspectorPane(viewModel: viewModel)
+                            .frame(minHeight: 280)
+                    }
+                    .frame(minWidth: 340, idealWidth: 420)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(.background)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.background)
+        .navigationTitle(viewModel.currentId)
+        .toolbar {
+            ToolbarItemGroup {
+                ToolBarButton(
+                    title: "Save",
+                    icon: "tray.and.arrow.down",
+                    backgroundColor: .blue
+                ) {
+                    Task { _ = await viewModel.save(domain: mockDomain) }
+                }
+                .keyboardShortcut("s")
+            }
+            .disableSharedBackground()
+
+            ToolbarItem {
+                Menu {
+                    Button("Delete", role: .destructive) {
+                        viewModel.shouldShowDeleteConfirmation = true
+                    }
+                } label: {
+                    Label("More", systemImage: "ellipsis.circle")
+                }
+            }
+            .disableSharedBackground()
+        }
+        .task {
+            await viewModel.load(domain: mockDomain)
+        }
+        .alert("Error", isPresented: $viewModel.shouldShowErrorMessage) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(viewModel.errorMessage)
+        }
+        .confirmationDialog("Delete modifier?", isPresented: $viewModel.shouldShowDeleteConfirmation) {
+            Button("Delete", role: .destructive) {
+                Task { await viewModel.delete(domain: mockDomain) }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+        .modifier(ChangeConfirmationViewModifier(hasChange: $viewModel.shouldShowUnsavedIndicator,
+                                                 backNavigationShortcutDisabled: .init(get: { isEditorFocused }, set: { _ in })) {
+            Task { _ = await viewModel.save(domain: mockDomain) }
+        })
+    }
+}
+
+/// Matches Mock Detail inspector: always-open GroupBox sections instead of DisclosureGroups.
+private struct MockModifierDetailInspectorPane: View {
+    @Bindable var viewModel: MockModifierDetailViewModel
+    @AppStorage("mockDomain") private var mockDomain: String = "Dev"
+
+    var body: some View {
+        List {
+            GroupBox {
+                VStack(alignment: .leading, spacing: 0) {
+                    LabeledContent("ID") {
+                        TextField("ID", text: $viewModel.draft.id)
+                            .multilineTextAlignment(.trailing)
+                            .textFieldStyle(.plain)
+                    }
+                    fieldErrorText(for: .id)
+                    Divider().padding(.vertical, 6)
+
+                    LabeledContent("Path") {
+                        TextField("Path", text: $viewModel.draft.path)
+                            .multilineTextAlignment(.trailing)
+                            .textFieldStyle(.plain)
+                    }
+                    fieldErrorText(for: .path)
+                    Divider().padding(.vertical, 6)
+
+                    LabeledContent("Method") {
+                        TextField("Method", text: $viewModel.draft.method)
+                            .multilineTextAlignment(.trailing)
+                            .textFieldStyle(.plain)
+                    }
+                    fieldErrorText(for: .method)
+                    Divider().padding(.vertical, 6)
+
+                    LabeledContent("Scenario") {
+                        TextField("Scenario", text: $viewModel.draft.scenario)
+                            .multilineTextAlignment(.trailing)
+                            .textFieldStyle(.plain)
+                    }
+                    Divider().padding(.vertical, 6)
+
+                    LabeledContent("Order") {
+                        TextField(
+                            "Order",
+                            value: $viewModel.draft.order,
+                            format: .number
+                        )
+                        .multilineTextAlignment(.trailing)
+                        .textFieldStyle(.plain)
+                    }
+                    fieldErrorText(for: .order)
+                    Divider().padding(.vertical, 6)
+
+                    LabeledContent("Sample Mock ID") {
+                        TextField(
+                            "Sample Mock ID",
+                            text: $viewModel.draft.sampleMockRequestId
+                        )
+                        .multilineTextAlignment(.trailing)
+                        .textFieldStyle(.plain)
+                    }
+                    fieldErrorText(for: .sampleMockId)
+                    Divider().padding(.vertical, 6)
+
+                    LabeledContent("Current ID") {
+                        Text(viewModel.currentId)
+                            .textSelection(.enabled)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(6)
+            } label: {
+                Label("Metadata", systemImage: "book.pages")
+                    .labelStyle(.titleOnly)
+                    .font(.title3)
+            }
+            .listRowSeparator(.hidden)
+
+            GroupBox {
+                VStack(alignment: .leading, spacing: 0) {
+                    TipView(ModifierPreviewRequestTip())
+
+                    LabeledContent("Source") {
+                        MockModifierSourcePicker(selection: viewModel.activeSource) { newSource in
+                            Task { await viewModel.setSource(newSource, domain: mockDomain) }
+                        }
+                        .frame(maxWidth: 240)
+                    }
+                    Divider().padding(.vertical, 6)
+
+                    LabeledContent("URL") {
+                        TextField("URL", text: $viewModel.previewInput.url, axis: .vertical)
+                            .lineLimit(1...4)
+                            .multilineTextAlignment(.trailing)
+                            .textFieldStyle(.plain)
+                    }
+                    fieldErrorText(for: .url)
+                    Divider().padding(.vertical, 6)
+
+                    LabeledContent("Method") {
+                        TextField("Method", text: $viewModel.previewInput.method)
+                            .multilineTextAlignment(.trailing)
+                            .textFieldStyle(.plain)
+                    }
+                    Divider().padding(.vertical, 6)
+
+                    LabeledContent("Scenario") {
+                        TextField("Scenario", text: $viewModel.previewInput.scenario)
+                            .multilineTextAlignment(.trailing)
+                            .textFieldStyle(.plain)
+                    }
+                    Divider().padding(.vertical, 6)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Headers JSON")
+                        TextField(
+                            "Headers JSON",
+                            text: $viewModel.previewInput.headersJSON,
+                            axis: .vertical
+                        )
+                        .lineLimit(2...6)
+                        .textFieldStyle(.plain)
+                        fieldErrorText(for: .headers)
+                    }
+                    Divider().padding(.vertical, 6)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Body")
+                        TextField(
+                            "Body",
+                            text: $viewModel.previewInput.body,
+                            axis: .vertical
+                        )
+                        .lineLimit(2...8)
+                        .textFieldStyle(.plain)
+                    }
+                }
+                .padding(6)
+            } label: {
+                Label("Preview Request", systemImage: "book.pages")
+                    .labelStyle(.titleOnly)
+                    .font(.title3)
+            }
+            .listRowSeparator(.hidden)
+        }
+        .scrollContentBackground(.hidden)
+    }
+
+    @ViewBuilder
+    private func fieldErrorText(for field: MockModifierDetailField) -> some View {
+        if let message = viewModel.fieldErrors[field] {
+            Text(message)
+                .font(.caption)
+                .foregroundStyle(.red)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .padding(.top, 4)
+        }
+    }
+}
+
+/// Form-safe Off/Mock/Live control. System `.segmented` picks get clipped inside
+/// grouped form rows and look crooked on macOS.
+private struct MockModifierSourcePicker: View {
+    let selection: MockModifierPreviewSource?
+    let onChange: (MockModifierPreviewSource?) -> Void
+
+    var body: some View {
+        HStack(spacing: 2) {
+            chip(title: "Off", value: nil)
+            chip(title: "Mock", value: .mock)
+            chip(title: "Live", value: .live)
+        }
+        .padding(2)
+        .background(Color.secondary.opacity(0.2), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+
+    private func chip(title: String, value: MockModifierPreviewSource?) -> some View {
+        let selected = selection == value
+        return Button {
+            onChange(value)
+        } label: {
+            Text(title)
+                .font(.callout.weight(.medium))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 5)
+                .foregroundStyle(selected ? Color.black : Color.primary)
+                .background(
+                    selected ? Color.accentColor : Color.clear,
+                    in: RoundedRectangle(cornerRadius: 6, style: .continuous)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+}

@@ -13,17 +13,17 @@ public class EditorContent {
     public var content: String = "" {
         didSet {
             guard content != oldValue else { return }
-            DispatchQueue.global(qos: .userInteractive).async {
-                self.onContentChange?()
-                self.onContentDidChange?()
+            DispatchQueue.main.async { [weak self] in
+                self?.onContentChange?()
+                self?.onContentDidChange?()
             }
         }
     }
     public var type: MockModelBodyType = .json {
         didSet {
             guard type != oldValue else { return }
-            DispatchQueue.global(qos: .userInteractive).async {
-                self.onLanguageChange?()
+            DispatchQueue.main.async { [weak self] in
+                self?.onLanguageChange?()
             }
         }
     }
@@ -40,30 +40,23 @@ public class EditorContent {
 }
 
 public struct EditorView: NSViewRepresentable {
-    public init() {}
+    private let session: EditorSession
 
-    public func makeNSView(context: NSViewRepresentableContext<EditorView>) -> WKWebView {
-        EditorWebView.shared.webView
+    public init(session: EditorSession) {
+        self.session = session
     }
 
-    public func updateEditorContent(contentModel: EditorContent) {
-        EditorWebView.shared.content = contentModel
-        contentModel.onContentChange = {
-            EditorWebView.shared.updateContent()
-        }
-        contentModel.onLanguageChange = {
-            EditorWebView.shared.updateLanguage()
-        }
-        EditorWebView.shared.setInitialContent()
-        EditorWebView.shared.updateLanguage()
+    public func makeNSView(context: Context) -> WKWebView {
+        session.webView
     }
 
-    public func updateNSView(_ nsView: WKWebView, context: NSViewRepresentableContext<EditorView>) { }
-    public func makeCoordinator() -> Coordinator { Coordinator() }
-    public class Coordinator {  }
+    public func updateNSView(_ nsView: WKWebView, context: Context) {
+        session.setContent(session.content.content, type: session.content.type)
+        session.isReadOnly = session.isReadOnly
+    }
 
     public static func warmUp() {
-        let _ = EditorWebView.shared
+        _ = EditorSession.prewarmed
     }
 }
 
@@ -82,6 +75,8 @@ extension MockModelBodyType {
             return "xml"
         case .graphql:
             return "graphql"
+        case .javascript:
+            return "javascript"
         }
     }
 }

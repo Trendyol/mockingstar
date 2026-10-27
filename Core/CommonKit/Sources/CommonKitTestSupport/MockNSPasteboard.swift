@@ -26,11 +26,17 @@ public final class MockNSPasteboard: NSPasteboardInterface {
     public  var invokedSetStringParameters: (string: String, dataType: NSPasteboard.PasteboardType, Void)?
     public  var invokedSetStringParametersList: [(string: String, dataType: NSPasteboard.PasteboardType, Void)] = []
     public  var stubbedSetStringResult: Bool!
+    public  var stubbedString: String?
     public  func setString(_ string: String, forType dataType: NSPasteboard.PasteboardType) -> Bool {
         invokedSetString = true
         invokedSetStringCount += 1
         invokedSetStringParameters = (string, dataType, ())
         invokedSetStringParametersList.append((string, dataType, ()))
+        stubbedString = string
         return stubbedSetStringResult
+    }
+
+    public func string(forType dataType: NSPasteboard.PasteboardType) -> String? {
+        stubbedString
     }
 }

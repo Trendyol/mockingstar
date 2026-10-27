@@ -96,3 +96,17 @@ curl --location --request PUT 'http://localhost:8008/scenario' \
 In case the desired scenario is not found, Mocking Star will send the original request to fetch the data. 
 It will then mock the received result with the specified scenario. 
 However, response might not match your desired scenario, and in such cases, manual modifications may be necessary.
+
+### Modifiers (partial response transforms)
+
+Modifiers are JavaScript transformers that can reshape mock or live responses for a path/method.
+Activation is per `deviceId` and ephemeral (cleared on server restart):
+
+```bash
+curl -X PUT 'http://localhost:8008/modifiers?domain=Dev' \
+  --header 'Content-Type: application/json' \
+  --header 'deviceId:123' \
+  --data '["discount","latency"]'
+```
+
+Use the same `deviceId` on `/mock` requests. See <doc:Modifiers> for full CRUD examples, ordering (`order`), and Maestro setup/teardown with `[]`.
