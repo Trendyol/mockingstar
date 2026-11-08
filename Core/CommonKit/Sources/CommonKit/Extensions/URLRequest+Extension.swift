@@ -15,27 +15,22 @@ public extension URLRequest {
         func quoted(_ value: String) -> String {
             "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
         }
-        let newLine = pretty ? "\\\n" : ""
-        let method = (pretty ? "--request " : "-X ") + "\(quoted(self.httpMethod ?? "GET")) \(newLine)"
-        let url: String = (pretty ? "--url " : "") + "\(quoted(self.url?.absoluteString ?? "")) \(newLine)"
-
-        var cURL = "curl "
-        var header = ""
-        var data: String = ""
-
-        if let httpHeaders = self.allHTTPHeaderFields, httpHeaders.keys.count > 0 {
-            for (key,value) in httpHeaders {
-                header += (pretty ? "--header " : "-H ") + "\(quoted("\(key): \(value)")) \(newLine)"
-            }
+        var parts = [
+            "curl",
+            (pretty ? "--request " : "-X ") + quoted(httpMethod ?? "GET"),
+            (pretty ? "--url " : "") + quoted(url?.absoluteString ?? "")
+        ]
+        for (key, value) in (allHTTPHeaderFields ?? [:]).sorted(by: { $0.key < $1.key }) {
+            let header = value.isEmpty ? "\(key);" : "\(key): \(value)"
+            parts.append((pretty ? "--header " : "-H ") + quoted(header))
         }
-
         if let bodyData = self.httpBody, let bodyString = String(data: bodyData, encoding: .utf8),  !bodyString.isEmpty {
-            data = "--data \(quoted(bodyString))"
+            if value(forHTTPHeaderField: "Content-Type") == nil {
+                parts.append((pretty ? "--header " : "-H ") + "'Content-Type:'")
+            }
+            parts.append("--data-raw " + quoted(bodyString))
         }
-
-        cURL += method + url + header + data
-
-        return cURL
+        return parts.joined(separator: pretty ? " \\\n  " : " ")
     }
 
     func recalculateContentLength() -> URLRequest {

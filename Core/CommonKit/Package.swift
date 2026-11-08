@@ -17,6 +17,7 @@ let package = Package(
             targets: ["CommonKitTestSupport"]),
     ],
     dependencies: [
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.5.0"),
         .package(url: "https://github.com/yusufozgul/AnyCodable", .upToNextMajor(from: "1.1.4")),
         .package(url: "https://github.com/aus-der-Technik/FileMonitor.git", from: "1.2.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.6.3"),
@@ -25,6 +26,7 @@ let package = Package(
         .target(
             name: "CommonKit",
         dependencies: [
+            .product(name: "ArgumentParser", package: "swift-argument-parser"),
             "AnyCodable",
             .product(name: "FileMonitor", package: "FileMonitor"),
             .product(name: "Logging", package: "swift-log"),

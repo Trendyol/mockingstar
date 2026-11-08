@@ -6,6 +6,7 @@
 //
 
 import XCTest
+@testable import CommonKit
 @testable import MockList
 
 final class CurlParserTests: XCTestCase {
@@ -140,7 +141,7 @@ final class CurlParserTests: XCTestCase {
     }
     
     func test_buildRequest_invalidURL_throwsInvalidURLError() {
-        let curlCommand = "curl %&/"
+        let curlCommand = "curl invalid-url"
         let parser = CurlParser(curlCommand)
 
         XCTAssertThrowsError(try parser.buildRequest()) { error in

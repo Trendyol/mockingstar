@@ -12,7 +12,7 @@ final class URLRequestTests: XCTestCase {
             let curl = request.cURL(pretty: pretty)
             XCTAssertTrue(curl.contains("'https://example.com/search?q=O'\\''Reilly'"))
             XCTAssertTrue(curl.contains("'X-Name: O'\\''Reilly'"))
-            XCTAssertTrue(curl.contains("--data '{\"name\":\"O'\\''Reilly\"}'"))
+            XCTAssertTrue(curl.contains("--data-raw '{\"name\":\"O'\\''Reilly\"}'"))
         }
     }
 
