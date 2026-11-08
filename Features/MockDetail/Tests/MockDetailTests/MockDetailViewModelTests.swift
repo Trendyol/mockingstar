@@ -241,7 +241,7 @@ final class MockDetailViewModelTests: XCTestCase {
         XCTAssertFalse(pasteBoard.invokedSetString)
     }
 
-    func test_shareButtonTapped_Curl_CopyExport() {
+    func test_shareButtonTapped_Curl_CopyExport() throws {
         pasteBoard.stubbedClearContentsResult = 0
         pasteBoard.stubbedSetStringResult = true
 
@@ -254,7 +254,13 @@ final class MockDetailViewModelTests: XCTestCase {
         XCTAssertTrue(pasteBoard.invokedClearContents)
         XCTAssertTrue(pasteBoard.invokedSetString)
         XCTAssertTrue(notificationManager.invokedShow)
-        XCTAssertEqual(pasteBoard.invokedSetStringParametersList.map(\.string), ["curl --request 'GET' \\\n--url \'https://www.trendyol.com/aboutus\' \\\n"])
+        XCTAssertEqual(pasteBoard.invokedSetStringParametersList.count, 1)
+        let curl = try XCTUnwrap(pasteBoard.invokedSetStringParametersList.first?.string)
+        let request = try CurlParser(curl).buildRequest()
+        XCTAssertEqual(request.url?.absoluteString, "https://www.trendyol.com/aboutus")
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertTrue(request.allHTTPHeaderFields?.isEmpty ?? true)
+        XCTAssertNil(request.httpBody)
         XCTAssertEqual(pasteBoard.invokedSetStringParametersList.map(\.dataType), [.string])
         XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.title), ["Request copied to clipboard"])
         XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.color), [.green])

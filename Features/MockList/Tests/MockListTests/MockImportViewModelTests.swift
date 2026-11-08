@@ -66,13 +66,24 @@ final class MockImportViewModelTests: XCTestCase {
     func test_importMock_withInvalidCurlCommand_showsError() async {
         let mockDomain = "TestDomain"
         viewModel.mockImportStyle = .cURL
-        viewModel.importInput = "curl %&/"  // Invalid URL
+        viewModel.importInput = "curl invalid-url"
         
         await viewModel.importMock(for: mockDomain)
         
         XCTAssertFalse(mockingStarCore.invokedImportMock)
         XCTAssertFalse(viewModel.shouldShowImportDone)
         XCTAssertEqual(viewModel.importFailedMessage, "Import failed: Valid URL not found. Make sure the URL starts with http:// or https://.\ninvalidURL")
+    }
+
+    func test_importMock_withShellOperator_showsParsingError() async {
+        viewModel.mockImportStyle = .cURL
+        viewModel.importInput = "curl %&/"
+
+        await viewModel.importMock(for: "TestDomain")
+
+        XCTAssertFalse(mockingStarCore.invokedImportMock)
+        XCTAssertFalse(viewModel.shouldShowImportDone)
+        XCTAssertEqual(viewModel.importFailedMessage, "Import failed: Failed to parse cURL command. Please check the command syntax.\nparsingFailed")
     }
 
     func test_importMock_withValidFileContent_importsMock() async {
