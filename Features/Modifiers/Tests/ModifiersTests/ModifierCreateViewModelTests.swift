@@ -80,4 +80,48 @@ final class MockModifierCreateViewModelTests: XCTestCase {
         XCTAssertEqual(result?.seed.requestBody, "{\"id\":1}")
         XCTAssertNil(api.invokedSetActiveActivations)
     }
+
+    func test_importCurl_PrefillsMetadataAndPersistsPreviewOnCreate() async throws {
+        let api = FakeMockModifierAPIClient()
+        let sut = MockModifierCreateViewModel(seed: .empty, apiClient: api, notificationManager: MockNotificationManager())
+        sut.curlCommand = #"curl 'https://example.com/search/widgets?q=elbise' -H 'X-Merlin-Scenario: dress' --json '{"query":"elbise"}' --compressed"#
+
+        sut.importCurl()
+
+        XCTAssertEqual(sut.modifierId, "search-widgets")
+        XCTAssertEqual(sut.path, "/search/widgets")
+        XCTAssertEqual(sut.method, "POST")
+        XCTAssertEqual(sut.scenario, "dress")
+        XCTAssertTrue(sut.importedCurl)
+        XCTAssertNil(sut.curlError)
+        _ = await sut.create(domain: "Dev")
+        let created = try XCTUnwrap(api.invokedCreate)
+        let preview = try XCTUnwrap(MockModifierPreviewInput.saved(model: created.asModel(id: "search-widgets")))
+        XCTAssertEqual(preview.url, "https://example.com/search/widgets?q=elbise")
+        XCTAssertEqual(preview.method, "POST")
+        XCTAssertEqual(preview.body, #"{"query":"elbise"}"#)
+        XCTAssertEqual(preview.source, .live)
+        XCTAssertEqual(preview.scenario, "dress")
+        XCTAssertNil(api.invokedSetActiveActivations)
+    }
+
+    func test_importCurl_PreservesManualIDAndOrderClearsMismatchedSample() {
+        let sut = MockModifierCreateViewModel(
+            seed: .init(mockId: "cart-mock", url: "https://example.com/cart", path: "/cart"),
+            apiClient: FakeMockModifierAPIClient(), notificationManager: MockNotificationManager()
+        )
+        sut.modifierId = "custom"
+        sut.order = 3
+        sut.curlCommand = "curl https://example.com/widgets"
+        sut.importCurl()
+        XCTAssertEqual(sut.modifierId, "custom")
+        XCTAssertEqual(sut.order, 3)
+        XCTAssertEqual(sut.sampleMockRequestId, "")
+
+        sut.curlCommand = "curl '"
+        sut.importCurl()
+        XCTAssertNotNil(sut.curlError)
+        XCTAssertEqual(sut.path, "/widgets")
+        XCTAssertEqual(sut.modifierId, "custom")
+    }
 }

@@ -29,6 +29,26 @@ public struct MockModifierCreateSheet: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             Form {
+                Section {
+                    Button("Import cURL") { viewModel.isImportingCurl.toggle() }
+                    if viewModel.isImportingCurl {
+                        Text("cURL command").font(.caption)
+                        TextEditor(text: $viewModel.curlCommand)
+                            .font(.system(.caption, design: .monospaced))
+                            .frame(height: 100)
+                            .accessibilityLabel("cURL command")
+                        if let error = viewModel.curlError {
+                            Text(error).foregroundStyle(.red).font(.caption)
+                        }
+                        Button("Fill fields from cURL") { viewModel.importCurl() }
+                            .disabled(viewModel.curlCommand.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                    if viewModel.importedCurl {
+                        Text("Request imported. Review the fields before creating. URL, headers and body are saved as cURL for Preview Request.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+                LabeledContent("Domain", value: domain)
                 TextField("ID (filename)", text: $viewModel.modifierId)
                 TextField("Path", text: $viewModel.path)
                 TextField("Method", text: $viewModel.method)
@@ -69,7 +89,7 @@ public struct MockModifierCreateSheet: View {
             }
         }
         .padding()
-        .frame(width: 420)
+        .frame(width: 480)
         .disabled(viewModel.isCreating)
     }
 }
