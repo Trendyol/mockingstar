@@ -24,7 +24,7 @@ jobs:
 
   linux-test:
     name: 'Linux Build Check'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Check out Repository
@@ -34,7 +34,7 @@ jobs:
 
     - uses: swift-actions/setup-swift@v2
       with:
-        swift-version: "5"
+        swift-version: "5.10.1"
 
     - name: Prepare Dependencies
       run: |
@@ -46,10 +46,10 @@ jobs:
                   libc6-dev \
                   libcurl4-openssl-dev \
                   libedit2 \
-                  libgcc-9-dev \
-                  libpython3.8 \
+                  libgcc-11-dev \
+                  libpython3.10 \
                   libsqlite3-0 \
-                  libstdc++-9-dev \
+                  libstdc++-11-dev \
                   libxml2-dev \
                   libz3-dev \
                   pkg-config \
