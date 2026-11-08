@@ -34,6 +34,7 @@ Discover powerful features that make Mocking Star an essential tool for network 
 @Links(visualStyle: detailedGrid) {
     - <doc:PartialMocking>
     - <doc:Modifiers>
+    - <doc:PartialMocking-Merlin>
     - <doc:MockingStarTrace>
     - <doc:MockImport>
     - <doc:FileIntegrityChecker>

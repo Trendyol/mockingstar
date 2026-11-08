@@ -22,7 +22,7 @@ The latest binary can also be found on the releases page or clone and compile in
 ### Key Features
 
 - **Mocking Requests**: Easily mock requests and test different cases with scenarios.
-- **Partial Mocking**: Change selected fields in stored or live responses with JavaScript modifiers. Follow the [partial mocking guide](MockingStar/MockingStar/Documentation.docc/Features/PartialMocking.md) to create and preview your first transformation.
+- **Partial Mocking**: Edit requests and selected fields in stored or live responses with JavaScript modifiers. The [partial mocking guide](MockingStar/MockingStar/Documentation.docc/Features/PartialMocking.md) covers the motivation, authoring workflow, limits, demos, and adoption plan. See the [modifier reference](MockingStar/MockingStar/Documentation.docc/Features/Modifiers.md) for editor/API features and [Merlin integration](MockingStar/MockingStar/Documentation.docc/Features/PartialMocking-Merlin.md) for automated flows and tool differences.
 - **Modifying Requests**: Modify intercepted requests to test different edge cases, allowing you to assess your application's performance under different conditions.
 - **Debugging Support**: Use Mocking Star to debug your network requests on your mac.
 - **UI Testing**: Integrate Mocking Star into your UI tests, creating a reliable and controlled testing environment to validate your mobile application's functionality.

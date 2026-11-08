@@ -4,6 +4,13 @@ These are MockingStar versions of the four Merlin demos. They target domain
 `Dev` and GET `/tmcdiscovery-msearch-mcwidgets-santral/tr-TR-1/search/widgets`.
 This is the route in the Dev workspace's recorded Android Elbise request.
 
+See the [partial mocking guide](../../../MockingStar/MockingStar/Documentation.docc/Features/PartialMocking.md)
+for the concept, matching, ordering, and platform limits; the
+[modifier reference](../../../MockingStar/MockingStar/Documentation.docc/Features/Modifiers.md)
+for UI/API features; and
+[Merlin integration](../../../MockingStar/MockingStar/Documentation.docc/Features/PartialMocking-Merlin.md)
+for equivalent automated flows. The commands below control Mocking Star, not Merlin Studio.
+
 Copy `Modifiers/` into `<mock-workspace>/Domains/Dev/Modifiers/`. For an Android
 Maestro workspace, this is:
 
@@ -11,9 +18,12 @@ Maestro workspace, this is:
 Trendyol_v2/maestro/mockingstar/Domains/Dev/Modifiers/
 ```
 
-The existing `sample-mock.js` is preserved. The four new modifiers start Off.
+Copying these definitions does not activate them. Existing modifiers such as `sample-mock.js`
+are separate and should be reviewed before enabling a demo.
 Preview requests contain a clean cURL and use Live; no authentication headers
-were copied. The sample mock ID points to the existing Dev widgets recording.
+were copied. The Sample Mock ID came from the reference workspace's Dev widgets recording;
+replace it with an existing ID in your own workspace for Mock preview. Live preview does
+not require that sample recording.
 
 ## Prepare the device
 
@@ -30,6 +40,11 @@ Use a logged-in account for the JFY demos; the personalized products endpoint ca
 return an empty list without a session. The slider's full-service URL triggers a
 separate products request. Live on the search widgets modifier applies only to
 the widgets route; the products route still follows normal mock matching.
+
+The injected widget is a captured demonstration payload, including its product URL and
+query flags. Refresh it if your API contract or environment changes. If your live widgets
+response already contains a suitable JFY object, prefer finding and reusing that object
+instead of maintaining another complete captured widget.
 
 The modifiers match the full API gateway path above. A direct Mars service URL
 whose path is only `/tr-TR-1/search/widgets` requires updating all selected
@@ -126,14 +141,14 @@ curl --fail-with-body -X DELETE 'http://localhost:8008/scenario' \
 
 `PUT /modifiers` replaces the activation list for that context; the empty list
 turns all modifiers Off. `DELETE /scenario` clears all scenario registrations
-for the specified device in Dev. Activation and scenarios also clear when the
-MockingStar server restarts. `disableLiveEnvironment=true` forces mock responses
+for the specified device in Dev. Activation and scenarios are process-local and clear when
+the MockingStar process restarts. `disableLiveEnvironment=true` forces mock responses
 even with Live selected, so keep it disabled for these live demos.
 
 ## Verification
 
-The current macOS Debug build succeeded. Five checks passed through MockingStar's
+During local authoring, the macOS Debug build succeeded. Five checks passed through MockingStar's
 Live Preview API: JFY insertion, the two-modifier chain, both scenario outcomes,
-and the Elbise-to-Pantolon request rewrite. The isolated verification activation
-list was cleared, and the default UI's four modifiers remain Off. The Android UI
-demonstration has not been run for these MockingStar copies.
+and the Elbise-to-Pantolon request rewrite. These checks used an isolated device context,
+which was cleared afterwards. They do not assert the current UI activation state or replace
+an end-to-end Android/CI test for your installed versions.
