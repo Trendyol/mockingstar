@@ -9,18 +9,16 @@ var previewSource = "live"
 var previewScenario = ""
 
 function transformer(req, chain) {
-  function replaceElbiseParameter(url, name) {
-    return url.replace(new RegExp("([?&]" + name + "=)([^&#]*)", "g"), function (match, prefix, value) {
-      return decodeURIComponent(value.replace(/\+/g, " ")).toLowerCase() === "elbise"
-        ? prefix + "Pantolon"
-        : match;
-    });
+  function replaceElbiseValue(match, prefix, value) {
+    return decodeURIComponent(value.replace(/\+/g, " ")).toLowerCase() === "elbise"
+      ? prefix + "Pantolon"
+      : match;
   }
 
-  req.url = replaceElbiseParameter(req.url, "q");
+  req.url = req.url.replace(/([?&]q=)([^&#]*)/g, replaceElbiseValue);
   req.url = req.url.replace(/([?&]deeplink=)([^&#]*)/g, function (match, prefix, value) {
     var deeplink = decodeURIComponent(value.replace(/\+/g, " "));
-    var updated = replaceElbiseParameter(deeplink, "Query");
+    var updated = deeplink.replace(/([?&]Query=)([^&#]*)/g, replaceElbiseValue);
     return updated === deeplink ? match : prefix + encodeURIComponent(updated);
   });
 
