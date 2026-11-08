@@ -38,8 +38,8 @@ synchronization service between the two tools. A deliberate transfer is still po
 | Sample mock reference | Stored Mocking Star mock ID | Relative imported mock path under `mocks_dir` |
 | Runtime base mock selection | Normal request matching; sample ID is a preview reference | Normal request matching; sample path is validated/used for preview, not a runtime selector |
 | Strict source override | `disableLiveEnvironment=true` forces a matched chain to Mock | `miss_policy: fail` forces a matched chain to Mock even if a modifier requests Live |
-| Device identity | Exact lowercase `deviceId`; never-configured named clients inherit the UI default | `X-Merlin-Device`; current CLI activation buckets do not inherit the default |
-| Cleanup | Client-managed teardown; process restart loses active sets | Executor installs the flow's set and defers removal on success/failure |
+| Device identity | Exact lowercase `deviceId`; never-configured named clients inherit the UI default | Device-specific CLI ingress supplies the serial, overriding missing/stale `X-Merlin-Device`; named buckets do not inherit the default |
+| Cleanup | Client-managed teardown; process restart loses active sets | Executor installs activation before launch and defers removal on success/failure/retry/cancellation |
 | Linux | Shared chain compiles but does not execute transformers; preview unsupported | Goja execution is in the CLI; validate the target platform and application integration |
 
 Do not infer identical behavior from identical control labels. In particular, a successful
@@ -75,9 +75,10 @@ and `previewScenario` metadata restore editor requests; **previewSource is not a
 
 Use positive Order values starting at `1`. Older `priority` metadata is accepted as a fallback
 when Order is absent, but new files should use Order. Zero/negative values are normalized;
-do not use Order `0` to express a dependency. Helpers before the transformer declaration
-can be excluded when executable source is extracted, so put helpers inside the function or
-after its declaration. Avoid assuming browser/Node APIs are available in either engine.
+do not use Order `0` to express a dependency. Current Merlin preserves authored helpers,
+constants, comments and trailing code with AST-based metadata separation, including helpers
+before the transformer declaration. When sharing with another tool/version, verify its
+source round trip as well. Avoid assuming browser/Node APIs are available in either engine.
 
 When transferring a file:
 
@@ -277,10 +278,11 @@ Live on search widgets does not force that products route to Live.
 
 ## Flow lifecycle and device compatibility
 
-The executor installs `setup.modifiers` for the flow's device/domain, and uses deferred
-cleanup to remove that set when the flow returns, including a failed run. A flow with an
-empty list gets an explicit empty activation set so it does not inherit a prior flow's
-modifiers. The server's activation state is process-local.
+The CLI validates the effective setup, including base includes and project defaults, before
+device setup. Each attempt validates again and installs `setup.modifiers` for its device/domain
+before cold launch. Deferred cleanup removes that set on completion, launch failure, retry or
+cancellation. An empty list skips activation; the prior attempt's cleanup prevents leakage.
+The server's activation state is process-local.
 
 The inspected Android interceptor also checks the request host and seeded routing intent.
 Flow defaults or a per-path scenario must resolve a routing selection; otherwise that
@@ -289,19 +291,22 @@ are eligible. An absolute JFY URL is a separate route, but an arbitrary absolute
 automatically routed through Merlin. Check the installed APK's host rules, original path,
 and seeded domain/scenario when a request never reaches the mock server.
 
-**Version-specific integration finding, checked on 8 November 2026:** the current inspected
-CLI stores activations under the executor's device serial and routes modifier lookup using
-`X-Merlin-Device`. Its activation book does not provide fallback from a named device to the
-header-less default. The inspected Android `MerlinMockInterceptor` stamps original URL,
-domain, and scenario, but does not stamp `X-Merlin-Device`. This can prevent a named-device
-activation from matching that APK's request. A device-keyed CLI needs an APK that forwards
-the corresponding device identity, or an explicitly compatible routing implementation.
+**Current Scylla implementation, checked on 8 November 2026:** activations are keyed by the
+executor's device serial. The CLI creates a dedicated host ingress for each device and reverses
+the APK's fixed local mock port to that ingress. The ingress supplies the correct serial,
+overriding missing or stale `X-Merlin-Device`. The Android interceptor does not need to supply
+that header for CLI-managed runs. Routing defaults and per-path scenarios are pre-staged in
+preferences before launch, so eligible bootstrap requests use the correct activation set.
+Relaunch and process restoration retain the mapping; server shutdown closes listeners and
+device cleanup removes the reverse tunnel. Named activation buckets do not inherit the default.
 
-The supplied presentation describes an earlier default-bucket workaround and states that
-parallel Android isolation had not been verified. Do not assume that workaround exists in
-the current code. Confirm identity propagation, modifier matching, failure cleanup, and
-cross-device isolation using the exact released versions before relying on parallel runs.
-This documentation records the compatibility gap; it does not change the Android/CLI code.
+This supersedes the presentation's earlier default-bucket workaround and the previously
+documented missing-header compatibility gap. Fake-bridge startup tests, real HTTP ingress
+isolation tests and race checks cover the current implementation. They do not replace an
+end-to-end Android/CI smoke test or real parallel-device verification. Use released CLI/APK
+versions containing the compatible routing bootstrap and ingress changes; this guide does not
+establish their release availability. The current iOS runner rejects `setup.modifiers` before
+launch; Studio preview and Go engine support are separate.
 
 ## Validate the presentation demonstrations
 

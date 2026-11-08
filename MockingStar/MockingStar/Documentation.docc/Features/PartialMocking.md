@@ -495,6 +495,6 @@ details, see <doc:Modifiers>; for version-dependent Android/CLI integration, see
 | Changing a scenario unexpectedly uses Live | Scenario is a match selector. Inspect the active modifiers' source settings; scenario registration alone does not select Mock. |
 | Chained edits appear in the wrong order | Response edits run in reverse Order. Review each definition's Order and filename tie-breaker. |
 | A script works in one tool only | Check engine-specific APIs, helper placement, domain, sample reference, and the preview/runtime differences. |
-| A Merlin preview works but a multi-device run does not | Verify `X-Merlin-Device` propagation and the activation key in the exact APK/CLI versions. See <doc:PartialMocking-Merlin>. |
+| A Merlin preview works but a multi-device run does not | Verify the CLI's device-specific reverse mapping, ingress identity and seeded routing in the exact APK/CLI versions. See <doc:PartialMocking-Merlin>. |
 
 For the complete API and editor reference, see <doc:Modifiers>.
