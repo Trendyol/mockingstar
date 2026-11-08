@@ -2,6 +2,20 @@ import XCTest
 @testable import CommonKit
 
 final class MockModifierPreviewModelsTests: XCTestCase {
+    func test_previewMetadata_CodableAndWriteMappingPreserveEmptyScenario() throws {
+        let request = MockModifierWriteRequest(id: "preview", path: "/widgets", method: "GET",
+            previewCurl: "curl 'https://example.com/widgets?q=1'", previewSource: .live, previewScenario: "",
+            transformerCode: "function transformer(req, chain) { return chain.proceed(req); }")
+        let decoded = try JSONDecoder().decode(MockModifierWriteRequest.self, from: JSONEncoder().encode(request))
+        XCTAssertEqual(decoded, request)
+        let model = decoded.asModel(id: "preview")
+        XCTAssertEqual(model.previewCurl, request.previewCurl)
+        XCTAssertEqual(model.previewSource, .live)
+        XCTAssertEqual(model.previewScenario, "")
+        XCTAssertFalse(model.enabled)
+        XCTAssertNil(model.source)
+    }
+
     func test_previewRequest_CodableRoundTrip_PreservesDraftAndBinaryBody() throws {
         let request = MockModifierPreviewRequest(
             currentModifierId: "discount",

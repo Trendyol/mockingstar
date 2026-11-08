@@ -14,6 +14,10 @@ public struct MockModifierModel: Codable, Hashable, Identifiable, Sendable {
     public var source: MockModifierPreviewSource?
     public var order: Int
     public var sampleMockRequestId: String?
+    /// Studio request metadata; does not activate a modifier or change runtime routing.
+    public var previewCurl: String?
+    public var previewSource: MockModifierPreviewSource?
+    public var previewScenario: String?
     /// JavaScript containing `function transformer(req, chain) { ... }` (metadata is not required).
     public var transformerCode: String
 
@@ -25,6 +29,9 @@ public struct MockModifierModel: Codable, Hashable, Identifiable, Sendable {
                 source: MockModifierPreviewSource? = nil,
                 order: Int = 1,
                 sampleMockRequestId: String? = nil,
+                previewCurl: String? = nil,
+                previewSource: MockModifierPreviewSource? = nil,
+                previewScenario: String? = nil,
                 transformerCode: String) {
         self.id = id
         self.path = path
@@ -34,6 +41,9 @@ public struct MockModifierModel: Codable, Hashable, Identifiable, Sendable {
         self.source = source
         self.order = max(1, order)
         self.sampleMockRequestId = sampleMockRequestId
+        self.previewCurl = previewCurl
+        self.previewSource = previewSource
+        self.previewScenario = previewScenario
         self.transformerCode = transformerCode
     }
 }
@@ -60,6 +70,9 @@ public struct MockModifierWriteRequest: Codable, Hashable, Sendable {
     public var scenario: String?
     public var order: Int
     public var sampleMockRequestId: String?
+    public var previewCurl: String?
+    public var previewSource: MockModifierPreviewSource?
+    public var previewScenario: String?
     public var transformerCode: String
 
     public init(id: String? = nil,
@@ -68,6 +81,9 @@ public struct MockModifierWriteRequest: Codable, Hashable, Sendable {
                 scenario: String? = nil,
                 order: Int = 1,
                 sampleMockRequestId: String? = nil,
+                previewCurl: String? = nil,
+                previewSource: MockModifierPreviewSource? = nil,
+                previewScenario: String? = nil,
                 transformerCode: String) {
         self.id = id
         self.path = path
@@ -75,6 +91,9 @@ public struct MockModifierWriteRequest: Codable, Hashable, Sendable {
         self.scenario = scenario
         self.order = max(1, order)
         self.sampleMockRequestId = sampleMockRequestId
+        self.previewCurl = previewCurl
+        self.previewSource = previewSource
+        self.previewScenario = previewScenario
         self.transformerCode = transformerCode
     }
 
@@ -86,6 +105,9 @@ public struct MockModifierWriteRequest: Codable, Hashable, Sendable {
                       enabled: enabled,
                       order: order,
                       sampleMockRequestId: sampleMockRequestId,
+                      previewCurl: previewCurl,
+                      previewSource: previewSource,
+                      previewScenario: previewScenario,
                       transformerCode: transformerCode)
     }
 }

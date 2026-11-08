@@ -130,4 +130,29 @@ final class MockModifierParserTests: XCTestCase {
         let model = try parser.parse(jsCode: js, filenameId: "default-order")
         XCTAssertEqual(model.order, 1)
     }
+
+    func test_previewMetadata_RoundTripPreservesLiteralCurlAndEmptyScenario() throws {
+        for source in [MockModifierPreviewSource.mock, .live] {
+            let original = MockModifierModel(
+                id: "preview", path: "/widgets", method: "GET", scenario: "route-scenario",
+                previewCurl: "curl 'https://example.com/widgets?q=elbise' \\\n  -X 'POST' --data-raw '{\"text\":\"Ömer'\\''s function transformer\"}'",
+                previewSource: source, previewScenario: "",
+                transformerCode: "function transformer(req, chain) {\n  return chain.proceed(req);\n}"
+            )
+            let code = parser.serialize(original)
+            let parsed = try parser.parse(jsCode: code, filenameId: original.id)
+            XCTAssertEqual(parsed, original)
+            XCTAssertFalse(parsed.transformerCode.contains("previewCurl"))
+            XCTAssertFalse(parsed.enabled)
+            XCTAssertNil(parsed.source)
+        }
+    }
+
+    func test_legacyFile_HasNoPreviewMetadata() throws {
+        let parsed = try parser.parse(jsCode: canonicalJS, filenameId: "legacy")
+        XCTAssertNil(parsed.previewCurl)
+        XCTAssertNil(parsed.previewSource)
+        XCTAssertNil(parsed.previewScenario)
+        XCTAssertFalse(parser.serialize(parsed).contains("previewCurl"))
+    }
 }

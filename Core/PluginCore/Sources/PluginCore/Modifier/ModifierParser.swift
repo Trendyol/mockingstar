@@ -70,6 +70,9 @@ final class MockModifierParser {
             enabled: false,
             order: orderValue,
             sampleMockRequestId: optionalString("sampleMockRequestId"),
+            previewCurl: optionalString("previewCurl"),
+            previewSource: optionalString("previewSource").flatMap(MockModifierPreviewSource.init(rawValue:)),
+            previewScenario: read("previewScenario").flatMap { $0.isNull ? nil : $0.toString() },
             transformerCode: Self.extractTransformerBody(from: jsCode)
         )
     }
@@ -78,6 +81,11 @@ final class MockModifierParser {
     /// `order` is the only sequence field.
     func serialize(_ model: MockModifierModel) -> String {
         let transformerBody = Self.extractTransformerBody(from: model.transformerCode)
+        let previewMetadata = model.previewCurl.map { curl in
+            "var previewCurl = \(escape(curl))\n" +
+            "var previewSource = \(model.previewSource.map { escape($0.rawValue) } ?? "null")\n" +
+            "var previewScenario = \(model.previewScenario.map(escape) ?? "null")\n"
+        } ?? ""
         return """
         // metadata
         var path = \(escape(model.path))
@@ -85,13 +93,15 @@ final class MockModifierParser {
         var scenario = \(model.scenario.map(escape) ?? "null")
         var order = \(max(1, model.order))
         var sampleMockRequestId = \(model.sampleMockRequestId.map(escape) ?? "null")
-
+        \(previewMetadata)
         \(transformerBody)
         """
     }
 
     static func extractTransformerBody(from code: String) -> String {
-        if let range = code.range(of: "function transformer") {
+        // Serialized metadata strings are single physical lines; match the declaration
+        // at a line boundary so body text such as "function transformer" is not code.
+        if let range = code.range(of: #"(?m)^\s*function\s+transformer\b"#, options: .regularExpression) {
             return String(code[range.lowerBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
         }
         return code.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -112,6 +122,13 @@ final class MockModifierParser {
     }
 
     private func escape(_ str: String) -> String {
-        "\"\(str.replacingOccurrences(of: "\"", with: "\\\""))\""
+        let escaped = str.replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "\n", with: "\\n")
+            .replacingOccurrences(of: "\r", with: "\\r")
+            .replacingOccurrences(of: "\t", with: "\\t")
+            .replacingOccurrences(of: "\u{2028}", with: "\\u2028")
+            .replacingOccurrences(of: "\u{2029}", with: "\\u2029")
+        return "\"\(escaped)\""
     }
 }
