@@ -9,6 +9,9 @@ struct MockModifierDetailDraft: Equatable {
     var order: Int
     var sampleMockRequestId: String
     var transformerCode: String
+    var previewCurl: String?
+    var previewSource: MockModifierPreviewSource?
+    var previewScenario: String?
 
     init(model: MockModifierModel) {
         id = model.id
@@ -18,6 +21,9 @@ struct MockModifierDetailDraft: Equatable {
         order = model.order
         sampleMockRequestId = model.sampleMockRequestId ?? ""
         transformerCode = model.transformerCode
+        previewCurl = model.previewCurl
+        previewSource = model.previewSource
+        previewScenario = model.previewScenario
     }
 
     var writeRequest: MockModifierWriteRequest {
@@ -28,6 +34,9 @@ struct MockModifierDetailDraft: Equatable {
             scenario: scenario.isEmpty ? nil : scenario,
             order: max(1, order),
             sampleMockRequestId: sampleMockRequestId.isEmpty ? nil : sampleMockRequestId,
+            previewCurl: previewCurl,
+            previewSource: previewSource,
+            previewScenario: previewScenario,
             transformerCode: transformerCode
         )
     }
@@ -40,6 +49,20 @@ struct MockModifierPreviewInput: Equatable, Codable {
     var scenario: String
     var headersJSON: String
     var body: String
+
+    static func saved(model: MockModifierModel) throws -> Self? {
+        guard let curl = model.previewCurl else { return nil }
+        let request = try CurlParser(curl).buildRequest()
+        let headers = try JSONEncoder().encode(request.allHTTPHeaderFields ?? [:])
+        return .init(
+            source: model.previewSource ?? (model.sampleMockRequestId == nil ? .live : .mock),
+            url: request.url?.absoluteString ?? "",
+            method: request.httpMethod ?? model.method,
+            scenario: model.previewScenario ?? model.scenario ?? "",
+            headersJSON: normalizedHeadersJSON(String(decoding: headers, as: UTF8.self)),
+            body: request.httpBody.map { String(decoding: $0, as: UTF8.self) } ?? ""
+        )
+    }
 
     static func initial(model: MockModifierModel, seed: MockModifierCreationSeed?) -> Self {
         if let seed {

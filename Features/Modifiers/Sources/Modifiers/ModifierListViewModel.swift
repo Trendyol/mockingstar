@@ -184,6 +184,9 @@ public final class MockModifierListViewModel {
             scenario: request.scenario,
             order: nextOrder(),
             sampleMockRequestId: request.sampleMockRequestId,
+            previewCurl: request.previewCurl,
+            previewSource: request.previewSource,
+            previewScenario: request.previewScenario,
             transformerCode: request.transformerCode
         )
         do {
@@ -204,6 +207,9 @@ public final class MockModifierListViewModel {
             scenario: modifier.scenario,
             order: modifier.order,
             sampleMockRequestId: modifier.sampleMockRequestId,
+            previewCurl: modifier.previewCurl,
+            previewSource: modifier.previewSource,
+            previewScenario: modifier.previewScenario,
             transformerCode: modifier.transformerCode
         )
     }

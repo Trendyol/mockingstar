@@ -228,6 +228,7 @@ private struct MockModifierDetailInspectorPane: View {
                             .multilineTextAlignment(.trailing)
                             .textFieldStyle(.plain)
                     }
+                    fieldErrorText(for: .previewMethod)
                     Divider().padding(.vertical, 6)
 
                     LabeledContent("Scenario") {
@@ -260,6 +261,10 @@ private struct MockModifierDetailInspectorPane: View {
                         .lineLimit(2...8)
                         .textFieldStyle(.plain)
                     }
+                    Text("Save stores this request as cURL, with its preview source and scenario. Activation remains device-specific; Off keeps the last preview terminal.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 8)
                 }
                 .padding(6)
             } label: {

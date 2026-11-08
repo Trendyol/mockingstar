@@ -222,6 +222,24 @@ final class MockModifierListViewModelTests: XCTestCase {
             "function transformer(req, chain) { return chain.proceed(req) }"
         )
     }
+
+    func test_duplicateAndClipboardCopy_PreserveSavedPreview() async {
+        var model = sampleModifier()
+        model.previewCurl = "curl 'https://example.com/cart?q=1' -X 'POST' --data-raw '@literal'"
+        model.previewSource = .live
+        model.previewScenario = ""
+        api.stubbedList = [model]
+        await sut.load(domain: "Dev")
+        await sut.duplicate(id: model.id, domain: "Dev")
+        XCTAssertEqual(api.invokedCreate?.previewCurl, model.previewCurl)
+        XCTAssertEqual(api.invokedCreate?.previewSource, .live)
+        XCTAssertEqual(api.invokedCreate?.previewScenario, "")
+
+        sut.selected = [model.id]
+        sut.copySelected()
+        await sut.paste(domain: "Dev")
+        XCTAssertEqual(api.invokedCreate?.previewCurl, model.previewCurl)
+    }
 }
 
 @MainActor
@@ -689,6 +707,49 @@ final class MockModifierDetailViewModelTests: XCTestCase {
 
         XCTAssertEqual(reloaded.previewInput.url, "https://saved.example/cart")
         XCTAssertEqual(reloaded.previewInput.headersJSON, "{\"X-Test\":\"1\"}")
+    }
+
+    func test_save_PersistsCurlAndReloadsWithoutUserDefaultsOrCreationSeed() async throws {
+        let suiteName = "modifier.preview.file.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        sut = MockModifierDetailViewModel(modifierId: "discount", apiClient: api,
+            notificationManager: MockNotificationManager(), navigationStore: navigationStore, defaults: defaults)
+        api.stubbedGet = sampleModifier()
+        await sut.load(domain: "Dev")
+        sut.previewInput = .init(source: .mock, url: "https://example.com/cart?q=elbise", method: "POST",
+            scenario: "", headersJSON: "{\"X-Test\":\"saved\"}", body: "Ömer's function transformer")
+        XCTAssertTrue(sut.hasUnsavedChanges)
+        let didSave = await sut.save(domain: "Dev")
+        XCTAssertTrue(didSave)
+        let saved = try XCTUnwrap(api.invokedUpdate?.request)
+        api.stubbedGet = saved.asModel(id: "discount")
+        defaults.removePersistentDomain(forName: suiteName)
+        let reopened = MockModifierDetailViewModel(modifierId: "discount",
+            previewSeed: .init(url: "https://stale.example.com/cart"), apiClient: api,
+            notificationManager: MockNotificationManager(), navigationStore: navigationStore, defaults: defaults)
+        await reopened.load(domain: "Dev")
+        XCTAssertEqual(reopened.previewInput, sut.previewInput)
+        XCTAssertEqual(reopened.draft.method, "GET")
+        XCTAssertFalse(reopened.hasUnsavedChanges)
+        XCTAssertNil(reopened.activeSource)
+        XCTAssertNil(api.invokedSetActiveActivations)
+    }
+
+    func test_save_InvalidNonemptyPreviewDoesNotWriteDefinition() async {
+        api.stubbedGet = sampleModifier()
+        await sut.load(domain: "Dev")
+        sut.previewInput.url = "/invalid"
+        let saved = await sut.save(domain: "Dev")
+        XCTAssertFalse(saved)
+        XCTAssertNil(api.invokedUpdate)
+        XCTAssertNotNil(sut.fieldErrors[.url])
+        sut.previewInput.url = "https://example.com/cart"
+        sut.previewInput.method = "POST invalid"
+        let invalidMethodSaved = await sut.save(domain: "Dev")
+        XCTAssertFalse(invalidMethodSaved)
+        XCTAssertNotNil(sut.fieldErrors[.previewMethod])
+        XCTAssertNil(api.invokedUpdate)
     }
 
     func test_runPreview_LateOldResponseCannotOverwriteNewResponse() async {

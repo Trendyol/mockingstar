@@ -9,6 +9,7 @@ enum MockModifierDetailField: Hashable {
     case id
     case path
     case method
+    case previewMethod
     case order
     case url
     case headers
@@ -32,7 +33,10 @@ public final class MockModifierDetailViewModel {
         }
     }
     private var savedSnapshot: MockModifierDetailDraft
-    var previewInput: MockModifierPreviewInput
+    var previewInput: MockModifierPreviewInput {
+        didSet { refreshDirtyState() }
+    }
+    private var savedPreviewSnapshot: MockModifierPreviewInput
     let javaScriptEditorSession: EditorSession
     let responseEditorSession: EditorSession
     let diffEditorSession: MonacoDiffSession
@@ -94,7 +98,9 @@ public final class MockModifierDetailViewModel {
         self.initialPreviewSeed = previewSeed
         self.currentId = modifierId
         self.savedSnapshot = initialDraft
-        self.previewInput = .initial(model: placeholder, seed: previewSeed)
+        let initialPreview = MockModifierPreviewInput.initial(model: placeholder, seed: previewSeed)
+        self.previewInput = initialPreview
+        self.savedPreviewSnapshot = initialPreview
         self.javaScriptEditorSession = EditorSession(
             content: .init(content: "", type: .javascript),
             isReadOnly: false
@@ -122,12 +128,13 @@ public final class MockModifierDetailViewModel {
             let model = try await apiClient.getModifier(domain: domain, id: currentId)
             draft = MockModifierDetailDraft(model: model)
             savedSnapshot = draft
-            previewInput = resolvePreviewInput(model: model, domain: domain)
+            previewInput = try resolvePreviewInput(model: model, domain: domain)
             activeSource = model.source
             enabled = model.enabled
             if let source = model.source {
                 previewInput.source = source
             }
+            savedPreviewSnapshot = previewInput
             javaScriptEditorSession.setContent(model.transformerCode, type: .javascript)
             javaScriptEditorSession.content.onContentDidChange = { [weak self] in
                 guard let self else { return }
@@ -145,17 +152,35 @@ public final class MockModifierDetailViewModel {
     @MainActor
     func save(domain: String) async -> Bool {
         guard validateDocument() else { return false }
+        let savingDraft = draft
+        let savingPreview = previewInput
+        var request = draft.writeRequest
+        if previewInput.url.isEmpty {
+            request.previewCurl = nil
+            request.previewSource = nil
+            request.previewScenario = nil
+        } else {
+            guard let input = validatePreviewRequest() else { return false }
+            var previewRequest = URLRequest(url: input.url)
+            previewRequest.httpMethod = previewInput.method.uppercased()
+            previewRequest.allHTTPHeaderFields = input.headers
+            previewRequest.httpBody = Data(previewInput.body.utf8)
+            request.previewCurl = previewRequest.cURL(pretty: true)
+            request.previewSource = previewInput.source
+            request.previewScenario = previewInput.scenario
+        }
         let oldId = currentId
         do {
             try await apiClient.updateModifier(
                 domain: domain,
                 id: oldId,
-                request: draft.writeRequest
+                request: request
             )
-            currentId = draft.id
-            savedSnapshot = draft
-            shouldShowUnsavedIndicator = false
-            persistPreviewInput(domain: domain)
+            currentId = savingDraft.id
+            savedSnapshot = savingDraft
+            savedPreviewSnapshot = savingPreview
+            refreshDirtyState()
+            MockModifierPreviewInputStore.save(savingPreview, domain: domain, id: currentId, defaults: defaults)
             if oldId != currentId {
                 MockModifierPreviewInputStore.remove(domain: domain, id: oldId, defaults: defaults)
                 navigationStore.replaceLast(
@@ -170,7 +195,8 @@ public final class MockModifierDetailViewModel {
         }
     }
 
-    private func resolvePreviewInput(model: MockModifierModel, domain: String) -> MockModifierPreviewInput {
+    private func resolvePreviewInput(model: MockModifierModel, domain: String) throws -> MockModifierPreviewInput {
+        if let saved = try MockModifierPreviewInput.saved(model: model) { return saved }
         if let initialPreviewSeed {
             let seeded = MockModifierPreviewInput.initial(model: model, seed: initialPreviewSeed)
             MockModifierPreviewInputStore.save(seeded, domain: domain, id: currentId, defaults: defaults)
@@ -343,7 +369,7 @@ public final class MockModifierDetailViewModel {
     }
 
     private func refreshDirtyState() {
-        shouldShowUnsavedIndicator = draft != savedSnapshot
+        shouldShowUnsavedIndicator = draft != savedSnapshot || previewInput != savedPreviewSnapshot
     }
 
     private func syncJavaScriptEditorFromDraft() {
@@ -394,6 +420,11 @@ public final class MockModifierDetailViewModel {
     }
 
     private func validatePreviewRequest() -> (url: URL, headers: [String: String])? {
+        guard previewInput.method.uppercased().range(of: #"^[A-Z!#$%&'*+.^_`|~0-9-]+$"#, options: .regularExpression) != nil else {
+            fieldErrors[.previewMethod] = "Enter a valid HTTP method"
+            return nil
+        }
+        fieldErrors.removeValue(forKey: .previewMethod)
         guard let url = URL(string: previewInput.url),
               ["http", "https"].contains(url.scheme?.lowercased() ?? ""),
               url.host() != nil else {
