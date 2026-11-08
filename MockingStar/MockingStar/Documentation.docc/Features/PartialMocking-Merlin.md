@@ -98,12 +98,21 @@ Example project configuration in `contracts/merlin.yaml`:
 ```yaml
 project:
   package: trendyol.com.stage
+  shared_prefs_file: PREF.xml
   mock_server:
     port: 8008
     mocks_dir: mocks
     modifiers_dir: modifiers
     miss_policy: proxy
+
+fixtures:
+  verify_mock_routing: { kind: bridge }
+  clear_mock_routing: { kind: bridge }
 ```
+
+Use the application's actual package and preferences filename. The declared adapter
+fixtures require compatible Android integration. `set_mock_scenario` and `set_shared_pref`
+are CLI built-ins and must not be redeclared in the project fixture registry.
 
 Paths are relative to `merlin.yaml` unless absolute. This layout resolves to:
 
@@ -160,7 +169,7 @@ this field and expect it to identify an imported Merlin mock.
 From a configured project directory, run:
 
 ```bash
-merlin studio --port 9879
+merlin studio --config contracts/merlin.yaml --port 9879
 ```
 
 Open `http://127.0.0.1:9879/modifiers/` and select the required domain.
@@ -296,7 +305,7 @@ This documentation records the compatibility gap; it does not change the Android
 
 ## Validate the presentation demonstrations
 
-The Android example flows use the following current filenames:
+The shared demo documentation references these Android example flow filenames:
 
 | Demonstration | Flow under `contracts/flows/msearch/regression/` |
 | --- | --- |
@@ -305,9 +314,11 @@ The Android example flows use the following current filenames:
 | Switch matching scenario | `test_SearchResult_switchModifierScenario_TogglesJfyFavorites.yaml` |
 | Rewrite Elbise to Pantolon | `test_SearchResult_openElbiseWithRequestModifier_ShowsPantolonProducts.yaml` |
 
-These are project-specific examples, not files shipped with every Merlin installation.
-They use an authenticated account and include a five-second wait after the final assertion
-for a presentation. The earlier `WithTestModifier` filename is obsolete.
+These are project-specific examples, not files shipped with Merlin. The four YAML files were
+not present in the inspected Android feature-branch tree for this documentation update; use
+the demo workspace or create the flows before running these paths. The intended demos use an
+authenticated account and a five-second wait after the final assertion for the presentation.
+The earlier `WithTestModifier` filename is obsolete.
 
 Validate each flow separately. To execute all four, pass their four paths to one `merlin run`;
 the runner accepts multiple paths. Use independent report filenames when running them
@@ -315,6 +326,12 @@ individually. Inspect the verbose mock-server log for the actual route, domain, 
 matched IDs, and resulting status; pair this with UI assertions and the HTML report.
 
 ## Source references
+
+Scylla's [Partial mocking with Merlin](https://gitlab.trendyol.com/mobile/mobile-all/android-all/platform-subgroup/scylla/-/blob/MSEARCH-7638/MerlinPartialMockingImpl/docs/partial-mocking.md)
+provides the full user workflow, examples and commands. Its
+[runtime guarantees](https://gitlab.trendyol.com/mobile/mobile-all/android-all/platform-subgroup/scylla/-/blob/MSEARCH-7638/MerlinPartialMockingImpl/docs/partial-mocking-runtime.md)
+describe Goja conversion and execution limits. These links target the implementation branch;
+use documentation matching your installed release.
 
 Behavior in this guide was checked against these implementation files on 8 November 2026:
 
