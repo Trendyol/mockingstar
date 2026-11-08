@@ -2,6 +2,8 @@
 
 Modifiers let you transform mock or live HTTP responses with JavaScript `transformer(req, chain)` functions.
 
+For an introduction to partial mocking and a step-by-step macOS walkthrough, see <doc:PartialMocking>.
+
 ## Identity and ordering
 
 - Modifier ID is the `.js` filename without extension (for example `discount.js` → `discount`).
@@ -65,7 +67,7 @@ The modifier detail screen uses a horizontal split:
 
 **Run** (`⌘↩`) evaluates the current unsaved draft directly in the macOS app. It does **not** write the `.js` file. API clients can run the same preview through `POST /modifiers/preview`.
 
-Preview request fields (URL, method, scenario, headers, body) and the preview response are **ephemeral**. They are not written to disk. The only preview-related field persisted on the modifier definition is `sampleMockRequestId`.
+**Save** stores the preview URL, method, headers and body as `previewCurl` in the modifier's `.js` file, with `previewSource` and `previewScenario` alongside it. Reopening restores this request, including an intentionally empty scenario. Saved file metadata takes precedence over a creation seed or an older local `UserDefaults` entry. Existing modifiers without preview metadata can still use their local preview settings; the next Save makes those settings portable. The preview response remains ephemeral.
 
 **Source** (Off / Mock / Live) is the same device activation as the modifiers list. Mock and Live turn the modifier on for `/mock` traffic and select the preview terminal. Off removes it from the activation set; Run still uses the last Mock or Live terminal.
 
@@ -102,7 +104,7 @@ Path: res.body.widgets[1]
 
 ### Save and rename
 
-**Save** persists metadata + transformer code. If the draft `id` differs from the path `{id}`, the update is a rename:
+**Save** persists metadata, transformer code and the Preview Request. Preview edits show the unsaved indicator. Modifiers without a preview URL can still be saved; a nonempty preview URL must be HTTP(S), with headers represented as a JSON string dictionary. If the draft `id` differs from the path `{id}`, the update is a rename:
 
 - The file is rewritten as `{newId}.js` and `{oldId}.js` is removed.
 - Every device activation set that contained the old id is updated to the new id (all devices for that domain).
@@ -115,6 +117,14 @@ From Mock List, right-click a single mock and choose **Create Modifier**:
 1. The create sheet is prefilled from the mock (path, method, scenario, `sampleMockRequestId`).
 2. Create writes the new `.js` file; the modifier starts **inactive** (`enabled` is not persisted; it is not added to any device activation set).
 3. Detail opens with the creation seed so **Preview Request** defaults to Mock source and the mock’s URL/headers/body.
+
+### Create Modifier → Import cURL
+
+1. Open **New Modifier**, choose **Import cURL**, and paste a request.
+2. Choose **Fill fields from cURL** to fill Path, Method and a suggested ID. Existing manual ID and Order values are preserved. `X-Merlin-Scenario` or `scenario` headers also populate Scenario. The selected domain remains unchanged.
+3. Review the fields and choose **Create**. The full request is saved as cURL and restored in Preview Request. The new modifier stays inactive until activated; imports without a matching sample mock use the Live preview terminal.
+
+Imports read literal request values without executing the command or reading local files. Escaped quotes, multiline commands, JSON bodies and common browser cURL flags are supported. Copy cURL uses literal `--data-raw` bodies, so values beginning with `@` are not treated as files. **Duplicate** and modifier copy/paste carry saved preview metadata to the new file.
 
 ## CRUD examples
 
@@ -211,7 +221,7 @@ Errors return `MockModifierAPIErrorResponse` (`code` + `message`):
 | `422` | `execution_failed` | Transformer threw or chain execution failed |
 | `502` | `live_proxy_failed` | Live terminal request failed |
 
-Preview does not persist the draft, the preview request, or the preview output. Only saving the modifier writes definition fields (including `sampleMockRequestId`) to disk.
+Running a preview does not write the draft or preview output. Create and Save write definition fields, including `sampleMockRequestId` and the optional preview metadata, to disk. Preview metadata never changes device activation or runtime request matching.
 
 ## Maestro / UI-test setup
 

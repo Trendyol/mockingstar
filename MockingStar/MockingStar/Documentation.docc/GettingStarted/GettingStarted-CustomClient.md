@@ -100,13 +100,14 @@ However, response might not match your desired scenario, and in such cases, manu
 ### Modifiers (partial response transforms)
 
 Modifiers are JavaScript transformers that can reshape mock or live responses for a path/method.
+See <doc:PartialMocking> for an introduction and a macOS walkthrough.
 Activation is per `deviceId` and ephemeral (cleared on server restart):
 
 ```bash
 curl -X PUT 'http://localhost:8008/modifiers?domain=Dev' \
   --header 'Content-Type: application/json' \
   --header 'deviceId:123' \
-  --data '["discount","latency"]'
+  --data '[{"id":"product-out-of-stock","source":"mock"}]'
 ```
 
 Use the same `deviceId` on `/mock` requests. See <doc:Modifiers> for full CRUD examples, ordering (`order`), and Maestro setup/teardown with `[]`.
