@@ -46,6 +46,13 @@ public struct MockModifierDetailView: View {
                         HStack {
                             Text("JavaScript").font(.headline)
                             Spacer()
+                            Button {
+                                Task { await viewModel.formatJavaScript() }
+                            } label: {
+                                Label("Format", systemImage: "wand.and.stars")
+                            }
+                            .disabled(viewModel.isFormatting)
+                            .help("Format JavaScript (⇧⌥F)")
                             if viewModel.isPreviewLoading {
                                 ProgressView().controlSize(.small)
                             }

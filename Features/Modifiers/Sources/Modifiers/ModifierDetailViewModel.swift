@@ -50,6 +50,7 @@ public final class MockModifierDetailViewModel {
     var enabled: Bool = false
     var activeSource: MockModifierPreviewSource?
     var isLoading = false
+    var isFormatting = false
     var shouldShowErrorMessage = false
     var errorMessage = ""
     var shouldShowUnsavedIndicator = false
@@ -366,6 +367,18 @@ public final class MockModifierDetailViewModel {
         pasteBoard.clearContents()
         pasteBoard.setString(request.cURL(pretty: true), forType: .string)
         notificationManager.show(title: "Request copied to clipboard", color: .green)
+    }
+
+    @MainActor
+    func formatJavaScript() async {
+        guard !isFormatting else { return }
+        isFormatting = true
+        defer { isFormatting = false }
+        do {
+            try await javaScriptEditorSession.formatDocument()
+        } catch {
+            present(error)
+        }
     }
 
     private func refreshDirtyState() {
