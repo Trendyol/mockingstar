@@ -33,5 +33,14 @@ public final class EditorSession {
         webView.runJS("revealLine(\(line))")
     }
 
+    @MainActor
+    public func formatDocument() async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            webView.callAsyncJavaScript("await formatDocument()", in: nil, in: .page) { result in
+                continuation.resume(with: result.map { _ in () })
+            }
+        }
+    }
+
     static let prewarmed = EditorSession()
 }
