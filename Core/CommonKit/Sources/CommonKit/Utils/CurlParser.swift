@@ -22,10 +22,16 @@ public struct CurlParser {
         let arguments = try parseCommandToArguments()
         let parsedCommand = try CURLCommand.parse(arguments)
 
+        #if canImport(FoundationNetworking)
+        let parsedURL = URL(string: parsedCommand.url)
+        #else
+        let parsedURL = URL(string: parsedCommand.url, encodingInvalidCharacters: false)
+        #endif
+
         guard parsedCommand.urlArgument.allSatisfy({ !$0.hasPrefix("-") }),
               parsedCommand.urlArgument.count + (parsedCommand.urlOption == nil ? 0 : 1) == 1,
               !parsedCommand.url.isEmpty,
-              let url = URL(string: parsedCommand.url, encodingInvalidCharacters: false),
+              let url = parsedURL,
               ["http", "https"].contains(url.scheme?.lowercased() ?? ""), url.host != nil else {
             throw CURLError.invalidURL
         }
