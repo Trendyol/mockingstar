@@ -21,7 +21,7 @@ jobs:
 
   linux-test:
     name: 'Linux Build Check'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Check out Repository
