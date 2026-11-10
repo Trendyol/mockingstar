@@ -15,7 +15,7 @@ jobs:
 
     steps:
     - name: Check out Repository
-      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
 
@@ -24,11 +24,11 @@ jobs:
 
   linux-test:
     name: 'Linux Build Check'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Check out Repository
-      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
 
@@ -66,7 +66,7 @@ jobs:
 
     steps:
     - name: Check out Repository
-      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
 
