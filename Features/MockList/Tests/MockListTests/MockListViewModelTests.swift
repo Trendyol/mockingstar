@@ -258,7 +258,19 @@ Error Domain=Failed Code=-1 "(null)"
         XCTAssertEqual(mockDiscover.invokedUpdateMockDomainParametersList.map(\.mockDomain), ["New Domain"])
     }
 
-    func test_shareButtonTapped_copyCurl() {
+    func test_shareButtonTapped_EncodingFailureShowsOnlyRedError() throws {
+        let id = "9271C0BE-9326-443F-97B8-1ECA29571FC3"
+        let mock = try XCTUnwrap(viewModel.mock(id: id))
+        mock.requestHeader = "{invalid JSON}"
+        viewModel.selected = [id]
+        viewModel.shareButtonTapped(shareStyle: .file)
+        XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.title), ["Failed to encode mock"])
+        XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.color), [.red])
+        XCTAssertFalse(pasteBoard.invokedClearContents)
+        XCTAssertFalse(pasteBoard.invokedSetString)
+    }
+
+    func test_shareButtonTapped_copyCurl() throws {
         viewModel.selected = ["9271C0BE-9326-443F-97B8-1ECA29571FC3"]
 
         pasteBoard.stubbedClearContentsResult = 0
@@ -273,7 +285,13 @@ Error Domain=Failed Code=-1 "(null)"
         XCTAssertTrue(pasteBoard.invokedClearContents)
         XCTAssertTrue(pasteBoard.invokedSetString)
         XCTAssertTrue(notificationManager.invokedShow)
-        XCTAssertEqual(pasteBoard.invokedSetStringParametersList.map(\.string), ["curl --request GET \\\n--url \'https://www.trendyol.com/aboutus\' \\\n"])
+        XCTAssertEqual(pasteBoard.invokedSetStringParametersList.count, 1)
+        let curl = try XCTUnwrap(pasteBoard.invokedSetStringParametersList.first?.string)
+        let request = try CurlParser(curl).buildRequest()
+        XCTAssertEqual(request.url?.absoluteString, "https://www.trendyol.com/aboutus")
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertTrue(request.allHTTPHeaderFields?.isEmpty ?? true)
+        XCTAssertNil(request.httpBody)
         XCTAssertEqual(pasteBoard.invokedSetStringParametersList.map(\.dataType), [.string])
         XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.title), ["Request copied to clipboard"])
         XCTAssertEqual(notificationManager.invokedShowParametersList.map(\.color), [.green])

@@ -98,6 +98,32 @@
 				monaco.editor.setModelLanguage(monacoEditor.getModel(), language);
 			}
 		}
+
+		function setReadOnly(readOnly) {
+			if (monacoEditor) {
+				monacoEditor.updateOptions({ readOnly: readOnly });
+			}
+		}
+
+		function revealLine(line) {
+			if (monacoEditor) {
+				monacoEditor.revealLineInCenter(line);
+				monacoEditor.setPosition({ lineNumber: line, column: 1 });
+				monacoEditor.focus();
+			}
+		}
+
+		async function formatDocument() {
+			if (typeof monacoEditor === 'undefined' || monacoEditor.getOption(monaco.editor.EditorOption.readOnly)) {
+				throw new Error('The editor is not ready for formatting.');
+			}
+			var action = monacoEditor.getAction('editor.action.formatDocument');
+			if (!action || !action.isSupported()) {
+				throw new Error('Formatting is not available for this language.');
+			}
+			await action.run();
+			monacoEditor.focus();
+		}
 	</script>
 </body>
 

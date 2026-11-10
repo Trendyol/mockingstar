@@ -22,6 +22,7 @@
 		5557F27B2B074078008957B1 /* MockingStarCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5557F27A2B074078008957B1 /* MockingStarCore */; };
 		5557F27D2B074126008957B1 /* CommonViewsKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5557F27C2B074126008957B1 /* CommonViewsKit */; };
 		5557F27F2B074157008957B1 /* MockList in Frameworks */ = {isa = PBXBuildFile; productRef = 5557F27E2B074157008957B1 /* MockList */; };
+		A1B2C3D42E3A10010000MOD1 /* Modifiers in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D42E3A10010000MOD2 /* Modifiers */; };
 		5557F2812B074166008957B1 /* PluginConfigs in Frameworks */ = {isa = PBXBuildFile; productRef = 5557F2802B074166008957B1 /* PluginConfigs */; };
 		5557F2832B074166008957B1 /* PluginCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5557F2822B074166008957B1 /* PluginCore */; };
 		5557F2852B074456008957B1 /* Documentation.docc in Sources */ = {isa = PBXBuildFile; fileRef = 5557F2842B074456008957B1 /* Documentation.docc */; };
@@ -366,6 +367,7 @@
 				5557F27A2B074078008957B1 /* MockingStarCore */,
 				5557F27C2B074126008957B1 /* CommonViewsKit */,
 				5557F27E2B074157008957B1 /* MockList */,
+				A1B2C3D42E3A10010000MOD2 /* Modifiers */,
 				5557F2802B074166008957B1 /* PluginConfigs */,
 				5557F2822B074166008957B1 /* PluginCore */,
 				55CBE2162B6A595D00A330F0 /* Sparkle */,
@@ -915,6 +917,10 @@
 		5557F27E2B074157008957B1 /* MockList */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MockList;
+		};
+		A1B2C3D42E3A10010000MOD2 /* Modifiers */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Modifiers;
 		};
 		5557F2802B074166008957B1 /* PluginConfigs */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -12,6 +12,7 @@ import AppKit
 public protocol NSPasteboardInterface {
     @discardableResult func clearContents() -> Int
     @discardableResult func setString(_ string: String, forType dataType: NSPasteboard.PasteboardType) -> Bool
+    func string(forType dataType: NSPasteboard.PasteboardType) -> String?
 }
 
 extension NSPasteboard: NSPasteboardInterface {}

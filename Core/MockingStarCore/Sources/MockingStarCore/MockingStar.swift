@@ -27,16 +27,59 @@ public final class MockingStarCore {
     private let jsonDecoder = JSONDecoder.shared
     private let pluginActor = PluginCoreActor.shared
     private let logger = Logger(category: "MockingStarCore")
+    private let urlSession: URLSessionInterface
+    private let modifierGateway: MockModifierGateway
 
-    public init() {
+    public init(
+        urlSession: URLSessionInterface = URLSession.shared,
+        activationStore: MockModifierActivationStore = .shared,
+        fileManager: FileManagerInterface = FileManager.default,
+        fileUrlBuilder: FileUrlBuilderInterface = FileUrlBuilder(),
+        storeActor: MockModifierStoreActor = .shared
+    ) {
+        self.urlSession = urlSession
+        let previewService = MockModifierPreviewService(
+            activationStore: activationStore,
+            storedMockLoader: StoredMockLoader(
+                fileManager: fileManager,
+                fileUrlBuilder: fileUrlBuilder
+            ),
+            storeActor: storeActor
+        )
+        modifierGateway = MockModifierGateway(
+            activationStore: activationStore,
+            previewService: previewService,
+            storeActor: storeActor
+        )
         logger.debug("Initialize")
     }
 
-    func handle(request: URLRequest, flags: MockServerFlags, startedAt: ContinuousClock.Instant) async throws -> (status: Int, body: Data, headers: [String: String]) {
+    /// Resolves a request into a response. Modifier matching and the JS chain live in
+    /// `MockModifierGateway`; this method only supplies the mock/live terminal.
+    func handle(request: URLRequest, flags: MockServerFlags, startedAt: ContinuousClock.Instant = ContinuousClock().now) async throws -> (status: Int, body: Data, headers: [String: String]) {
+        try await modifierGateway.handle(request: request, flags: flags) { [self] request, flags in
+            try await originalHandle(request: request, flags: flags, startedAt: startedAt)
+        }
+    }
+
+    /// MockingStar device isolation uses the exact `deviceId` flag (Maestro shards).
+    /// Android advertising `DeviceId` must not count — `/mock` forwards original headers.
+    func mockingStarDeviceId(from rawFlags: [String: String]) -> String {
+        rawFlags["deviceId"] ?? ""
+    }
+
+    private func originalHandle(request: URLRequest, flags: MockServerFlags, startedAt: ContinuousClock.Instant) async throws -> (status: Int, body: Data, headers: [String: String]) {
         let decider = try await deciderActor.decider(for: flags.domain)
         let result = try await decider.decideMock(request: request, flags: flags)
 
         switch result {
+        case .useMock where flags.mockSource == .onlyLive:
+            logger.info("Mock found but onlyLive requested, proxying live server", metadata: [
+                "traceUrl": .string(request.url?.absoluteString ?? "")
+            ])
+            let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
+            logMockTrace(request: request, responseType: "live request", startedAt: startedAt)
+            return liveResult
         case .useMock(mock: let mock):
             logger.info("Mock found, waiting response time", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
@@ -49,20 +92,22 @@ public final class MockingStarCore {
             return (status: mock.metaData.httpStatus,
                     body: bodyData,
                     headers: try mock.responseHeader.asDictionary())
-        case .mockNotFound where flags.mockSource == .default:
+        case .mockNotFound where flags.mockSource == .default || flags.mockSource == .onlyLive:
             logger.info("Mock not found, trying to request live server: \(request.url?.path() ?? .init())", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
 
             let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
             logMockTrace(request: request, responseType: "live request", startedAt: startedAt)
-            Task {
-                try await saveFileIfNeeded(request: request,
-                                           flags: flags,
-                                           status: liveResult.status,
-                                           body: liveResult.body,
-                                           headers: liveResult.headers,
-                                           decider: decider)
+            if flags.mockSource == .default {
+                Task {
+                    try await saveFileIfNeeded(request: request,
+                                               flags: flags,
+                                               status: liveResult.status,
+                                               body: liveResult.body,
+                                               headers: liveResult.headers,
+                                               decider: decider)
+                }
             }
             return liveResult
         case .mockNotFound:
@@ -72,20 +117,22 @@ public final class MockingStarCore {
             let pluginMessage = try await pluginActor.pluginCore(for: flags.domain).mockErrorPlugin(message: "Mock not found and disable live environment: \(request.url?.path() ?? .init())")
             logMockTrace(request: request, responseType: "no mock and disabled live request", startedAt: startedAt)
             return (404, pluginMessage.data(using: .utf8) ?? .init(), [:])
-        case .scenarioNotFound where flags.mockSource == .default:
+        case .scenarioNotFound where flags.mockSource == .default || flags.mockSource == .onlyLive:
             logger.info("Scenario not found, trying to request live server", metadata: [
                 "traceUrl": .string(request.url?.absoluteString ?? "")
             ])
 
             let liveResult = try await proxyRequest(request: request, mockDomain: flags.domain)
             logMockTrace(request: request, responseType: "scenario not found and live request", startedAt: startedAt)
-            Task {
-                try await saveFileIfNeeded(request: request,
-                                           flags: flags,
-                                           status: liveResult.status,
-                                           body: liveResult.body,
-                                           headers: liveResult.headers,
-                                           decider: decider)
+            if flags.mockSource == .default {
+                Task {
+                    try await saveFileIfNeeded(request: request,
+                                               flags: flags,
+                                               status: liveResult.status,
+                                               body: liveResult.body,
+                                               headers: liveResult.headers,
+                                               decider: decider)
+                }
             }
             return liveResult
         case .scenarioNotFound:
@@ -141,7 +188,7 @@ public final class MockingStarCore {
             liveRequest = request.recalculateContentLength()
         }
 
-        let (data, response) = try await URLSession.shared.data(for: liveRequest)
+        let (data, response) = try await urlSession.data(for: liveRequest)
 
         guard let httpResponse = response as? HTTPURLResponse else {
             logger.error("Live Request load error", metadata: [
@@ -181,7 +228,6 @@ public final class MockingStarCore {
         logger.debug("Checking mock should save", metadata: [
             "traceUrl": .string(request.url?.absoluteString ?? "")
         ])
-        var request = request
 
         let shouldSave = executeMockFilterForShouldSave(for: request, scenario: flags.scenario ?? "", statusCode: status, mockFilters: decider.mockFilters)
 
@@ -455,7 +501,10 @@ extension MockingStarCore: ServerMockHandlerInterface {
 
         let scenario: String
         let mockDomain = rawFlags.caseInsensitiveSearch(for: "mockDomain") ?? "Dev"
-        let deviceId = rawFlags.caseInsensitiveSearch(for: "deviceId").orEmpty
+        // Exact key only: Android advertising sends `DeviceId`, Maestro sends `deviceId`.
+        // `/mock` forwards original request headers, so case-insensitive lookup would isolate
+        // every app request onto a UUID bucket instead of the UI default (`""`) set.
+        let deviceId = mockingStarDeviceId(from: rawFlags)
 
         if rawFlags.caseInsensitiveSearch(for: "scenario").isNilOrEmpty {
             scenario = await scenariosActor.decider(for: mockDomain).decideScenario(request: request, deviceId: deviceId).orEmpty
@@ -496,7 +545,7 @@ extension MockingStarCore: ServerMockSearchHandlerInterface {
     ///   - `headers`: The response headers as `[String : String]`.
     public func search(path: String, method: String, scenario: String?, rawFlags: [String : String]) async throws -> (status: Int, body: Data, headers: [String : String]) {
         let mockDomain = rawFlags.caseInsensitiveSearch(for: "mockDomain") ?? "Dev"
-        let deviceId = rawFlags.caseInsensitiveSearch(for: "deviceId").orEmpty
+        let deviceId = mockingStarDeviceId(from: rawFlags)
 
         let flags = MockServerFlags(mockSource: .init(from: rawFlags),
                                     scenario: scenario,
@@ -535,6 +584,51 @@ extension MockingStarCore: ScenarioHandlerInterface {
     
     public func removeScenario(scenario: ScenarioModel) async throws {
         await scenariosActor.decider(for: scenario.mockDomain).removeScenarios(deviceId: scenario.deviceId)
+    }
+}
+
+// MARK: - ServerMockModifierHandlerInterface
+extension MockingStarCore: ServerMockModifierHandlerInterface {
+    public func listModifiers(domain: String, deviceId: String) async throws -> [MockModifierModel] {
+        try await modifierGateway.listModifiers(domain: domain, deviceId: deviceId)
+    }
+
+    public func getModifier(domain: String, id: String, deviceId: String) async throws -> MockModifierModel? {
+        try await modifierGateway.getModifier(domain: domain, id: id, deviceId: deviceId)
+    }
+
+    public func createModifier(domain: String, model: MockModifierModel) async throws {
+        try await modifierGateway.createModifier(domain: domain, model: model)
+    }
+
+    public func updateModifier(domain: String, currentId: String, model: MockModifierModel) async throws {
+        try await modifierGateway.updateModifier(domain: domain, currentId: currentId, model: model)
+    }
+
+    public func deleteModifier(domain: String, id: String) async throws {
+        try await modifierGateway.deleteModifier(domain: domain, id: id)
+    }
+
+    public func setActiveModifiers(domain: String, deviceId: String, activations: [MockModifierActivation]) async throws {
+        try await modifierGateway.setActiveModifiers(domain: domain, deviceId: deviceId, activations: activations)
+    }
+
+    public func previewModifier(
+        domain: String,
+        deviceId: String,
+        request: MockModifierPreviewRequest
+    ) async throws -> MockModifierPreviewResponse {
+        try await modifierGateway.previewModifier(
+            domain: domain,
+            deviceId: deviceId,
+            request: request
+        ) { [weak self] liveRequest in
+            guard let self else {
+                throw MockModifierPreviewError.liveRequestFailed("Core deallocated")
+            }
+            let result = try await self.proxyRequest(request: liveRequest, mockDomain: domain)
+            return HTTPResult(status: result.status, body: result.body, headers: result.headers)
+        }
     }
 }
 

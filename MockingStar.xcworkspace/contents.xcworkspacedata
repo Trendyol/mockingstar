@@ -45,6 +45,9 @@
          location = "group:MockList">
       </FileRef>
       <FileRef
+         location = "group:Modifiers">
+      </FileRef>
+      <FileRef
          location = "group:PluginConfigs">
       </FileRef>
    </Group>

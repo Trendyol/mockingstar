@@ -11,6 +11,7 @@ import Logs
 import MockDetail
 import MockDomainConfigs
 import MockList
+import Modifiers
 import MockingStarCore
 import PluginConfigs
 import SwiftUI
@@ -19,6 +20,7 @@ struct AppNavigationSplitView: View {
     @Bindable private var navigationStore = NavigationStore.shared
     @AppStorage("mockDomain") var mockDomain: String = ""
     @AppStorage("isOnboardingDone") private var isOnboardingDone: Bool = false
+    @State private var modifierListViewModel = MockModifierListViewModel()
     private let mockListViewModel = MockListViewModel()
     private let onboardingCompleted = OnboardingCompleted.shared
     private let deeplinkStore = DeeplinkStore.shared
@@ -31,7 +33,7 @@ struct AppNavigationSplitView: View {
                         .frame(minWidth: 280)
                 } detail: {
                     NavigationStack(path: $navigationStore.path) {
-                        MockListView(viewModel: mockListViewModel)
+                        MockListMockModifierCreateHost(viewModel: mockListViewModel)
                             .navigationDestination(for: Route.self) { route in
                                 switch route {
                                 case .mock(let mock):
@@ -50,6 +52,13 @@ struct AppNavigationSplitView: View {
                                     LogsView()
                                 case .fileIntegrityCheck:
                                     FileIntegrityCheckView()
+                                case .modifiers:
+                                    MockModifierListView(viewModel: modifierListViewModel)
+                                case .modifier(let id, let previewSeed):
+                                    MockModifierDetailRouteView(
+                                        modifierId: id,
+                                        previewSeed: previewSeed
+                                    )
                                 }
                             }
                     }
@@ -73,6 +82,44 @@ struct AppNavigationSplitView: View {
 
 #Preview {
     AppNavigationSplitView()
+}
+
+/// Owns the create sheet so presenting it does not invalidate `NavigationSplitView`.
+/// Navigation happens after the sheet dismisses; navigating in the same turn as dismiss crashed.
+private struct MockListMockModifierCreateHost: View {
+    let viewModel: MockListViewModel
+    @State private var modifierCreationSeed: MockModifierCreationSeed?
+    @State private var createdModifier: CreatedMockModifier?
+    @Bindable private var navigationStore = NavigationStore.shared
+    @AppStorage("mockDomain") private var mockDomain: String = ""
+
+    private struct CreatedMockModifier {
+        let id: String
+        let seed: MockModifierCreationSeed
+    }
+
+    var body: some View {
+        MockListView(viewModel: viewModel) { seed in
+            modifierCreationSeed = seed
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { modifierCreationSeed != nil },
+                set: { if !$0 { modifierCreationSeed = nil } }
+            ),
+            onDismiss: {
+                guard let createdModifier else { return }
+                self.createdModifier = nil
+                navigationStore.open(.modifier(id: createdModifier.id, previewSeed: createdModifier.seed))
+            }
+        ) {
+            if let seed = modifierCreationSeed {
+                MockModifierCreateSheet(seed: seed, domain: mockDomain) { id, previewSeed in
+                    createdModifier = CreatedMockModifier(id: id, seed: previewSeed)
+                }
+            }
+        }
+    }
 }
 
 struct NotificationView: View {
