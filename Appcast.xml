@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 2.2.2</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed <em> Fix/release app actions security issue by @yusufozgul in https://github.com/Trendyol/mockingstar/pull/83 </em> MockingStarResponseTimeLogging by @mbasakkarahan in https://github.com/Trendyol/mockingstar/pull/86</h2><h2>New Contributors * @mbasakkarahan made their first contribution in https://github.com/Trendyol/mockingstar/pull/86</h2><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/2.2.1-24...2.2.2-25</p>
+                ]]>
+            </description>
+            <pubDate>Tue, 10 Nov 2026 08:20:55 +0000</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/2.2.2-25/MockingStar-App.zip"
+            sparkle:version="25" sparkle:shortVersionString="2.2.2"
+            sparkle:edSignature="HleXR1mKvXPgcAz8L+R1l3noH6Cg0GMCX4s+zjBrm+PTF9BHisq/GSg4+T5oyqyQB+iHRARLND1PYiW2vDycAw==" length="7834213"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 2.2.1</title>
             <description>
                 <![CDATA[
