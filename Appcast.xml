@@ -3,6 +3,21 @@
     <channel>
         <title>MockingStar</title>
         <item>
+            <title>Version 2.3.0</title>
+            <description>
+                <![CDATA[
+<h2>What's Changed * Feature/partial mock faz0 by @Enes-Kayiklik in https://github.com/Trendyol/mockingstar/pull/87</h2><h2>New Contributors * @Enes-Kayiklik made their first contribution in https://github.com/Trendyol/mockingstar/pull/87</h2><p><strong>Full Changelog</strong>: https://github.com/Trendyol/mockingstar/compare/2.2.2-25...2.3.0-26</p>
+                ]]>
+            </description>
+            <pubDate>Tue, 10 Nov 2026 10:26:50 +0000</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/Trendyol/mockingstar/releases/download/2.3.0-26/MockingStar-App.zip"
+            sparkle:version="26" sparkle:shortVersionString="2.3.0"
+            sparkle:edSignature="FDymmv/7SeXW+HW73ZaLdZ/mkiRorJMQXtTai9aEtnhBV2czmvuBv7a3gCmmd0no3I3fESbmwbU8CT6EIcMGAw==" length="9006106"
+            type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 2.2.1</title>
             <description>
                 <![CDATA[
